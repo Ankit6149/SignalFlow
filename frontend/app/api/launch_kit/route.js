@@ -4,17 +4,29 @@ const CHANNEL_LABELS = {
   linkedin: "LinkedIn",
   x: "X",
   instagram: "Instagram",
+  reddit: "Reddit",
+  hn: "Hacker News",
+  youtube: "YouTube",
+  tiktok: "TikTok",
   blog: "Blog",
   newsletter: "Newsletter",
   release_notes: "Release notes",
+  discord: "Discord",
+  slack: "Slack",
 };
 
-const DEFAULT_CHANNELS = ["linkedin", "x", "newsletter"];
+const DEFAULT_CHANNELS = ["linkedin", "x", "instagram", "newsletter"];
+const DEFAULT_OUTPUTS = ["caption", "text", "image", "video", "doc"];
 
 function normalizeChannels(channels) {
   const selected = Array.isArray(channels) ? channels : [];
   const valid = selected.filter((channel) => CHANNEL_LABELS[channel]);
   return valid.length ? valid : DEFAULT_CHANNELS;
+}
+
+function normalizeOutputs(outputs) {
+  const selected = Array.isArray(outputs) ? outputs.filter(Boolean) : [];
+  return selected.length ? selected : DEFAULT_OUTPUTS;
 }
 
 function excerpt(value) {
@@ -62,21 +74,33 @@ function channelDrafts({ projectName, signal, audience, channels }) {
       `${projectName}: ${signal}\n\nDescribe once. Get the post package: copy, media direction, and export-ready formats.`,
     instagram:
       `${projectName}\n\n${signal}\n\nUse this with the generated card, screenshot set, or short screen-recording clip.`,
+    reddit:
+      `Title: I built ${projectName} to turn raw product context into a complete posting package\n\n${signal}\n\nI would use it to prepare captions, visuals, docs, and channel variants from the same source material. Curious what workflows people would want automated first.`,
+    hn:
+      `Show HN: ${projectName} - generate posting packages from raw product context\n\n${signal}\n\nIt takes descriptions, links, docs, repos, screenshots, or recordings and prepares reviewable social assets instead of making users assemble every format manually.`,
+    youtube:
+      `${projectName} demo idea\n\nHook: Stop rebuilding every product post by hand.\n\nShow: paste context, add assets, choose outputs, generate captions, visual plan, video script, and docs.\n\nCTA: Review the package and publish through your own channels.`,
+    tiktok:
+      `Short video script for ${projectName}\n\n0-2s: "I do not want to manually make posts from product updates anymore."\n3-8s: Show inputs going in.\n9-15s: Show generated captions, image plan, video plan, and docs.\nCaption: ${signal}`,
     blog:
       `${projectName} is a useful update for ${who}. ${signal} This post package gives the article a clear angle, suggested visual assets, and platform-specific follow-up copy.`,
     newsletter:
       `Subject: ${projectName} update\n\n${signal}\n\nThe package includes ready-to-edit copy, visual asset direction, and selected-platform variants so the update can be reviewed and shared faster.`,
     release_notes:
       `## ${projectName} update\n\n- Summary: ${signal}\n- Audience: ${who}\n- Included assets: generated card, visual media plan, platform drafts\n- Review before publishing through official channels.`,
+    discord:
+      `**${projectName} update**\n\n${signal}\n\nGenerated package includes captions, visual direction, and selected-channel drafts for review.`,
+    slack:
+      `*${projectName} update*\n\n${signal}\n\nPrepared package: channel drafts, visual asset plan, doc summary, and publishing handoff notes.`,
   };
   return Object.fromEntries(channels.map((channel) => [channel, drafts[channel]]));
 }
 
-function mediaPlan(projectName, signal, channels) {
+function mediaPlan(projectName, signal, channels, outputs) {
   const channelNames = channels.map((channel) => CHANNEL_LABELS[channel]).join(", ");
-  return [
+  const plans = [
     {
-      type: "generated_card",
+      type: "image",
       title: "Use the generated card",
       summary: `Static visual for ${projectName}: ${signal}`,
     },
@@ -86,19 +110,42 @@ function mediaPlan(projectName, signal, channels) {
       summary: "Use three clean states for carousel posts or visual proof.",
     },
     {
-      type: "screen_recording",
-      title: "Record the core flow",
+      type: "video",
+      title: "Create a short demo clip",
       summary: "Capture the product flow once and reuse it for short clips.",
     },
     {
-      type: "gif_clip",
+      type: "gif",
       title: "Create a short loop",
       summary: "Turn the strongest 3-6 seconds into a GIF or silent video.",
     },
     {
-      type: "platform_variants",
+      type: "carousel",
+      title: "Build a carousel",
+      summary: "Use problem, input, generation, result, and review slides.",
+    },
+    {
+      type: "caption",
       title: "Format per selected account",
       summary: `Prepare copy and assets for ${channelNames}.`,
+    },
+  ];
+  return plans.filter((item) => outputs.includes(item.type) || item.type === "caption");
+}
+
+function documents(projectName, signal, outputs) {
+  if (!outputs.includes("doc")) {
+    return [];
+  }
+
+  return [
+    {
+      title: "Posting brief",
+      summary: `A clean source-of-truth doc for ${projectName}: audience, angle, selected channels, copy, visual direction, and review checklist.`,
+    },
+    {
+      title: "Publishing handoff",
+      summary: `A structured handoff that explains what to publish, where to publish it, and which assets belong with each channel.`,
     },
   ];
 }
@@ -114,15 +161,25 @@ function buildMarkdown({ projectName, signal, drafts, plan, prompt }) {
 function localPackage(body) {
   const projectName = (body.project_name || "SignalFlow Studio").trim();
   const channels = normalizeChannels(body.channels);
-  const signal = excerpt(body.notes || body.document_text || body.research_url || body.repo) || "Describe what happened and why it matters.";
+  const outputs = normalizeOutputs(body.output_types);
+  const sourceParts = [
+    body.notes,
+    body.research_url,
+    body.repo,
+    body.document_text,
+    Array.isArray(body.media_items) ? body.media_items.map((item) => item.name).join(", ") : "",
+  ];
+  const signal = excerpt(sourceParts.filter(Boolean).join(" ")) || "Describe what happened and why it matters.";
   const audience = (body.audience || "selected social media audiences").trim();
   const prompt = `Create formatted posting packages for ${projectName}.
 Audience: ${audience}
 Selected channels: ${channels.map((channel) => CHANNEL_LABELS[channel]).join(", ")}
+Requested outputs: ${outputs.join(", ")}
 Source information: ${signal}
-Return copy, visual media suggestions, and review notes per channel.`;
+Return copy, captions, visual media suggestions, document notes, and review notes per channel.`;
   const posts = channelDrafts({ projectName, signal, audience, channels });
-  const plan = mediaPlan(projectName, signal, channels);
+  const plan = mediaPlan(projectName, signal, channels, outputs);
+  const docs = documents(projectName, signal, outputs);
   const imageBase64 = cardDataUri(projectName, signal).split(",")[1];
   return {
     project_name: projectName,
@@ -145,6 +202,7 @@ Return copy, visual media suggestions, and review notes per channel.`;
     },
     posts,
     channels,
+    outputs,
     generator: body.generator || "standalone",
     chatbot_prompt: prompt,
     slide_outline: `# ${projectName} Posting Plan\n\n- Core signal: ${signal}\n- Channels: ${channels.map((channel) => CHANNEL_LABELS[channel]).join(", ")}\n- Review copy and media before publishing.`,
@@ -162,6 +220,7 @@ Return copy, visual media suggestions, and review notes per channel.`;
       },
     ],
     media_plan: plan,
+    documents: docs,
     image_mime: "image/svg+xml",
     image_base64: imageBase64,
     integration_config: {

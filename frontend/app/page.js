@@ -7,89 +7,75 @@ const API_BASE = "/api";
 const PRODUCT_NAME = "SignalFlow Studio";
 const ACCESS_TOKEN_STORAGE_KEY = "signalflow_owner_token";
 
+const INPUT_TYPES = [
+  ["text", "Text or idea"],
+  ["links", "Links"],
+  ["docs", "Docs"],
+  ["repo", "GitHub repo"],
+  ["media", "Screenshots / recordings"],
+];
+
 const CHANNELS = [
   ["linkedin", "LinkedIn"],
   ["x", "X"],
   ["instagram", "Instagram"],
-  ["blog", "Blog"],
+  ["reddit", "Reddit"],
+  ["hn", "Hacker News"],
+  ["youtube", "YouTube"],
+  ["tiktok", "TikTok"],
   ["newsletter", "Newsletter"],
+  ["blog", "Blog"],
   ["release_notes", "Release notes"],
+  ["discord", "Discord"],
+  ["slack", "Slack"],
 ];
 
-const INPUT_MODES = [
-  ["brief", "Brief"],
-  ["repo", "Repository"],
-  ["research", "Research"],
+const OUTPUT_TYPES = [
+  ["caption", "Captions"],
+  ["text", "Posts"],
+  ["thread", "Threads"],
+  ["image", "Images"],
+  ["video", "Video plan"],
+  ["gif", "GIF plan"],
+  ["carousel", "Carousel"],
+  ["doc", "Doc"],
 ];
 
-const GENERATORS = [
-  ["chatbot", "Chatbot"],
-  ["local", "Local API"],
-  ["slm", "Embedded SLM"],
-  ["api", "Cloud API"],
-];
-
-const DISTRIBUTION_MODES = [
-  ["manual", "Manual review"],
-  ["files", "Files only"],
-  ["webhook", "Webhook"],
-  ["official_api", "Official API"],
-];
-
-const sampleResult = {
+const DEFAULT_RESULT = {
   project_name: PRODUCT_NAME,
-  output_dir: "pipeline-output/SignalFlow Studio-demo",
-  highlights: [
-    {
-      path: "assets",
-      score: 1,
-      summary:
-        "Assets supplied from notes; starts with: Describe the update, add data, and let the app build the post package.",
-    },
-  ],
-  channels: ["linkedin", "x", "newsletter"],
-  generator: "chatbot",
-  chatbot_prompt:
-    `You are helping create content for ${PRODUCT_NAME}.\nAudience: builders and technical founders.\nChannels: LinkedIn, X, Newsletter.\nUse the supplied assets and return one section per channel.`,
   posts: {
     linkedin:
-      `I am building ${PRODUCT_NAME}, a simple way to turn a description and source data into ready-to-review platform posts.\n\nDescribe the update, add data, choose platforms, and generate the post package.`,
-    x:
-      `${PRODUCT_NAME} turns a short description and data into platform-ready posts.\n\nDescribe it once. Pick platforms. Review the package.`,
-    newsletter:
-      `Subject: ${PRODUCT_NAME} update\n\n${PRODUCT_NAME} helps users create copy, visual-ready assets, and channel-specific posting packages from one description.`,
+      "Describe what you built, add links or assets, choose outputs, and SignalFlow Studio prepares a complete posting package.",
+    x: "One input -> channel-ready captions, visuals, docs, and handoff files.",
+    instagram: "Turn product context into captions, image directions, video hooks, and carousel slides.",
   },
-  markdown: `# ${PRODUCT_NAME} Kit\n\nReady-to-edit drafts for selected channels.`,
-  assets: {
-    code_image: "pipeline-output/SignalFlow Studio-demo/post-card.png",
-    markdown: "pipeline-output/SignalFlow Studio-demo/post-kit.md",
-    summary: "pipeline-output/SignalFlow Studio-demo/post-kit.json",
-  },
-  integration_config: {
-    model_route: "chatbot",
-    model_endpoint: "",
-    model_name: "copy-paste prompt",
-    api_key_present: false,
-    distribution_mode: "manual",
-    webhook_configured: false,
-  },
+  channels: ["linkedin", "x", "instagram"],
+  outputs: ["caption", "text", "image", "video"],
+  markdown: `# ${PRODUCT_NAME} package\n\nAdd inputs, choose outputs, and generate a reviewable post kit.`,
+  chatbot_prompt: `Create a complete social content package for ${PRODUCT_NAME}.`,
   media_plan: [
     {
-      type: "screen_recording",
-      title: "Record the user flow",
-      summary: "Capture the app flow, then convert the strongest moment into a short clip.",
+      type: "image",
+      title: "Generated visual card",
+      summary: "Use the strongest product signal as a clean social image.",
     },
     {
-      type: "screenshot_set",
-      title: "Capture key states",
-      summary: "Use before, action, and result screenshots for carousel or static post variants.",
-    },
-    {
-      type: "gif_clip",
-      title: "Create a short loop",
-      summary: "Turn the best 3-6 seconds into a GIF or silent video.",
+      type: "video",
+      title: "Short demo clip",
+      summary: "Record the core workflow and convert it into a 10-20 second product clip.",
     },
   ],
+  documents: [
+    {
+      title: "Posting brief",
+      summary: "A structured doc with angle, audience, channels, captions, and visual instructions.",
+    },
+  ],
+  assets: {
+    markdown: "post-package.md",
+    summary: "post-package.json",
+    code_image: "post-card.svg",
+  },
 };
 
 export default function Home() {
@@ -97,115 +83,70 @@ export default function Home() {
   const recorderRef = useRef(null);
   const streamRef = useRef(null);
   const chunksRef = useRef([]);
-  const [workspaceOpen, setWorkspaceOpen] = useState(true);
-  const [advancedOpen, setAdvancedOpen] = useState(false);
-  const [sourceMode, setSourceMode] = useState("brief");
-  const [repoPath, setRepoPath] = useState("");
-  const [researchUrl, setResearchUrl] = useState("");
-  const [documentPath, setDocumentPath] = useState("");
-  const [notes, setNotes] = useState(
-    `${PRODUCT_NAME} helps users create posts without manually making screenshots, GIFs, videos, and platform-specific copy.\nDescribe what happened, add source data or assets, choose platforms, then generate a complete posting package for review.`,
+
+  const [brief, setBrief] = useState(
+    "Describe what changed, what data matters, and what the audience should understand.",
   );
-  const [projectName, setProjectName] = useState(PRODUCT_NAME);
-  const [audience, setAudience] = useState("builders, founders, and technical creators");
-  const [generator, setGenerator] = useState("chatbot");
-  const [modelEndpoint, setModelEndpoint] = useState("");
-  const [modelName, setModelName] = useState("standalone template");
-  const [apiKey, setApiKey] = useState("");
-  const [selectedChannels, setSelectedChannels] = useState(["linkedin", "x", "newsletter"]);
-  const [distributionMode, setDistributionMode] = useState("manual");
-  const [webhookUrl, setWebhookUrl] = useState("");
-  const [outDir, setOutDir] = useState("pipeline-output");
-  const [backendStatus, setBackendStatus] = useState("Checking");
-  const [statusTone, setStatusTone] = useState("checking");
+  const [links, setLinks] = useState("");
+  const [repoUrl, setRepoUrl] = useState("");
+  const [fileNames, setFileNames] = useState([]);
+  const [mediaItems, setMediaItems] = useState([]);
+  const [selectedChannels, setSelectedChannels] = useState([
+    "linkedin",
+    "x",
+    "instagram",
+    "reddit",
+    "newsletter",
+    "blog",
+  ]);
+  const [selectedOutputs, setSelectedOutputs] = useState([
+    "caption",
+    "text",
+    "image",
+    "video",
+    "carousel",
+    "doc",
+  ]);
+  const [audience, setAudience] = useState("builders, founders, creators, and technical teams");
   const [accessLocked, setAccessLocked] = useState(false);
   const [accessToken, setAccessToken] = useState("");
   const [accessKey, setAccessKey] = useState("");
   const [accessMessage, setAccessMessage] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState("");
-  const [result, setResult] = useState(sampleResult);
+  const [result, setResult] = useState(DEFAULT_RESULT);
   const [activeChannel, setActiveChannel] = useState("linkedin");
   const [copiedLabel, setCopiedLabel] = useState("");
-  const [captureStatus, setCaptureStatus] = useState("Idle");
-  const [mediaItems, setMediaItems] = useState([]);
+  const [captureStatus, setCaptureStatus] = useState("Ready");
 
   useEffect(() => {
     setAccessToken(window.localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY) || "");
-    checkBackendHealth();
+    checkHealth();
   }, []);
 
-  const resultChannels = useMemo(() => {
-    const keys = Object.keys(result?.posts || {});
-    return CHANNELS.filter(([key]) => keys.includes(key));
+  const visibleChannels = useMemo(() => {
+    const available = Object.keys(result?.posts || {});
+    return CHANNELS.filter(([key]) => available.includes(key));
   }, [result]);
 
-  const integrationConfig = useMemo(
-    () => ({
-      ...(result?.integration_config || {}),
-      model_route: generator,
-      model_endpoint: modelEndpoint,
-      model_name: modelName,
-      api_key_present: apiKey.trim().length > 0,
-      distribution_mode: distributionMode,
-      webhook_configured: webhookUrl.trim().length > 0,
-    }),
-    [apiKey, distributionMode, generator, modelEndpoint, modelName, result, webhookUrl],
+  const inputSummary = useMemo(
+    () => [
+      brief.trim() ? "description" : "",
+      links.trim() ? "links" : "",
+      repoUrl.trim() ? "repo" : "",
+      fileNames.length ? `${fileNames.length} docs` : "",
+      mediaItems.length ? `${mediaItems.length} media` : "",
+    ].filter(Boolean),
+    [brief, fileNames.length, links, mediaItems.length, repoUrl],
   );
 
-  const copyableConfig = useMemo(
-    () =>
-      JSON.stringify(
-        {
-          product: projectName,
-          input_channel: sourceMode,
-          model: {
-            route: generator,
-            endpoint: modelEndpoint,
-            name: modelName,
-            api_key: apiKey ? "<set in your local vault or env>" : "",
-          },
-          output_channels: selectedChannels,
-          captured_media: mediaItems.map((item) => ({ type: item.type, name: item.name })),
-          distribution: {
-            mode: distributionMode,
-            webhook_url: webhookUrl,
-            export_folder: outDir,
-          },
-        },
-        null,
-        2,
-      ),
-    [
-      apiKey,
-      distributionMode,
-      generator,
-      modelEndpoint,
-      modelName,
-      outDir,
-      projectName,
-      selectedChannels,
-      sourceMode,
-      webhookUrl,
-      mediaItems,
-    ],
-  );
-
-  async function checkBackendHealth() {
+  async function checkHealth() {
     try {
       const resp = await fetch(`${API_BASE}/health`);
       const data = await resp.json();
-      if (resp.ok && data?.status === "ok") {
-        setBackendStatus(data?.mode === "app" ? "Ready" : "Online");
-        setStatusTone("online");
-        setAccessLocked(Boolean(data?.access_locked));
-      } else {
-        setBackendStatus(`Offline (${resp.status})`);
-        setStatusTone("offline");
-      }
+      setAccessLocked(Boolean(data?.access_locked));
     } catch {
-      setBackendStatus("Offline");
-      setStatusTone("offline");
+      setAccessLocked(false);
     }
   }
 
@@ -230,49 +171,26 @@ export default function Home() {
         throw new Error(data?.error || "Access key was not accepted.");
       }
 
-      if (data?.token) {
-        window.localStorage.setItem(ACCESS_TOKEN_STORAGE_KEY, data.token);
-        setAccessToken(data.token);
-        setAccessKey("");
-        setAccessMessage(`Unlocked for ${data.expires_in_days || 30} days on this browser.`);
-      } else {
-        setAccessMessage("This deployment is not locked.");
-      }
+      window.localStorage.setItem(ACCESS_TOKEN_STORAGE_KEY, data.token);
+      setAccessToken(data.token);
+      setAccessKey("");
+      setAccessMessage(`Unlocked for ${data.expires_in_days || 30} days on this browser.`);
     } catch (unlockError) {
       setAccessMessage(unlockError.message);
     }
   }
 
-  function lockWorkspace() {
-    window.localStorage.removeItem(ACCESS_TOKEN_STORAGE_KEY);
-    setAccessToken("");
-    setAccessMessage("This browser has been locked again.");
-  }
-
-  function toggleChannel(channel) {
-    setSelectedChannels((current) => {
-      if (current.includes(channel)) {
-        return current.length === 1 ? current : current.filter((item) => item !== channel);
+  function toggleValue(value, setter) {
+    setter((current) => {
+      if (current.includes(value)) {
+        return current.length === 1 ? current : current.filter((item) => item !== value);
       }
-      return [...current, channel];
+      return [...current, value];
     });
   }
 
-  function buildInputPayload() {
-    if (sourceMode === "repo") {
-      return { input_type: "repo", repo: repoPath, notes: "" };
-    }
-    if (sourceMode === "research") {
-      return {
-        input_type: "research",
-        repo: "",
-        notes: "",
-        research_url: researchUrl,
-        document_text: notes,
-        document_path: documentPath,
-      };
-    }
-    return { input_type: "brief", repo: "", notes };
+  function handleFiles(event) {
+    setFileNames(Array.from(event.target.files || []).map((file) => file.name));
   }
 
   function addMediaItem(item) {
@@ -285,6 +203,7 @@ export default function Home() {
       setError("Screen capture is not available in this browser.");
       return;
     }
+
     try {
       const stream = await navigator.mediaDevices.getDisplayMedia({
         video: { frameRate: 30 },
@@ -308,11 +227,10 @@ export default function Home() {
           return;
         }
         const blob = new Blob(chunksRef.current, { type: "video/webm" });
-        const url = URL.createObjectURL(blob);
         addMediaItem({
-          type: "screen_recording",
+          type: "screen recording",
           name: `recording-${new Date().toISOString().replace(/[:.]/g, "-")}.webm`,
-          url,
+          url: URL.createObjectURL(blob),
         });
         setCaptureStatus("Recording saved");
       };
@@ -320,7 +238,7 @@ export default function Home() {
       recorder.start();
       setCaptureStatus("Recording screen");
     } catch (captureError) {
-      setCaptureStatus("Idle");
+      setCaptureStatus("Ready");
       setError(captureError.message || "Screen capture was cancelled.");
     }
   }
@@ -334,20 +252,20 @@ export default function Home() {
     if (videoPreviewRef.current) {
       videoPreviewRef.current.srcObject = null;
     }
-    setCaptureStatus("Stopped");
+    setCaptureStatus("Saved");
   }
 
   function captureScreenshot() {
     const video = videoPreviewRef.current;
     if (!video?.srcObject || !video.videoWidth || !video.videoHeight) {
-      setError("Start screen capture before taking a screenshot.");
+      setError("Start screen recording before taking a screenshot.");
       return;
     }
+
     const canvas = document.createElement("canvas");
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-    const context = canvas.getContext("2d");
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
     canvas.toBlob((blob) => {
       if (!blob) {
         setError("Could not create screenshot.");
@@ -358,44 +276,51 @@ export default function Home() {
         name: `screenshot-${new Date().toISOString().replace(/[:.]/g, "-")}.png`,
         url: URL.createObjectURL(blob),
       });
-      setCaptureStatus("Screenshot captured");
+      setCaptureStatus("Screenshot saved");
     }, "image/png");
   }
 
-  async function createContentKit(event) {
+  async function generatePackage(event) {
     event.preventDefault();
+    if (accessLocked && !accessToken) {
+      setError("Enter the owner key before generating on this hosted demo.");
+      return;
+    }
+
     setError("");
     setIsGenerating(true);
+
     try {
       const resp = await fetch(`${API_BASE}/launch_kit`, {
         method: "POST",
         headers: { "Content-Type": "application/json", ...authHeaders() },
         body: JSON.stringify({
-          ...buildInputPayload(),
-          out_dir: outDir,
-          project_name: projectName,
-          audience,
+          input_type: "mixed",
+          notes: brief,
+          research_url: links,
+          repo: repoUrl,
+          document_text: fileNames.join(", "),
+          media_items: mediaItems.map((item) => ({ type: item.type, name: item.name })),
           channels: selectedChannels,
-          generator,
-          model_endpoint: modelEndpoint,
-          model_name: modelName,
-          api_key_present: apiKey.trim().length > 0,
-          distribution_mode: distributionMode,
-          webhook_url: webhookUrl,
+          output_types: selectedOutputs,
+          audience,
+          project_name: PRODUCT_NAME,
         }),
       });
       const data = await resp.json();
+
       if (!resp.ok) {
         if (resp.status === 401) {
           window.localStorage.removeItem(ACCESS_TOKEN_STORAGE_KEY);
           setAccessToken("");
         }
-        throw new Error(data?.detail || data?.error || `${PRODUCT_NAME} could not generate content`);
+        throw new Error(data?.error || `${PRODUCT_NAME} could not generate content.`);
       }
+
       setResult(data);
       setActiveChannel(Object.keys(data?.posts || {})[0] || "linkedin");
-    } catch (launchError) {
-      setError(launchError.message);
+    } catch (generateError) {
+      setError(generateError.message);
     } finally {
       setIsGenerating(false);
     }
@@ -408,59 +333,53 @@ export default function Home() {
     try {
       await navigator.clipboard.writeText(text);
       setCopiedLabel(label);
-      window.setTimeout(() => setCopiedLabel(""), 1600);
+      window.setTimeout(() => setCopiedLabel(""), 1500);
     } catch {
       setError("Clipboard access was blocked. Select the text and copy it manually.");
     }
   }
 
-  const currentPost = result?.posts?.[activeChannel] || "";
   const imageSrc = result?.image_base64
-    ? `data:${result.image_mime || "image/png"};base64,${result.image_base64}`
+    ? `data:${result.image_mime || "image/svg+xml"};base64,${result.image_base64}`
     : "";
+  const currentPost = result?.posts?.[activeChannel] || "";
 
   return (
     <main className={styles.page}>
-      <header className={styles.header}>
+      <section className={styles.hero}>
         <div>
           <p className={styles.eyebrow}>{PRODUCT_NAME}</p>
-          <h1>Describe once. Get the full posting package.</h1>
+          <h1>Drop the context. Get the finished posting package.</h1>
           <p>
-            Add a description and data, choose platforms, and let the workspace
-            prepare copy, visual-ready assets, prompts, and export files.
+            Give it text, links, docs, repo context, screenshots, or recordings.
+            Choose what you want back: captions, posts, images, video ideas,
+            GIF plans, carousels, docs, or channel-ready exports.
           </p>
-          <div className={styles.heroActions}>
-            <button className={styles.primaryButton} onClick={() => setWorkspaceOpen(true)} type="button">
-              Jump to autopilot
-            </button>
-            <button
-              className={styles.secondaryButton}
-              onClick={() => copyText("name", PRODUCT_NAME)}
-              type="button"
-            >
-              {copiedLabel === "name" ? "Copied name" : "Copy product name"}
-            </button>
-          </div>
         </div>
-        <div className={`${styles.statusPill} ${styles[statusTone]}`}>
-          <span />
-          App {backendStatus}
+        <div className={styles.heroFlow} aria-label="Product flow">
+          {["Inputs", "Understand", "Create", "Package"].map((item) => (
+            <span key={item}>{item}</span>
+          ))}
         </div>
-      </header>
+      </section>
 
       {accessLocked && (
-        <section className={styles.accessPanel} aria-label="Owner access">
+        <section className={styles.accessPanel}>
           <div>
-            <p className={styles.eyebrow}>Private hosted workspace</p>
-            <h2>{accessToken ? "Owner session active" : "Enter owner key to generate"}</h2>
-            <p>
-              The public demo stays visible, but post generation is protected on
-              this hosted link. Self-hosted and local installs can use their own key.
-            </p>
+            <p className={styles.eyebrow}>Private hosted demo</p>
+            <h2>{accessToken ? "Owner session active" : "Unlock generation"}</h2>
+            <p>The UI is public. Generation is private on your hosted link.</p>
           </div>
           {accessToken ? (
-            <button className={styles.secondaryButton} onClick={lockWorkspace} type="button">
-              Lock this browser
+            <button
+              className={styles.secondaryButton}
+              onClick={() => {
+                window.localStorage.removeItem(ACCESS_TOKEN_STORAGE_KEY);
+                setAccessToken("");
+              }}
+              type="button"
+            >
+              Lock browser
             </button>
           ) : (
             <form className={styles.accessForm} onSubmit={unlockWorkspace}>
@@ -480,456 +399,217 @@ export default function Home() {
         </section>
       )}
 
-      <section className={styles.explainer} aria-label={`${PRODUCT_NAME} overview`}>
-        <div className={styles.explainerIntro}>
-          <p className={styles.eyebrow}>How it works</p>
-          <h2>One hosted app. One description. One formatted package.</h2>
-        </div>
-        <div className={styles.explainGrid}>
-          {[
-            ["1", "Describe the post", "Write what happened, what should be announced, and who should care."],
-            ["2", "Add data", "Attach notes, repo context, research, metrics, links, or existing assets."],
-            ["3", "Pick platforms", "Select the places you want to post: LinkedIn, X, Instagram, blog, newsletter, and more."],
-            ["4", "Generate package", "Get copy, visual-ready cards, model prompts, exports, and safe publish handoff."],
-          ].map(([number, title, body]) => (
-            <article className={styles.explainCard} key={title}>
-              <span>{number}</span>
-              <h3>{title}</h3>
-              <p>{body}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className={styles.pipelineMap} aria-label={`${PRODUCT_NAME} architecture`}>
-        {[
-          ["Describe", "What to post"],
-          ["Data", "Notes, links, files"],
-          ["Plan", "Platform formats"],
-          ["Create", "Copy and assets"],
-          ["Publish", "Review and handoff"],
-        ].map(([title, body]) => (
-          <div key={title}>
-            <strong>{title}</strong>
-            <span>{body}</span>
-          </div>
-        ))}
-      </section>
-
-      {!workspaceOpen ? (
-        <section className={styles.startPanel}>
-          <div>
-            <p className={styles.eyebrow}>Ready</p>
-            <h2>Open the workspace when the flow makes sense.</h2>
-            <p>
-              The product stays step-based after this point, so users can create
-              the first post package without learning every integration upfront.
-            </p>
-          </div>
-          <button className={styles.primaryButton} onClick={() => setWorkspaceOpen(true)} type="button">
-            Start autopilot
-          </button>
-        </section>
-      ) : (
-      <section className={styles.appGrid}>
-        <form className={styles.builder} onSubmit={createContentKit}>
-          <div className={styles.step}>
+      <form className={styles.workspace} onSubmit={generatePackage}>
+        <section className={styles.inputPanel}>
+          <div className={styles.sectionHeader}>
             <span>1</span>
             <div>
-              <h2>Give the info</h2>
-              <p>Describe what happened. Defaults handle model, platforms, assets, and export.</p>
+              <p className={styles.eyebrow}>Inputs</p>
+              <h2>Send anything useful</h2>
+              <p>Only add what you have. Empty fields are ignored.</p>
             </div>
           </div>
 
-          <div className={styles.autopilotCard}>
-            <strong>Autopilot is on</strong>
-            <span>
-              Uses standalone generation, LinkedIn/X/Newsletter, manual review,
-              generated visual card, and media plan unless changed.
-            </span>
+          <div className={styles.inputTypes}>
+            {INPUT_TYPES.map(([key, label]) => (
+              <span key={key}>{label}</span>
+            ))}
+          </div>
+
+          <label className={styles.bigField}>
+            Description, notes, changelog, idea, raw brief
+            <textarea value={brief} onChange={(event) => setBrief(event.target.value)} rows={8} />
+          </label>
+
+          <div className={styles.twoCols}>
+            <label className={styles.field}>
+              Links or research URLs
+              <textarea
+                value={links}
+                onChange={(event) => setLinks(event.target.value)}
+                placeholder="Paste one or many URLs"
+                rows={5}
+              />
+            </label>
+            <label className={styles.field}>
+              GitHub repo or project link
+              <textarea
+                value={repoUrl}
+                onChange={(event) => setRepoUrl(event.target.value)}
+                placeholder="https://github.com/user/repo"
+                rows={5}
+              />
+            </label>
+          </div>
+
+          <div className={styles.uploadGrid}>
+            <label className={styles.uploadBox}>
+              <input multiple onChange={handleFiles} type="file" />
+              <strong>Attach docs or assets</strong>
+              <span>{fileNames.length ? fileNames.join(", ") : "PDF, notes, images, logs, briefs"}</span>
+            </label>
+            <div className={styles.captureBox}>
+              <div>
+                <strong>Record or screenshot</strong>
+                <span>{captureStatus}</span>
+              </div>
+              <div className={styles.captureActions}>
+                <button className={styles.secondaryButton} onClick={startScreenCapture} type="button">
+                  Record
+                </button>
+                <button className={styles.secondaryButton} onClick={captureScreenshot} type="button">
+                  Screenshot
+                </button>
+                <button className={styles.secondaryButton} onClick={stopScreenCapture} type="button">
+                  Stop
+                </button>
+              </div>
+              <video className={styles.preview} muted playsInline ref={videoPreviewRef} />
+            </div>
+          </div>
+        </section>
+
+        <section className={styles.choicePanel}>
+          <div className={styles.sectionHeader}>
+            <span>2</span>
+            <div>
+              <p className={styles.eyebrow}>Outputs</p>
+              <h2>Choose what you want back</h2>
+              <p>Pick formats and channels. The app prepares everything together.</p>
+            </div>
           </div>
 
           <label className={styles.field}>
-            What should be posted?
-            <textarea
-              value={notes}
-              onChange={(event) => setNotes(event.target.value)}
-              rows={9}
-              required={sourceMode !== "repo"}
-            />
+            Audience
+            <input value={audience} onChange={(event) => setAudience(event.target.value)} />
           </label>
 
-          <button
-            className={styles.advancedToggle}
-            onClick={() => setAdvancedOpen((current) => !current)}
-            type="button"
-          >
-            {advancedOpen ? "Hide settings" : "Settings"}
-          </button>
-
-          {advancedOpen && (
-          <div className={styles.advancedPanel}>
-            <div className={styles.step}>
-              <span>2</span>
-              <div>
-                <h2>Extra sources</h2>
-                <p>Add repository or research sources when the description needs more data.</p>
-              </div>
-            </div>
-
-            <div className={styles.segmented}>
-              {INPUT_MODES.map(([key, label]) => (
+          <div>
+            <h3>Result formats</h3>
+            <div className={styles.optionGrid}>
+              {OUTPUT_TYPES.map(([key, label]) => (
                 <button
-                  className={sourceMode === key ? styles.activeSegment : ""}
+                  className={selectedOutputs.includes(key) ? styles.selected : ""}
                   key={key}
-                  onClick={() => setSourceMode(key)}
+                  onClick={() => toggleValue(key, setSelectedOutputs)}
                   type="button"
                 >
                   {label}
                 </button>
               ))}
             </div>
-
-            {sourceMode === "repo" ? (
-              <label className={styles.field}>
-                Repository path
-                <input
-                  value={repoPath}
-                  onChange={(event) => setRepoPath(event.target.value)}
-                  placeholder="C:/Users/you/projects/my-product"
-                  required={sourceMode === "repo"}
-                />
-              </label>
-            ) : sourceMode === "research" ? (
-              <div className={styles.integrationBox}>
-                <label className={styles.field}>
-                  Research URL
-                  <input
-                    value={researchUrl}
-                    onChange={(event) => setResearchUrl(event.target.value)}
-                    placeholder="https://example.com/research"
-                  />
-                </label>
-                <label className={styles.field}>
-                  Document path
-                  <input
-                    value={documentPath}
-                    onChange={(event) => setDocumentPath(event.target.value)}
-                    placeholder="C:/Users/you/docs/brief.pdf"
-                  />
-                </label>
-              </div>
-            ) : null}
-
-          <div className={styles.twoCols}>
-            <label className={styles.field}>
-              Product
-              <input value={projectName} onChange={(event) => setProjectName(event.target.value)} />
-            </label>
-            <label className={styles.field}>
-              Audience
-              <input value={audience} onChange={(event) => setAudience(event.target.value)} />
-            </label>
           </div>
 
-          <div className={styles.step}>
-            <span>3</span>
-            <div>
-              <h2>Capture media</h2>
-              <p>Record a flow or take screenshots so the post package has real visual assets.</p>
-            </div>
-          </div>
-
-          <div className={styles.capturePanel}>
-            <div className={styles.captureActions}>
-              <button className={styles.secondaryButton} onClick={startScreenCapture} type="button">
-                Start screen recording
-              </button>
-              <button className={styles.secondaryButton} onClick={captureScreenshot} type="button">
-                Take screenshot
-              </button>
-              <button className={styles.secondaryButton} onClick={stopScreenCapture} type="button">
-                Stop and save
-              </button>
-            </div>
-            <div className={styles.captureStatus}>{captureStatus}</div>
-            <video className={styles.capturePreview} muted playsInline ref={videoPreviewRef} />
-            {mediaItems.length > 0 && (
-              <div className={styles.capturedList}>
-                {mediaItems.map((item) => (
-                  <a href={item.url} key={item.url} rel="noreferrer" target="_blank">
-                    <strong>{item.type}</strong>
-                    <span>{item.name}</span>
-                  </a>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className={styles.step}>
-            <span>4</span>
-            <div>
-                <h2>Generation settings</h2>
-                <p>Only change these when you connect your own model provider later.</p>
-            </div>
-          </div>
-
-          <div className={styles.generatorRow}>
-            {GENERATORS.map(([key, label]) => (
-              <button
-                className={generator === key ? styles.activeSegment : ""}
-                key={key}
-                onClick={() => setGenerator(key)}
-                type="button"
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-
-          <div className={styles.integrationBox}>
-            <div className={styles.twoCols}>
-              <label className={styles.field}>
-                Endpoint
-                <input
-                  value={modelEndpoint}
-                  onChange={(event) => setModelEndpoint(event.target.value)}
-                  placeholder="Provider endpoint"
-                />
-              </label>
-              <label className={styles.field}>
-                Model
-                <input
-                  value={modelName}
-                  onChange={(event) => setModelName(event.target.value)}
-                  placeholder="standalone template / custom model"
-                />
-              </label>
-            </div>
-            <label className={styles.field}>
-              API key
-              <input
-                type="password"
-                value={apiKey}
-                onChange={(event) => setApiKey(event.target.value)}
-                placeholder="Stored only in this browser field"
-              />
-            </label>
-          </div>
-
-          <div className={styles.step}>
-            <span>5</span>
-            <div>
-              <h2>Platforms</h2>
-              <p>Select where this package should be prepared for posting.</p>
-            </div>
-          </div>
-
-          <div className={styles.channelGrid}>
-            {CHANNELS.map(([key, label]) => (
-              <button
-                className={selectedChannels.includes(key) ? styles.selectedChannel : ""}
-                key={key}
-                onClick={() => toggleChannel(key)}
-                type="button"
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-
-          <label className={styles.field}>
-            Export folder
-            <input value={outDir} onChange={(event) => setOutDir(event.target.value)} />
-          </label>
-
-          <div className={styles.step}>
-            <span>6</span>
-            <div>
-              <h2>Publish handoff</h2>
-              <p>Keep final publishing explicit, reviewable, and platform-safe.</p>
-            </div>
-          </div>
-
-          <div className={styles.generatorRow}>
-            {DISTRIBUTION_MODES.map(([key, label]) => (
-              <button
-                className={distributionMode === key ? styles.activeSegment : ""}
-                key={key}
-                onClick={() => setDistributionMode(key)}
-                type="button"
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-
-          <div className={styles.integrationBox}>
-            <label className={styles.field}>
-              Webhook or official API URL
-              <input
-                value={webhookUrl}
-                onChange={(event) => setWebhookUrl(event.target.value)}
-                placeholder="https://hooks.example.com/SignalFlow Studio"
-              />
-            </label>
-            <button
-              className={styles.secondaryButton}
-              onClick={() => copyText("config", copyableConfig)}
-              type="button"
-            >
-              {copiedLabel === "config" ? "Copied config" : "Copy integration config"}
-            </button>
-          </div>
-          </div>
-          )}
-
-          <button className={styles.primaryButton} disabled={isGenerating || (accessLocked && !accessToken)}>
-            {isGenerating
-              ? "Autopilot is building..."
-              : accessLocked && !accessToken
-                ? "Unlock to generate"
-                : "Generate full post package"}
-          </button>
-          {error && <p className={styles.errorText}>{error}</p>}
-        </form>
-
-        <section className={styles.results}>
-          <div className={styles.resultHeader}>
-            <div>
-              <p className={styles.eyebrow}>Generated kit</p>
-              <h2>{result.project_name}</h2>
-            </div>
-            <button
-              className={styles.secondaryButton}
-              onClick={() => copyText("prompt", result.chatbot_prompt || "")}
-              type="button"
-            >
-              {copiedLabel === "prompt" ? "Copied" : "Copy model prompt"}
-            </button>
-          </div>
-
-          <div className={styles.summaryBar}>
-            <div>
-              <strong>{result?.highlights?.length || 0}</strong>
-              <span>signals</span>
-            </div>
-            <div>
-              <strong>{resultChannels.length}</strong>
-              <span>channels</span>
-            </div>
-            <div>
-              <strong>{result.generator || "local"}</strong>
-              <span>model route</span>
-            </div>
-            <div>
-              <strong>{integrationConfig.distribution_mode || "manual"}</strong>
-              <span>distribution</span>
-            </div>
-          </div>
-
-          <div className={styles.tabs}>
-            {resultChannels.map(([key, label]) => (
-              <button
-                className={activeChannel === key ? styles.activeTab : ""}
-                key={key}
-                onClick={() => setActiveChannel(key)}
-                type="button"
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-
-          <div className={styles.outputCard}>
-            <div className={styles.outputTitle}>
-              <h3>{CHANNELS.find(([key]) => key === activeChannel)?.[1] || "Draft"}</h3>
-              <button
-                className={styles.secondaryButton}
-                onClick={() => copyText("draft", currentPost)}
-                type="button"
-              >
-                {copiedLabel === "draft" ? "Copied" : "Copy draft"}
-              </button>
-            </div>
-            <pre>{currentPost}</pre>
-          </div>
-
-          <div className={styles.outputGrid}>
-            <div className={styles.outputCard}>
-              <div className={styles.outputTitle}>
-                <h3>Model prompt</h3>
+          <div>
+            <h3>Channels</h3>
+            <div className={styles.channelGrid}>
+              {CHANNELS.map(([key, label]) => (
                 <button
-                  className={styles.secondaryButton}
-                  onClick={() => copyText("prompt2", result.chatbot_prompt || "")}
+                  className={selectedChannels.includes(key) ? styles.selected : ""}
+                  key={key}
+                  onClick={() => toggleValue(key, setSelectedChannels)}
                   type="button"
                 >
-                  {copiedLabel === "prompt2" ? "Copied" : "Copy"}
+                  {label}
                 </button>
-              </div>
-              <pre>{result.chatbot_prompt}</pre>
-            </div>
-
-            <div className={styles.outputCard}>
-              <div className={styles.outputTitle}>
-                <h3>Signal card</h3>
-                <span>{result?.assets?.code_image || "PNG asset"}</span>
-              </div>
-              {imageSrc ? (
-                <img className={styles.signalImage} src={imageSrc} alt="Generated signal card" />
-              ) : (
-                <div className={styles.emptyImage}>Generate to preview the card.</div>
-              )}
-            </div>
-          </div>
-
-          <div className={styles.outputCard}>
-            <div className={styles.outputTitle}>
-              <h3>Integration config</h3>
-              <button
-                className={styles.secondaryButton}
-                onClick={() => copyText("resultConfig", JSON.stringify(integrationConfig, null, 2))}
-                type="button"
-              >
-                {copiedLabel === "resultConfig" ? "Copied" : "Copy"}
-              </button>
-            </div>
-            <pre>{JSON.stringify(integrationConfig, null, 2)}</pre>
-          </div>
-
-          <div className={styles.outputCard}>
-            <div className={styles.outputTitle}>
-              <h3>Visual media plan</h3>
-              <button
-                className={styles.secondaryButton}
-                onClick={() => copyText("mediaPlan", JSON.stringify(result?.media_plan || [], null, 2))}
-                type="button"
-              >
-                {copiedLabel === "mediaPlan" ? "Copied" : "Copy"}
-              </button>
-            </div>
-            <div className={styles.mediaPlan}>
-              {(result?.media_plan || []).map((item) => (
-                <article key={`${item.type}-${item.title}`}>
-                  <strong>{item.title}</strong>
-                  <span>{item.type}</span>
-                  <p>{item.summary}</p>
-                </article>
               ))}
             </div>
           </div>
 
-          <div className={styles.assetList}>
-            {(result?.highlights || []).map((asset) => (
-              <div key={asset.path}>
-                <strong>{asset.path}</strong>
-                <span>{asset.summary}</span>
-              </div>
-            ))}
+          <div className={styles.readyBox}>
+            <strong>{inputSummary.length ? inputSummary.join(" + ") : "Waiting for input"}</strong>
+            <span>
+              {selectedOutputs.length} formats for {selectedChannels.length} channels
+            </span>
           </div>
+
+          <button className={styles.primaryButton} disabled={isGenerating || (accessLocked && !accessToken)}>
+            {isGenerating ? "Creating package..." : "Generate package"}
+          </button>
+          {error && <p className={styles.errorText}>{error}</p>}
         </section>
+      </form>
+
+      <section className={styles.results}>
+        <div className={styles.resultTop}>
+          <div>
+            <p className={styles.eyebrow}>Results</p>
+            <h2>Ready-to-review package</h2>
+          </div>
+          <button className={styles.secondaryButton} onClick={() => copyText("markdown", result.markdown)} type="button">
+            {copiedLabel === "markdown" ? "Copied" : "Copy full doc"}
+          </button>
+        </div>
+
+        <div className={styles.resultStats}>
+          <div>
+            <strong>{visibleChannels.length}</strong>
+            <span>channels</span>
+          </div>
+          <div>
+            <strong>{result?.outputs?.length || selectedOutputs.length}</strong>
+            <span>formats</span>
+          </div>
+          <div>
+            <strong>{result?.media_plan?.length || 0}</strong>
+            <span>visual assets</span>
+          </div>
+        </div>
+
+        <div className={styles.tabs}>
+          {visibleChannels.map(([key, label]) => (
+            <button
+              className={activeChannel === key ? styles.activeTab : ""}
+              key={key}
+              onClick={() => setActiveChannel(key)}
+              type="button"
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        <div className={styles.resultGrid}>
+          <article className={styles.outputCard}>
+            <div className={styles.cardTitle}>
+              <h3>{CHANNELS.find(([key]) => key === activeChannel)?.[1] || "Channel"} draft</h3>
+              <button className={styles.secondaryButton} onClick={() => copyText("post", currentPost)} type="button">
+                {copiedLabel === "post" ? "Copied" : "Copy"}
+              </button>
+            </div>
+            <pre>{currentPost}</pre>
+          </article>
+
+          <article className={styles.outputCard}>
+            <div className={styles.cardTitle}>
+              <h3>Image / visual</h3>
+              <span>{result?.assets?.code_image || "generated asset"}</span>
+            </div>
+            {imageSrc ? (
+              <img className={styles.visualAsset} src={imageSrc} alt="Generated social visual" />
+            ) : (
+              <div className={styles.emptyAsset}>Generate to preview visual assets.</div>
+            )}
+          </article>
+        </div>
+
+        <div className={styles.assetGrid}>
+          {(result?.media_plan || []).map((item) => (
+            <article key={`${item.type}-${item.title}`}>
+              <span>{item.type}</span>
+              <strong>{item.title}</strong>
+              <p>{item.summary}</p>
+            </article>
+          ))}
+          {(result?.documents || []).map((item) => (
+            <article key={item.title}>
+              <span>doc</span>
+              <strong>{item.title}</strong>
+              <p>{item.summary}</p>
+            </article>
+          ))}
+        </div>
       </section>
-      )}
     </main>
   );
 }
