@@ -1,19 +1,29 @@
-# SignalFlow Frontend
+# SignalFlow Studio Frontend
 
-Next.js App Router frontend for the local SignalFlow backend.
+Next.js App Router app for SignalFlow Studio. The frontend contains the UI,
+generation routes, media capture workflow, crawler files, and posting-package
+formatter in one deployable app.
 
 ```bash
 npm install
 npm run dev
 ```
 
-The UI proxies API calls to `BACKEND_URL`, defaulting to `http://localhost:8000`.
+Open `http://localhost:3000`.
 
-Start the backend from the repository root first:
+Optional private hosted demo lock:
 
-```bash
-python -m signalflow.cli serve --host 127.0.0.1 --port 8000
+```text
+SIGNALFLOW_ACCESS_KEY=make-a-long-private-key-here
 ```
+
+If `SIGNALFLOW_ACCESS_KEY` is set, generation API routes require owner access.
+The UI exchanges the owner key for a signed 30-day browser session token, so the
+owner does not need to re-enter it every visit. Leave it empty for local use or
+for open self-hosted installs.
+
+Do not use a `NEXT_PUBLIC_` name for this value. It is read only by server-side
+API routes, and the browser receives only the signed session token.
 
 Build check:
 
@@ -23,7 +33,8 @@ npm run build
 
 Primary workflow:
 
-1. Start the backend.
-2. Paste a local repository path.
-3. Click `Create launch kit`.
-4. Review the generated channel drafts, code visual, slide outline, and export paths.
+1. Describe what should be posted.
+2. Add optional source data, links, or captured media.
+3. Select channels.
+4. Generate the posting package.
+5. Review the channel drafts, generated card, prompt, media plan, and export config.

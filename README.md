@@ -42,6 +42,26 @@ Build Command: npm run build
 Output Directory: frontend/.next
 ```
 
+### Protect Your Hosted Demo
+
+For your personal Vercel link, add this environment variable:
+
+```text
+SIGNALFLOW_ACCESS_KEY=make-a-long-private-key-here
+```
+
+When this is set, visitors can still see the product, docs, and UI, but they
+cannot generate post packages unless they enter the owner key. After the key is
+entered once, SignalFlow Studio stores a signed 30-day browser session token, so
+you do not have to remember or paste the key every time.
+
+Do not create this as a `NEXT_PUBLIC_` variable. `SIGNALFLOW_ACCESS_KEY` is read
+only by server-side API routes. The browser receives only a signed session token,
+not the secret environment value.
+
+For local use or someone else's self-hosted install, this variable can be left
+empty. In that mode generation is unlocked by default.
+
 From the frontend you can choose the input type, paste source material,
 select output channels, capture media, and prepare a manual, file, webhook,
 or official-API distribution config.

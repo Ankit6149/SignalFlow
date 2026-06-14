@@ -1,3 +1,5 @@
+import { requireOwnerAccess } from "../_auth";
+
 const CHANNEL_LABELS = {
   linkedin: "LinkedIn",
   x: "X",
@@ -179,6 +181,11 @@ Return copy, visual media suggestions, and review notes per channel.`;
 }
 
 export async function POST(request) {
+  const accessError = requireOwnerAccess(request);
+  if (accessError) {
+    return accessError;
+  }
+
   const body = await request.json();
   return new Response(JSON.stringify(localPackage(body)), {
     status: 200,

@@ -104,6 +104,63 @@
   animation: riseIn 680ms ease 80ms both;
 }
 
+.accessPanel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: center;
+  max-width: 1320px;
+  margin: 0 auto 28px;
+  border: 1px solid #d8d0c2;
+  border-radius: 8px;
+  background: #fffaf0;
+  padding: 20px;
+  animation: riseIn 620ms cubic-bezier(0.2, 0.8, 0.2, 1) 90ms both;
+}
+
+.accessPanel h2 {
+  margin: 0;
+  color: #111512;
+  font-size: 1.35rem;
+}
+
+.accessPanel p {
+  max-width: 720px;
+  margin: 6px 0 0;
+  color: #536159;
+  line-height: 1.6;
+}
+
+.accessForm {
+  display: grid;
+  grid-template-columns: minmax(180px, 260px) auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.accessForm input {
+  min-height: 50px;
+  border: 1px solid #d8d0c2;
+  border-radius: 8px;
+  background: #fffdf8;
+  color: #141815;
+  font: inherit;
+  outline: none;
+  padding: 12px;
+}
+
+.accessForm input:focus {
+  border-color: #226b57;
+  box-shadow: 0 0 0 3px rgba(34, 107, 87, 0.14);
+}
+
+.accessMessage {
+  grid-column: 1 / -1;
+  color: #226b57 !important;
+  font-size: 0.92rem;
+  font-weight: 780;
+}
+
 .explainer,
 .startPanel {
   max-width: 1320px;
@@ -812,7 +869,8 @@
   .outputGrid,
   .pipelineMap,
   .explainGrid,
-  .startPanel {
+  .startPanel,
+  .accessPanel {
     grid-template-columns: 1fr;
   }
 }
@@ -826,7 +884,8 @@
   .captureActions,
   .channelGrid,
   .summaryBar,
-  .mediaPlan {
+  .mediaPlan,
+  .accessForm {
     grid-template-columns: 1fr;
   }
 

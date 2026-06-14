@@ -1,4 +1,11 @@
+import { requireOwnerAccess } from "../_auth";
+
 export async function POST(request) {
+  const accessError = requireOwnerAccess(request);
+  if (accessError) {
+    return accessError;
+  }
+
   const body = await request.json();
   return new Response(JSON.stringify({
     status: "app",

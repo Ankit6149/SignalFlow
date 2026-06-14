@@ -5,6 +5,7 @@ import styles from "./page.module.css";
 
 const API_BASE = "/api";
 const PRODUCT_NAME = "SignalFlow Studio";
+const ACCESS_TOKEN_STORAGE_KEY = "signalflow_owner_token";
 
 const CHANNELS = [
   ["linkedin", "LinkedIn"],
@@ -117,6 +118,10 @@ export default function Home() {
   const [outDir, setOutDir] = useState("pipeline-output");
   const [backendStatus, setBackendStatus] = useState("Checking");
   const [statusTone, setStatusTone] = useState("checking");
+  const [accessLocked, setAccessLocked] = useState(false);
+  const [accessToken, setAccessToken] = useState("");
+  const [accessKey, setAccessKey] = useState("");
+  const [accessMessage, setAccessMessage] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState("");
   const [result, setResult] = useState(sampleResult);
@@ -126,6 +131,7 @@ export default function Home() {
   const [mediaItems, setMediaItems] = useState([]);
 
   useEffect(() => {
+    setAccessToken(window.localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY) || "");
     checkBackendHealth();
   }, []);
 
@@ -192,6 +198,7 @@ export default function Home() {
       if (resp.ok && data?.status === "ok") {
         setBackendStatus(data?.mode === "app" ? "Ready" : "Online");
         setStatusTone("online");
+        setAccessLocked(Boolean(data?.access_locked));
       } else {
         setBackendStatus(`Offline (${resp.status})`);
         setStatusTone("offline");
@@ -200,6 +207,46 @@ export default function Home() {
       setBackendStatus("Offline");
       setStatusTone("offline");
     }
+  }
+
+  function authHeaders() {
+    return accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
+  }
+
+  async function unlockWorkspace(event) {
+    event.preventDefault();
+    setAccessMessage("");
+    setError("");
+
+    try {
+      const resp = await fetch(`${API_BASE}/session`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ access_key: accessKey }),
+      });
+      const data = await resp.json();
+
+      if (!resp.ok) {
+        throw new Error(data?.error || "Access key was not accepted.");
+      }
+
+      if (data?.token) {
+        window.localStorage.setItem(ACCESS_TOKEN_STORAGE_KEY, data.token);
+        setAccessToken(data.token);
+        setAccessKey("");
+        setAccessMessage(`Unlocked for ${data.expires_in_days || 30} days on this browser.`);
+      } else {
+        setAccessMessage("This deployment is not locked.");
+      }
+    } catch (unlockError) {
+      setAccessMessage(unlockError.message);
+    }
+  }
+
+  function lockWorkspace() {
+    window.localStorage.removeItem(ACCESS_TOKEN_STORAGE_KEY);
+    setAccessToken("");
+    setAccessMessage("This browser has been locked again.");
   }
 
   function toggleChannel(channel) {
@@ -322,7 +369,7 @@ export default function Home() {
     try {
       const resp = await fetch(`${API_BASE}/launch_kit`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...authHeaders() },
         body: JSON.stringify({
           ...buildInputPayload(),
           out_dir: outDir,
@@ -339,6 +386,10 @@ export default function Home() {
       });
       const data = await resp.json();
       if (!resp.ok) {
+        if (resp.status === 401) {
+          window.localStorage.removeItem(ACCESS_TOKEN_STORAGE_KEY);
+          setAccessToken("");
+        }
         throw new Error(data?.detail || data?.error || `${PRODUCT_NAME} could not generate content`);
       }
       setResult(data);
@@ -396,6 +447,38 @@ export default function Home() {
           App {backendStatus}
         </div>
       </header>
+
+      {accessLocked && (
+        <section className={styles.accessPanel} aria-label="Owner access">
+          <div>
+            <p className={styles.eyebrow}>Private hosted workspace</p>
+            <h2>{accessToken ? "Owner session active" : "Enter owner key to generate"}</h2>
+            <p>
+              The public demo stays visible, but post generation is protected on
+              this hosted link. Self-hosted and local installs can use their own key.
+            </p>
+          </div>
+          {accessToken ? (
+            <button className={styles.secondaryButton} onClick={lockWorkspace} type="button">
+              Lock this browser
+            </button>
+          ) : (
+            <form className={styles.accessForm} onSubmit={unlockWorkspace}>
+              <input
+                aria-label="Owner access key"
+                onChange={(event) => setAccessKey(event.target.value)}
+                placeholder="Owner access key"
+                type="password"
+                value={accessKey}
+              />
+              <button className={styles.primaryButton} type="submit">
+                Unlock
+              </button>
+            </form>
+          )}
+          {accessMessage && <p className={styles.accessMessage}>{accessMessage}</p>}
+        </section>
+      )}
 
       <section className={styles.explainer} aria-label={`${PRODUCT_NAME} overview`}>
         <div className={styles.explainerIntro}>
@@ -701,8 +784,12 @@ export default function Home() {
           </div>
           )}
 
-          <button className={styles.primaryButton} disabled={isGenerating}>
-            {isGenerating ? "Autopilot is building..." : "Generate full post package"}
+          <button className={styles.primaryButton} disabled={isGenerating || (accessLocked && !accessToken)}>
+            {isGenerating
+              ? "Autopilot is building..."
+              : accessLocked && !accessToken
+                ? "Unlock to generate"
+                : "Generate full post package"}
           </button>
           {error && <p className={styles.errorText}>{error}</p>}
         </form>
