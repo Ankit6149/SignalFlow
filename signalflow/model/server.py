@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Dict, Any
 from signalflow.compositor.image_renderer import ImageRenderer
+from signalflow.launchkit import create_launch_kit
 from signalflow.orchestrator import run_pipeline
 
 app = FastAPI(title="SignalFlow Model Stub")
@@ -43,6 +44,14 @@ class PipelineRequest(BaseModel):
     top: int = 5
 
 
+class LaunchKitRequest(BaseModel):
+    repo: str
+    out_dir: str = "pipeline-output"
+    project_name: str = ""
+    audience: str = ""
+    top: int = 5
+
+
 @app.post("/generate_post", response_model=GenerateResponse)
 def generate_post(req: GenerateRequest):
     core = req.payload.get("CoreTokens", "")
@@ -72,6 +81,17 @@ def render_code(req: RenderRequest):
 def pipeline(req: PipelineRequest):
     summary = run_pipeline(Path(req.repo), Path(req.out_dir), req.top)
     return summary
+
+
+@app.post("/launch_kit")
+def launch_kit(req: LaunchKitRequest):
+    return create_launch_kit(
+        repo=Path(req.repo),
+        out_dir=Path(req.out_dir),
+        project_name=req.project_name,
+        audience=req.audience,
+        top_n=req.top,
+    )
 
 
 @app.get("/health")

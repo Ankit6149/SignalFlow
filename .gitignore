@@ -42,3 +42,11 @@ Thumbs.db
 # Next.js frontend artifacts
 frontend/.next/
 frontend/node_modules/
+
+# Local generated artifacts
+.pytest_cache/
+.test-tmp/
+pipeline-output/
+*.png
+*.mp4
+*.pdf

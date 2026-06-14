@@ -1,32 +1,33 @@
-# SignalFlow (safe subset)
+# SignalFlow
 
-This repository contains a safe, local-first implementation of the SignalFlow prototype.
+SignalFlow turns local repository work into a small developer launch kit: ranked code highlights, shareable code images, post copy, slide outlines, and a pipeline summary.
 
-Key components:
+The project is intentionally local-first. It is useful for developers, maintainers, and DevRel teams who want to explain technical work without pasting private source code into a hosted product.
 
-- `signalflow/` — Python orchestrator, ingestion pipeline, model adapters, and compositor utilities.
-- `frontend/` — Minimal Next.js scaffold (UI to be expanded).
-- `rust_media_compositor/` — Rust scaffold for high-performance media work (optional).
-- `go_transport/` — Go scaffold for transport workers (optional).
+## What Works Today
 
-Quick start (install Python deps then run the CLI):
+- Scan a repository and rank source files by simple signal-to-noise heuristics.
+- Render syntax-highlighted code snippets to PNG.
+- Generate stubbed social copy and slide outlines through a local FastAPI service.
+- Run a local pipeline that writes a JSON summary and media artifacts.
+- Use a Next.js UI that proxies requests to the local Python backend.
+
+## Quick Start
+
+Install Python dependencies and scan a repository:
 
 ```bash
 python -m pip install -r requirements.txt
-python -m signalflow.cli scan --repo "C:\\path\\to\\repo" --top 10
+python -m signalflow.cli scan --repo "C:\path\to\repo" --top 10
 ```
 
-Optional native component builds:
+Start the local backend:
 
 ```bash
-cd rust_media_compositor
-cargo build --release
-
-cd ../go_transport
-go build -o transport.exe .
+python -m signalflow.cli serve --host 127.0.0.1 --port 8000
 ```
 
-Frontend UI (Next.js App Router)
+In a second terminal, start the frontend:
 
 ```bash
 cd frontend
@@ -34,30 +35,56 @@ npm install
 npm run dev
 ```
 
-Then open `http://localhost:3000` and use the Next.js UI to generate text, render code snapshots, create slide outlines, and run the local pipeline. The frontend now uses the Next.js App Router with API routes under `frontend/app/api/` to proxy requests to the local backend. Make sure the Python model stub is running at `http://localhost:8000` first.
+Open `http://localhost:3000`.
 
-Rendering a code image:
+## Useful Commands
+
+Render a code image:
 
 ```bash
-python -m signalflow.cli render --file examples/example.py --out code.png
+python -m signalflow.cli render --file path/to/file.py --out code.png
 ```
 
 Run the full local pipeline:
 
 ```bash
-python -m signalflow.cli pipeline --repo "C:\\path\\to\\repo" --out-dir output --top 5
+python -m signalflow.cli pipeline --repo "C:\path\to\repo" --out-dir pipeline-output --top 5
 ```
 
-Start the local model stub:
+Run tests:
 
 ```bash
-python -m signalflow.cli serve --host 127.0.0.1 --port 8000
+python -m pytest -q
 ```
 
-Generate presentation PDF from Markdown slides:
+Build the frontend:
 
 ```bash
-python -c "from signalflow.compositor.presentation import render_slide_pdf; import pathlib; render_slide_pdf(pathlib.Path('slides.md').read_text(), pathlib.Path('slides.pdf'))"
+cd frontend
+npm run build
 ```
 
-Security & ethics: see `SECURITY.md` for details about allowed/forbidden features and safe deployment guidance.
+Create a launch kit through the API:
+
+```bash
+curl -X POST http://127.0.0.1:8000/launch_kit ^
+  -H "Content-Type: application/json" ^
+  -d "{\"repo\":\"C:\\path\\to\\repo\",\"project_name\":\"My Project\",\"audience\":\"open-source maintainers\"}"
+```
+
+## Project Structure
+
+- `signalflow/` - Python CLI, ingestion pipeline, model adapters, and media utilities.
+- `frontend/` - Next.js App Router UI and API proxy routes.
+- `rust_media_compositor/` - Optional Rust renderer scaffold.
+- `go_transport/` - Optional Go transport worker scaffold.
+- `tests/` - Python smoke tests for core pipeline pieces.
+
+## Open-Source Direction
+
+The strongest product angle is: **a local-first launch kit generator for open-source maintainers**.
+
+See [ROADMAP.md](ROADMAP.md) for the path from prototype to a product people can understand, try, and contribute to.
+See [docs/INTEGRATIONS.md](docs/INTEGRATIONS.md) for the GitHub, social, and blog integration strategy.
+
+Security and ethics: see [SECURITY.md](SECURITY.md). SignalFlow must not harvest credentials, bypass platform protections, or publish to third-party services without official APIs and explicit user approval.
