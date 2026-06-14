@@ -1,1 +1,11 @@
-# No pinned deps for core ingestion; optional: rich, pillow, ffmpeg-python later
+# Core Python dependencies (optional for full features):
+# - Pillow: image handling
+# - Pygments: syntax highlighting
+# - reportlab: PDF generation for presentations
+# - markdown2: markdown parsing
+# FFmpeg is required on PATH for terminal recording to produce MP4/GIF
+Pillow
+Pygments
+reportlab
+markdown2
+
