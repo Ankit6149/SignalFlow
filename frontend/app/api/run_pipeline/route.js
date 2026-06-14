@@ -1,22 +1,11 @@
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8000";
-
 export async function POST(request) {
-  try {
-    const body = await request.json();
-    const response = await fetch(`${BACKEND_URL}/run_pipeline`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    const data = await response.json();
-    return new Response(JSON.stringify(data), {
-      status: response.status,
-      headers: { "Content-Type": "application/json" },
-    });
-  } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
+  const body = await request.json();
+  return new Response(JSON.stringify({
+    status: "app",
+    message: "SignalFlow Studio is a one-app hosted product. Repository scanning should be wired into the app workflow before being exposed to users.",
+    repo: body?.repo || "",
+  }), {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+  });
 }

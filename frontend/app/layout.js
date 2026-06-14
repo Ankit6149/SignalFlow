@@ -1,7 +1,7 @@
 import "../app/globals.css";
 
 export const metadata = {
-  title: "PostPilot - Describe Once, Post Everywhere",
+  title: "SignalFlow Studio - Describe Once, Post Everywhere",
   description: "Create platform-ready posting packages from descriptions, data, and assets.",
 };
 

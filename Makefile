@@ -1,4 +1,10 @@
-.PHONY: build-rust build-go fmt
+.PHONY: dev build build-rust build-go fmt
+
+dev:
+	cd frontend && npm run dev
+
+build:
+	cd frontend && npm run build
 
 build-rust:
 	@echo "Building rust_media_compositor (requires Rust toolchain)"

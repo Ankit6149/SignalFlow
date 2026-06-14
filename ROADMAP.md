@@ -1,6 +1,6 @@
-# PostPilot Roadmap
+# SignalFlow Studio Roadmap
 
-PostPilot should become a focused, useful open-source autoposting workspace rather than a bundle of demos.
+SignalFlow Studio should become a focused, useful open-source autoposting workspace rather than a bundle of demos.
 
 ## Product Bet
 
@@ -13,9 +13,9 @@ The one-line promise:
 ## MVP Workflow
 
 1. User describes what should be posted.
-2. User optionally adds data, links, files, repository context, screenshots, or screen recordings.
-3. PostPilot builds a formatted package for selected social accounts.
-4. PostPilot creates:
+2. User adds any useful data, links, files, repository context, screenshots, or screen recordings.
+3. SignalFlow Studio builds a formatted package for selected social accounts.
+4. SignalFlow Studio creates:
    - platform-specific post variants,
    - captions and long-form drafts,
    - visual media plan,
@@ -31,7 +31,7 @@ The one-line promise:
 
 - Replace placeholder repo paths with a guided empty state.
 - Show one primary action: "Generate full post package".
-- Add clear backend status and setup help when the API is offline.
+- Keep the hosted product as one Next.js app with standalone API routes.
 - Save outputs into one timestamped folder.
 - Include a sample repo/demo mode so visitors can try the product in one minute.
 - Add copy/export actions for every generated draft and asset.
@@ -57,23 +57,23 @@ The one-line promise:
 
 - Add screenshots or a short demo GIF to the README.
 - Add issue templates for bugs, feature requests, and good first issues.
-- Add CI for Python tests and frontend build.
+- Add CI for the hosted app build and engine tests.
 - Document architecture in `docs/architecture.md`.
 - Publish a small set of labeled starter issues.
-- Keep the CLI stable so integrations can build on it without depending on the UI.
+- Keep internal engine modules stable so integrations can plug into the hosted app cleanly.
 
 ## What Not To Build Yet
 
 - Unreviewed auto-posting to social platforms.
 - Complex cloud accounts.
 - Browser/session scraping.
-- A large multi-language native stack before the Python/Next.js path feels great.
+- A large multi-language native stack before the one-app Next.js product feels great.
 
 ## Good First Issues
 
 - Add a `--since` option that uses `git diff` to rank recently changed files.
 - Add a Markdown export next to `pipeline_summary.json`.
 - Add richer LinkedIn/X/Instagram post templates to the local stub.
-- Add frontend error states for offline backend responses.
+- Add frontend error states for failed standalone generation responses.
 - Add a sample project fixture for demos and tests.
 - Add OAuth-backed draft publishing adapters behind explicit user approval.

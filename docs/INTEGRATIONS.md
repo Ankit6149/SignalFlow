@@ -1,10 +1,10 @@
-# PostPilot Integrations
+# SignalFlow Studio Integrations
 
-PostPilot is local-first. It generates formatted posting packages that users can review before publishing through official channels.
+SignalFlow Studio is local-first. It generates formatted posting packages that users can review before publishing through official channels.
 
 Inputs can be a simple description, pasted notes, changelogs, code snippets, screenshot text, launch context, metrics, research, screen recordings, screenshots, links, or a local repository path.
 
-PostPilot treats repositories, files, screenshots, screen recordings, changelogs, research excerpts, URLs/PDF notes, and raw descriptions as **input assets**. Selected social accounts or channels determine the output format.
+SignalFlow Studio treats repositories, files, screenshots, screen recordings, changelogs, research excerpts, URLs/PDF notes, and raw descriptions as **input assets**. Selected social accounts or channels determine the output format.
 
 ## Model Generation
 
@@ -12,25 +12,21 @@ Today:
 
 - Generate local template drafts.
 - Export a prompt that can be pasted into a local SLM, API model, or free chatbot.
+- Run the main hosted product as standalone Next.js API routes.
 - Return `context_engine` metadata with source types and input count.
 - Return `model_adapter` metadata with selected generator route and readiness status.
 - Keep generated JSON and Markdown in `pipeline-output/` for review.
-- Run `python -m signalflow.cli launch-kit --notes-file <file> --channel linkedin --channel newsletter`.
 - Generate visual media plans for screenshots, screen recordings, GIF/video loops, generated cards, and platform variants.
 
 Recommended next integration:
 
-1. Add provider adapters for OpenAI-compatible APIs, local SLM servers, and clipboard-only chatbot flows.
+1. Add provider adapters inside the Next.js app for OpenAI-compatible APIs, local SLM servers, and clipboard-only chatbot flows.
 2. Let users connect/select a model route once, then use autopilot defaults.
 3. Store API keys only in local environment variables or OS keychain.
 4. Never publish automatically without explicit approval.
 5. Use official APIs, webhooks, exports, or manual copy. Do not depend on private platform APIs or stealth transport.
 
-Example manual release flow:
-
-```bash
-python -m signalflow.cli launch-kit --notes-file launch-notes.md --channel linkedin --channel x
-```
+The hosted app owns the full flow: input, model routing, media planning, platform formatting, review, and handoff.
 
 ## Selected Social Accounts
 

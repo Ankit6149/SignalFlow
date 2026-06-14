@@ -15,6 +15,8 @@ Recommended website:
 Recommended topics:
 
 ```text
+signalflow-studio
+signalflow
 ai
 social-media
 social-media-automation
@@ -29,8 +31,6 @@ developer-marketing
 devrel
 local-first
 nextjs
-fastapi
-python
 open-source
 ```
 

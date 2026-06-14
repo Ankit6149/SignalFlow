@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import styles from "./page.module.css";
 
 const API_BASE = "/api";
-const PRODUCT_NAME = "PostPilot";
+const PRODUCT_NAME = "SignalFlow Studio";
 
 const CHANNELS = [
   ["linkedin", "LinkedIn"],
@@ -37,7 +37,7 @@ const DISTRIBUTION_MODES = [
 
 const sampleResult = {
   project_name: PRODUCT_NAME,
-  output_dir: "pipeline-output/postpilot-demo",
+  output_dir: "pipeline-output/SignalFlow Studio-demo",
   highlights: [
     {
       path: "assets",
@@ -60,9 +60,9 @@ const sampleResult = {
   },
   markdown: `# ${PRODUCT_NAME} Kit\n\nReady-to-edit drafts for selected channels.`,
   assets: {
-    code_image: "pipeline-output/postpilot-demo/post-card.png",
-    markdown: "pipeline-output/postpilot-demo/post-kit.md",
-    summary: "pipeline-output/postpilot-demo/post-kit.json",
+    code_image: "pipeline-output/SignalFlow Studio-demo/post-card.png",
+    markdown: "pipeline-output/SignalFlow Studio-demo/post-kit.md",
+    summary: "pipeline-output/SignalFlow Studio-demo/post-kit.json",
   },
   integration_config: {
     model_route: "chatbot",
@@ -108,8 +108,8 @@ export default function Home() {
   const [projectName, setProjectName] = useState(PRODUCT_NAME);
   const [audience, setAudience] = useState("builders, founders, and technical creators");
   const [generator, setGenerator] = useState("chatbot");
-  const [modelEndpoint, setModelEndpoint] = useState("http://127.0.0.1:8000");
-  const [modelName, setModelName] = useState("copy-paste prompt");
+  const [modelEndpoint, setModelEndpoint] = useState("");
+  const [modelName, setModelName] = useState("standalone template");
   const [apiKey, setApiKey] = useState("");
   const [selectedChannels, setSelectedChannels] = useState(["linkedin", "x", "newsletter"]);
   const [distributionMode, setDistributionMode] = useState("manual");
@@ -190,7 +190,7 @@ export default function Home() {
       const resp = await fetch(`${API_BASE}/health`);
       const data = await resp.json();
       if (resp.ok && data?.status === "ok") {
-        setBackendStatus("Online");
+        setBackendStatus(data?.mode === "app" ? "Ready" : "Online");
         setStatusTone("online");
       } else {
         setBackendStatus(`Offline (${resp.status})`);
@@ -365,7 +365,7 @@ export default function Home() {
 
   const currentPost = result?.posts?.[activeChannel] || "";
   const imageSrc = result?.image_base64
-    ? `data:image/png;base64,${result.image_base64}`
+    ? `data:${result.image_mime || "image/png"};base64,${result.image_base64}`
     : "";
 
   return (
@@ -393,14 +393,14 @@ export default function Home() {
         </div>
         <div className={`${styles.statusPill} ${styles[statusTone]}`}>
           <span />
-          Backend {backendStatus}
+          App {backendStatus}
         </div>
       </header>
 
       <section className={styles.explainer} aria-label={`${PRODUCT_NAME} overview`}>
         <div className={styles.explainerIntro}>
           <p className={styles.eyebrow}>How it works</p>
-          <h2>One clean path from source material to reviewed content.</h2>
+          <h2>One hosted app. One description. One formatted package.</h2>
         </div>
         <div className={styles.explainGrid}>
           {[
@@ -461,7 +461,7 @@ export default function Home() {
           <div className={styles.autopilotCard}>
             <strong>Autopilot is on</strong>
             <span>
-              Uses chatbot prompt mode, LinkedIn/X/Newsletter, manual review,
+              Uses standalone generation, LinkedIn/X/Newsletter, manual review,
               generated visual card, and media plan unless changed.
             </span>
           </div>
@@ -481,7 +481,7 @@ export default function Home() {
             onClick={() => setAdvancedOpen((current) => !current)}
             type="button"
           >
-            {advancedOpen ? "Hide advanced controls" : "Advanced controls"}
+            {advancedOpen ? "Hide settings" : "Settings"}
           </button>
 
           {advancedOpen && (
@@ -489,8 +489,8 @@ export default function Home() {
             <div className={styles.step}>
               <span>2</span>
               <div>
-                <h2>Optional inputs</h2>
-                <p>Add repository or research sources only when the description needs more data.</p>
+                <h2>Extra sources</h2>
+                <p>Add repository or research sources when the description needs more data.</p>
               </div>
             </div>
 
@@ -586,8 +586,8 @@ export default function Home() {
           <div className={styles.step}>
             <span>4</span>
             <div>
-              <h2>Engine</h2>
-              <p>Choose the generation route only if you want to customize it.</p>
+                <h2>Generation settings</h2>
+                <p>Only change these when you connect your own model provider later.</p>
             </div>
           </div>
 
@@ -611,7 +611,7 @@ export default function Home() {
                 <input
                   value={modelEndpoint}
                   onChange={(event) => setModelEndpoint(event.target.value)}
-                  placeholder="http://127.0.0.1:8000"
+                  placeholder="Provider endpoint"
                 />
               </label>
               <label className={styles.field}>
@@ -619,7 +619,7 @@ export default function Home() {
                 <input
                   value={modelName}
                   onChange={(event) => setModelName(event.target.value)}
-                  placeholder="llama-3.2 / gpt / custom"
+                  placeholder="standalone template / custom model"
                 />
               </label>
             </div>
@@ -687,7 +687,7 @@ export default function Home() {
               <input
                 value={webhookUrl}
                 onChange={(event) => setWebhookUrl(event.target.value)}
-                placeholder="https://hooks.example.com/postpilot"
+                placeholder="https://hooks.example.com/SignalFlow Studio"
               />
             </label>
             <button

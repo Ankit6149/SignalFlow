@@ -1,10 +1,10 @@
-# PostPilot
+# SignalFlow Studio
 
-> PostPilot is a local-first autoposting workspace that turns a user description, data, and captured media into formatted posting packages for selected social platforms.
+> SignalFlow Studio is a local-first autoposting workspace that turns a user description, data, and captured media into formatted posting packages for selected social platforms.
 
-## What PostPilot Does
+## What SignalFlow Studio Does
 
-- Accepts one primary user description plus optional data such as links, notes, repositories, research, metrics, screenshots, and screen recordings.
+- Accepts one primary user description plus useful data such as links, notes, repositories, research, metrics, screenshots, and screen recordings.
 - Helps users avoid manually creating screenshots, GIFs, short clips, captions, and platform-specific variants.
 - Generates reviewable posting packages with channel-specific copy, visual media plans, generated cards, model prompts, Markdown exports, and JSON summaries.
 - Supports selected social/output channels such as LinkedIn, X, Instagram, blog posts, newsletters, and release notes.
@@ -12,12 +12,12 @@
 
 ## Best Summary
 
-PostPilot is for creators, founders, builders, developers, DevRel teams, and small teams who want to describe something once and receive platform-ready post assets without building every caption, screenshot, GIF, or posting format manually.
+SignalFlow Studio is for creators, founders, builders, developers, DevRel teams, and small teams who want to describe something once and receive platform-ready post assets without building every caption, screenshot, GIF, or posting format manually.
 
 ## Core User Flow
 
 1. Describe what should be posted.
-2. Add optional data, links, assets, repository context, or research.
+2. Add data, links, assets, repository context, or research.
 3. Capture screenshots or screen recordings when useful.
 4. Choose selected social channels or use defaults.
 5. Generate a formatted post package for review and export.
@@ -29,15 +29,15 @@ PostPilot is for creators, founders, builders, developers, DevRel teams, and sma
 - [docs/INTEGRATIONS.md](docs/INTEGRATIONS.md): model, channel, and publishing integration strategy.
 - [SECURITY.md](SECURITY.md): safety and platform-compliance rules.
 - [frontend/app/page.js](frontend/app/page.js): main web workspace.
-- [signalflow/launchkit.py](signalflow/launchkit.py): backend post-package generation logic.
+- [frontend/app/api/launch_kit/route.js](frontend/app/api/launch_kit/route.js): hosted app post-package generation route.
 
 ## Important Boundaries
 
-- PostPilot should not scrape private platform APIs.
-- PostPilot should not harvest credentials.
-- PostPilot should not bypass rate limits or authentication.
-- PostPilot should not publish without explicit user approval.
-- PostPilot should prefer official APIs, local exports, webhooks, and manual review.
+- SignalFlow Studio should not scrape private platform APIs.
+- SignalFlow Studio should not harvest credentials.
+- SignalFlow Studio should not bypass rate limits or authentication.
+- SignalFlow Studio should not publish without explicit user approval.
+- SignalFlow Studio should prefer official APIs, local exports, webhooks, and manual review.
 
 ## Suggested Search Terms
 

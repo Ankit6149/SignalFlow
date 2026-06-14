@@ -1,5 +1,5 @@
 {
-  "name": "postpilot-frontend",
+  "name": "signalflow-studio",
   "version": "0.1.0",
   "private": true,
   "description": "Local-first autoposting workspace for generating formatted social media posting packages from descriptions, data, screenshots, and screen recordings.",

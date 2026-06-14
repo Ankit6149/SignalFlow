@@ -1,6 +1,6 @@
-# PostPilot
+# SignalFlow Studio
 
-> PostPilot is a local-first autoposting workspace that turns a user description, data, and captured media into formatted posting packages for selected social platforms.
+> SignalFlow Studio is a local-first autoposting workspace that turns a user description, data, and captured media into formatted posting packages for selected social platforms.
 
 ## What It Does
 
@@ -12,9 +12,9 @@
 
 ## Good Search Summary
 
-PostPilot helps creators, founders, developers, and small teams describe once and generate social posts, captions, screenshots/GIF planning, media cards, and export files for selected social channels.
+SignalFlow Studio helps creators, founders, developers, and small teams describe once and generate social posts, captions, screenshots/GIF planning, media cards, and export files for selected social channels.
 
 ## Links
 
-- GitHub: https://github.com/Ankit6149/SignalFlow
-- README: https://github.com/Ankit6149/SignalFlow#readme
+- GitHub: https://github.com/Ankit6149/SignalFlow-Studio
+- README: https://github.com/Ankit6149/SignalFlow-Studio#readme
