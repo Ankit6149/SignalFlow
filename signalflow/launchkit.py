@@ -187,7 +187,7 @@ def _write_launch_kit(
         "integration_notes": [
             "Use assets as input for a local SLM, API model, or free chatbot.",
             "Selected channels control the format of generated drafts.",
-            "Keep publishing manual until channel integrations are configured by the user.",
+            "Distribution should use manual review, exports, webhooks, or official platform APIs.",
         ],
     }
     summary_path.write_text(json.dumps({k: v for k, v in result.items() if k != "image_base64"}, indent=2), encoding="utf-8")

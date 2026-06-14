@@ -4,7 +4,7 @@ SignalFlow is local-first. It generates assets and drafts that users can review 
 
 Inputs can be pasted notes, changelogs, code snippets, screenshot text, launch context, or a local repository path.
 
-SignalFlow treats repositories, files, screenshots, changelogs, and notes as **assets**. Channels are output formats selected by the user.
+SignalFlow treats repositories, files, screenshots, changelogs, research excerpts, URLs/PDF notes, and raw briefs as **input channels**. Selected channels are output formats, not connected posting accounts.
 
 ## Model Generation
 
@@ -21,6 +21,7 @@ Recommended next integration:
 2. Require users to choose channels before generation.
 3. Store API keys only in local environment variables or OS keychain.
 4. Never publish automatically without explicit approval.
+5. Use official APIs, webhooks, exports, or manual copy. Do not depend on private platform APIs or stealth transport.
 
 Example manual release flow:
 

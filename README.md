@@ -1,16 +1,17 @@
 # SignalFlow
 
-SignalFlow turns technical assets into channel-ready content. Add notes, changelogs, code snippets, screenshots text, or repo context; choose channels; then generate drafts or copy a prompt into a local SLM, API model, or free chatbot.
+SignalFlow is a unified context engine for technical content. Add briefs, repositories, URLs/PDF notes, code snippets, or research assets; choose output channels; then generate drafts or copy a prompt into a local SLM, API model, cloud gateway, or free chatbot.
 
 The project is intentionally local-first. It is useful for builders, founders, developers, maintainers, and DevRel teams who want to explain technical work without pasting private source code into a hosted product.
 
 ## What Works Today
 
-- Generate drafts from pasted notes, changelogs, code snippets, screenshots text, or repository context.
+- Generate drafts from briefs, pasted notes, changelogs, code snippets, screenshots text, repository context, or research excerpts.
 - Scan a repository and rank source files by simple signal-to-noise heuristics.
 - Render syntax-highlighted code snippets to PNG.
 - Generate selected channel formats for LinkedIn, X, Instagram, blogs, newsletters, and release notes.
 - Export a model prompt for local SLMs, API models, or free chatbots.
+- Keep distribution safe through manual review, files, webhooks, or official platform APIs.
 - Run a local pipeline that writes Markdown, JSON, and media artifacts.
 - Use a Next.js UI that proxies requests to the local Python backend.
 

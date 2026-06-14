@@ -14,6 +14,12 @@ const CHANNELS = [
   ["release_notes", "Release notes"],
 ];
 
+const INPUT_MODES = [
+  ["brief", "Raw brief"],
+  ["repo", "Git repo"],
+  ["research", "URL/PDF notes"],
+];
+
 const sampleResult = {
   project_name: "SignalFlow",
   output_dir: "pipeline-output/signalflow-demo",
@@ -51,7 +57,7 @@ const sampleResult = {
 };
 
 export default function Home() {
-  const [sourceMode, setSourceMode] = useState("assets");
+  const [sourceMode, setSourceMode] = useState("brief");
   const [repoPath, setRepoPath] = useState("");
   const [notes, setNotes] = useState(
     "SignalFlow helps builders turn product work into content.\nAssets can be launch notes, code snippets, changelogs, screenshots, or repo context.\nThe user selects channels, then sends the asset pack to a local SLM, API model, or free chatbot.",
@@ -161,10 +167,11 @@ export default function Home() {
       <header className={styles.header}>
         <div>
           <p className={styles.eyebrow}>SignalFlow</p>
-          <h1>Assets in. Channel-ready content out.</h1>
+          <h1>Unified context engine for technical content.</h1>
           <p>
-            Add product assets, choose channels, then generate drafts through a
-            local template, API model, SLM, or free chatbot prompt.
+            Bring briefs, repositories, URLs, PDFs, or research notes into one
+            context layer, route it through a model adapter, and generate
+            channel-ready content packs.
           </p>
         </div>
         <div className={`${styles.statusPill} ${styles[statusTone]}`}>
@@ -173,31 +180,42 @@ export default function Home() {
         </div>
       </header>
 
+      <section className={styles.pipelineMap} aria-label="SignalFlow architecture">
+        {[
+          ["Input channels", "Briefs · repos · research"],
+          ["Unified context", "Normalize and extract signal"],
+          ["Model adapter", "Local API · SLM · cloud gateway"],
+          ["Content modules", "Text patterns · canvas · simulation"],
+          ["Distribution export", "Drafts, prompts, files, official APIs"],
+        ].map(([title, body]) => (
+          <div key={title}>
+            <strong>{title}</strong>
+            <span>{body}</span>
+          </div>
+        ))}
+      </section>
+
       <section className={styles.appGrid}>
         <form className={styles.builder} onSubmit={createContentKit}>
           <div className={styles.step}>
             <span>1</span>
             <div>
-              <h2>Add assets</h2>
-              <p>Paste notes, changelog, code, screenshots text, or scan a local repo.</p>
+              <h2>Choose input channel</h2>
+              <p>Start with a raw brief, git repository, or research/PDF notes.</p>
             </div>
           </div>
 
           <div className={styles.segmented}>
-            <button
-              className={sourceMode === "assets" ? styles.activeSegment : ""}
-              onClick={() => setSourceMode("assets")}
-              type="button"
-            >
-              Paste assets
-            </button>
-            <button
-              className={sourceMode === "repo" ? styles.activeSegment : ""}
-              onClick={() => setSourceMode("repo")}
-              type="button"
-            >
-              Scan repo
-            </button>
+            {INPUT_MODES.map(([key, label]) => (
+              <button
+                className={sourceMode === key ? styles.activeSegment : ""}
+                key={key}
+                onClick={() => setSourceMode(key)}
+                type="button"
+              >
+                {label}
+              </button>
+            ))}
           </div>
 
           {sourceMode === "repo" ? (
@@ -212,12 +230,12 @@ export default function Home() {
             </label>
           ) : (
             <label className={styles.field}>
-              Asset pack
+              {sourceMode === "research" ? "Research URL, PDF notes, or document excerpts" : "Raw tech brief or prompt"}
               <textarea
                 value={notes}
                 onChange={(event) => setNotes(event.target.value)}
                 rows={10}
-                required={sourceMode === "assets"}
+                required={sourceMode !== "repo"}
               />
             </label>
           )}
@@ -237,7 +255,7 @@ export default function Home() {
             <span>2</span>
             <div>
               <h2>Select channels</h2>
-              <p>These are content formats, not connected posting accounts.</p>
+              <p>These are output formats. Publishing stays manual or official-API based.</p>
             </div>
           </div>
 
@@ -258,7 +276,7 @@ export default function Home() {
             <span>3</span>
             <div>
               <h2>Choose generator</h2>
-              <p>Use local drafts now, or copy the prompt into your preferred model.</p>
+              <p>Route the unified context through a local API, SLM, cloud gateway, or chatbot prompt.</p>
             </div>
           </div>
 
@@ -304,7 +322,7 @@ export default function Home() {
           <div className={styles.summaryBar}>
             <div>
               <strong>{result?.highlights?.length || 0}</strong>
-              <span>assets</span>
+              <span>signals</span>
             </div>
             <div>
               <strong>{resultChannels.length}</strong>

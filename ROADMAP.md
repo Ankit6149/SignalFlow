@@ -8,7 +8,7 @@ Build for builders, developers, founders, and maintainers who want to share tech
 
 The one-line promise:
 
-> Turn technical assets into selected-channel content through local templates, SLMs, API models, or chatbot prompts.
+> Turn briefs, repositories, research assets, and documents into selected-channel content through local templates, SLMs, API models, cloud gateways, or chatbot prompts.
 
 ## MVP Workflow
 

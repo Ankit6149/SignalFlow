@@ -10,3 +10,4 @@ All notable changes to this project will be documented in this file.
 - Added a CLI launch-kit command, safer scanning defaults, copy actions, and clearer integration docs.
 - Added notes/changelog input so SignalFlow works beyond repository-only publishing.
 - Simplified the UI around assets, selected channels, and model/chatbot generation.
+- Reframed the interface around input channels, unified context, model adapters, content modules, and safe distribution exports.
