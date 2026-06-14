@@ -1,0 +1,1 @@
+# No pinned deps for core ingestion; optional: rich, pillow, ffmpeg-python later
