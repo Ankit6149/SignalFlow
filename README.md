@@ -4,6 +4,8 @@ PostPilot is a local-first posting workspace. Describe what you want to post, ad
 
 The project is intentionally local-first. It is useful for creators, builders, founders, developers, maintainers, and small teams who do not want to manually create screenshots, GIFs, short clips, captions, and platform variants from scratch.
 
+The product goal is low-click autopilot: the user provides information, connects or selects a model route once, and PostPilot prepares the full posting package with sensible defaults. Advanced controls stay available, but they should not be required for the first successful run.
+
 ## What Works Today
 
 - Generate platform drafts from descriptions, pasted notes, changelogs, code snippets, screenshots text, repository context, or research excerpts.
@@ -13,6 +15,7 @@ The project is intentionally local-first. It is useful for creators, builders, f
 - Generate selected channel formats for LinkedIn, X, Instagram, blogs, newsletters, and release notes.
 - Export a model prompt for local SLMs, API models, or free chatbots.
 - Configure input sources, model adapter details, selected channels, export folder, and safe distribution mode from the frontend.
+- Use the frontend in autopilot mode with one description field and defaults for model route, platforms, media plan, and export.
 - Keep distribution safe through manual review, files, webhooks, or official platform APIs.
 - Run a local pipeline that writes Markdown, JSON, and media artifacts.
 - Use a Next.js UI that proxies requests to the local Python backend.

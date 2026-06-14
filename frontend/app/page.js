@@ -96,7 +96,8 @@ export default function Home() {
   const recorderRef = useRef(null);
   const streamRef = useRef(null);
   const chunksRef = useRef([]);
-  const [workspaceOpen, setWorkspaceOpen] = useState(false);
+  const [workspaceOpen, setWorkspaceOpen] = useState(true);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
   const [sourceMode, setSourceMode] = useState("brief");
   const [repoPath, setRepoPath] = useState("");
   const [researchUrl, setResearchUrl] = useState("");
@@ -379,7 +380,7 @@ export default function Home() {
           </p>
           <div className={styles.heroActions}>
             <button className={styles.primaryButton} onClick={() => setWorkspaceOpen(true)} type="button">
-              Open step workspace
+              Jump to autopilot
             </button>
             <button
               className={styles.secondaryButton}
@@ -443,7 +444,7 @@ export default function Home() {
             </p>
           </div>
           <button className={styles.primaryButton} onClick={() => setWorkspaceOpen(true)} type="button">
-            Start with step 1
+            Start autopilot
           </button>
         </section>
       ) : (
@@ -452,72 +453,90 @@ export default function Home() {
           <div className={styles.step}>
             <span>1</span>
             <div>
-              <h2>Describe</h2>
-              <p>Tell {PRODUCT_NAME} what happened and what should be posted.</p>
+              <h2>Give the info</h2>
+              <p>Describe what happened. Defaults handle model, platforms, assets, and export.</p>
             </div>
           </div>
 
-          <div className={styles.segmented}>
-            {INPUT_MODES.map(([key, label]) => (
-              <button
-                className={sourceMode === key ? styles.activeSegment : ""}
-                key={key}
-                onClick={() => setSourceMode(key)}
-                type="button"
-              >
-                {label}
-              </button>
-            ))}
+          <div className={styles.autopilotCard}>
+            <strong>Autopilot is on</strong>
+            <span>
+              Uses chatbot prompt mode, LinkedIn/X/Newsletter, manual review,
+              generated visual card, and media plan unless changed.
+            </span>
           </div>
 
-          {sourceMode === "repo" ? (
-            <label className={styles.field}>
-              Repository path
-              <input
-                value={repoPath}
-                onChange={(event) => setRepoPath(event.target.value)}
-                placeholder="C:/Users/you/projects/my-product"
-                required={sourceMode === "repo"}
-              />
-            </label>
-          ) : sourceMode === "research" ? (
-            <div className={styles.integrationBox}>
-              <label className={styles.field}>
-                Research URL
-                <input
-                  value={researchUrl}
-                  onChange={(event) => setResearchUrl(event.target.value)}
-                  placeholder="https://example.com/research"
-                />
-              </label>
-              <label className={styles.field}>
-                Document path
-                <input
-                  value={documentPath}
-                  onChange={(event) => setDocumentPath(event.target.value)}
-                  placeholder="C:/Users/you/docs/brief.pdf"
-                />
-              </label>
-              <label className={styles.field}>
-                Extracted notes
-                <textarea
-                  value={notes}
-                  onChange={(event) => setNotes(event.target.value)}
-                  rows={8}
-                />
-              </label>
+          <label className={styles.field}>
+            What should be posted?
+            <textarea
+              value={notes}
+              onChange={(event) => setNotes(event.target.value)}
+              rows={9}
+              required={sourceMode !== "repo"}
+            />
+          </label>
+
+          <button
+            className={styles.advancedToggle}
+            onClick={() => setAdvancedOpen((current) => !current)}
+            type="button"
+          >
+            {advancedOpen ? "Hide advanced controls" : "Advanced controls"}
+          </button>
+
+          {advancedOpen && (
+          <div className={styles.advancedPanel}>
+            <div className={styles.step}>
+              <span>2</span>
+              <div>
+                <h2>Optional inputs</h2>
+                <p>Add repository or research sources only when the description needs more data.</p>
+              </div>
             </div>
-          ) : (
-            <label className={styles.field}>
-              What should be posted?
-              <textarea
-                value={notes}
-                onChange={(event) => setNotes(event.target.value)}
-                rows={9}
-                required={sourceMode !== "repo"}
-              />
-            </label>
-          )}
+
+            <div className={styles.segmented}>
+              {INPUT_MODES.map(([key, label]) => (
+                <button
+                  className={sourceMode === key ? styles.activeSegment : ""}
+                  key={key}
+                  onClick={() => setSourceMode(key)}
+                  type="button"
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {sourceMode === "repo" ? (
+              <label className={styles.field}>
+                Repository path
+                <input
+                  value={repoPath}
+                  onChange={(event) => setRepoPath(event.target.value)}
+                  placeholder="C:/Users/you/projects/my-product"
+                  required={sourceMode === "repo"}
+                />
+              </label>
+            ) : sourceMode === "research" ? (
+              <div className={styles.integrationBox}>
+                <label className={styles.field}>
+                  Research URL
+                  <input
+                    value={researchUrl}
+                    onChange={(event) => setResearchUrl(event.target.value)}
+                    placeholder="https://example.com/research"
+                  />
+                </label>
+                <label className={styles.field}>
+                  Document path
+                  <input
+                    value={documentPath}
+                    onChange={(event) => setDocumentPath(event.target.value)}
+                    placeholder="C:/Users/you/docs/brief.pdf"
+                  />
+                </label>
+              </div>
+            ) : null}
 
           <div className={styles.twoCols}>
             <label className={styles.field}>
@@ -531,7 +550,7 @@ export default function Home() {
           </div>
 
           <div className={styles.step}>
-            <span>2</span>
+            <span>3</span>
             <div>
               <h2>Capture media</h2>
               <p>Record a flow or take screenshots so the post package has real visual assets.</p>
@@ -565,7 +584,7 @@ export default function Home() {
           </div>
 
           <div className={styles.step}>
-            <span>3</span>
+            <span>4</span>
             <div>
               <h2>Engine</h2>
               <p>Choose the generation route only if you want to customize it.</p>
@@ -616,7 +635,7 @@ export default function Home() {
           </div>
 
           <div className={styles.step}>
-            <span>4</span>
+            <span>5</span>
             <div>
               <h2>Platforms</h2>
               <p>Select where this package should be prepared for posting.</p>
@@ -642,7 +661,7 @@ export default function Home() {
           </label>
 
           <div className={styles.step}>
-            <span>5</span>
+            <span>6</span>
             <div>
               <h2>Publish handoff</h2>
               <p>Keep final publishing explicit, reviewable, and platform-safe.</p>
@@ -679,9 +698,11 @@ export default function Home() {
               {copiedLabel === "config" ? "Copied config" : "Copy integration config"}
             </button>
           </div>
+          </div>
+          )}
 
           <button className={styles.primaryButton} disabled={isGenerating}>
-            {isGenerating ? "Generating..." : "Generate post package"}
+            {isGenerating ? "Autopilot is building..." : "Generate full post package"}
           </button>
           {error && <p className={styles.errorText}>{error}</p>}
         </form>

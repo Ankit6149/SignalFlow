@@ -463,6 +463,56 @@
   background: #fffaf0;
 }
 
+.autopilotCard,
+.advancedPanel {
+  border: 1px solid #d8d0c2;
+  border-radius: 8px;
+  background: #fdf7ec;
+}
+
+.autopilotCard {
+  display: grid;
+  gap: 5px;
+  padding: 15px;
+}
+
+.autopilotCard strong {
+  color: #111512;
+  font-size: 1rem;
+}
+
+.autopilotCard span {
+  color: #536159;
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.advancedToggle {
+  border: 1px solid #d8d0c2;
+  border-radius: 8px;
+  background: #fffaf0;
+  color: #226b57;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 850;
+  min-height: 44px;
+  padding: 10px 12px;
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.advancedToggle:hover {
+  border-color: #b8ad9d;
+  box-shadow: 0 8px 20px rgba(33, 28, 18, 0.08);
+  transform: translateY(-1px);
+}
+
+.advancedPanel {
+  display: grid;
+  gap: 20px;
+  padding: 18px;
+  animation: cardIn 260ms ease both;
+}
+
 .capturePanel {
   display: grid;
   gap: 12px;
