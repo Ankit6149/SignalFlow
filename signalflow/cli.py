@@ -6,7 +6,7 @@ from signalflow.ingestion.walker import DirectoryWalker
 from signalflow.ingestion.snr import SNRScorer
 from signalflow.compositor.image_renderer import ImageRenderer
 from signalflow.compositor.terminal_recorder import TerminalRecorder
-from signalflow.launchkit import create_launch_kit
+from signalflow.launchkit import create_launch_kit, create_notes_kit
 from signalflow.model.adapter import CloudStubAdapter, LocalRESTAdapter
 from signalflow.native import find_rust_renderer, render_code_via_rust
 from signalflow.orchestrator import run_pipeline
@@ -68,13 +68,21 @@ def cmd_stub_generate(args):
 
 
 def cmd_launch_kit(args):
-    result = create_launch_kit(
-        repo=Path(args.repo),
-        out_dir=Path(args.out_dir),
-        project_name=args.project_name,
-        audience=args.audience,
-        top_n=args.top,
-    )
+    if args.notes_file:
+        result = create_notes_kit(
+            notes=Path(args.notes_file).read_text(encoding="utf-8"),
+            out_dir=Path(args.out_dir),
+            project_name=args.project_name,
+            audience=args.audience,
+        )
+    else:
+        result = create_launch_kit(
+            repo=Path(args.repo),
+            out_dir=Path(args.out_dir),
+            project_name=args.project_name,
+            audience=args.audience,
+            top_n=args.top,
+        )
     printable = {key: value for key, value in result.items() if key != "image_base64"}
     for highlight in printable.get("highlights", []):
         highlight.pop("absolute_path", None)
@@ -109,7 +117,8 @@ def main(argv=None):
     p_pipeline.add_argument("--top", type=int, default=5, help="Top N candidate files")
 
     p_launch = sub.add_parser("launch-kit")
-    p_launch.add_argument("--repo", required=True, help="Repository path to turn into a launch kit")
+    p_launch.add_argument("--repo", required=False, default=".", help="Repository path to turn into a launch kit")
+    p_launch.add_argument("--notes-file", required=False, help="Text/Markdown file with notes, code, changelog, or launch context")
     p_launch.add_argument("--out-dir", required=False, default="pipeline-output", help="Output folder for launch kits")
     p_launch.add_argument("--project-name", required=False, default="", help="Public project name")
     p_launch.add_argument("--audience", required=False, default="", help="Audience to write for")

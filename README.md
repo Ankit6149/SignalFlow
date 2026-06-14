@@ -1,15 +1,16 @@
 # SignalFlow
 
-SignalFlow turns local repository work into a small developer launch kit: ranked code highlights, shareable code images, post copy, slide outlines, and a pipeline summary.
+SignalFlow turns technical work into a small publishing kit: ranked code highlights, shareable signal cards, post copy, launch notes, slide outlines, and Markdown exports.
 
-The project is intentionally local-first. It is useful for developers, maintainers, and DevRel teams who want to explain technical work without pasting private source code into a hosted product.
+The project is intentionally local-first. It is useful for builders, founders, developers, maintainers, and DevRel teams who want to explain technical work without pasting private source code into a hosted product.
 
 ## What Works Today
 
+- Generate drafts from pasted notes, changelogs, code snippets, or repository context.
 - Scan a repository and rank source files by simple signal-to-noise heuristics.
 - Render syntax-highlighted code snippets to PNG.
-- Generate stubbed social copy and slide outlines through a local FastAPI service.
-- Run a local pipeline that writes a JSON summary and media artifacts.
+- Generate channel drafts for LinkedIn, X, blogs, newsletters, and GitHub releases.
+- Run a local pipeline that writes Markdown, JSON, and media artifacts.
 - Use a Next.js UI that proxies requests to the local Python backend.
 
 ## Quick Start
@@ -28,6 +29,15 @@ python -m signalflow.cli launch-kit ^
   --repo "C:\path\to\repo" ^
   --project-name "My Project" ^
   --audience "open-source maintainers"
+```
+
+Create from a notes file instead of a repository:
+
+```bash
+python -m signalflow.cli launch-kit ^
+  --notes-file launch-notes.md ^
+  --project-name "My Project" ^
+  --audience "technical founders"
 ```
 
 Start the local backend:
@@ -97,7 +107,7 @@ curl -X POST http://127.0.0.1:8000/launch_kit ^
 
 ## Open-Source Direction
 
-The strongest product angle is: **a local-first launch kit generator for open-source maintainers**.
+The strongest product angle is: **a local-first publishing engine for builders and technical teams**.
 
 See [ROADMAP.md](ROADMAP.md) for the path from prototype to a product people can understand, try, and contribute to.
 See [docs/INTEGRATIONS.md](docs/INTEGRATIONS.md) for the GitHub, social, and blog integration strategy.

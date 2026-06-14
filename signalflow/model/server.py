@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Dict, Any
 from signalflow.compositor.image_renderer import ImageRenderer
-from signalflow.launchkit import create_launch_kit
+from signalflow.launchkit import create_launch_kit, create_notes_kit
 from signalflow.orchestrator import run_pipeline
 
 app = FastAPI(title="SignalFlow Model Stub")
@@ -45,7 +45,8 @@ class PipelineRequest(BaseModel):
 
 
 class LaunchKitRequest(BaseModel):
-    repo: str
+    repo: str = ""
+    notes: str = ""
     out_dir: str = "pipeline-output"
     project_name: str = ""
     audience: str = ""
@@ -86,6 +87,13 @@ def pipeline(req: PipelineRequest):
 @app.post("/launch_kit")
 def launch_kit(req: LaunchKitRequest):
     try:
+        if req.notes.strip():
+            return create_notes_kit(
+                notes=req.notes,
+                out_dir=Path(req.out_dir),
+                project_name=req.project_name,
+                audience=req.audience,
+            )
         return create_launch_kit(
             repo=Path(req.repo),
             out_dir=Path(req.out_dir),

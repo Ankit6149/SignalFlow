@@ -2,6 +2,8 @@
 
 SignalFlow is local-first. It generates assets and drafts that users can review before publishing through official channels.
 
+Inputs can be pasted notes, changelogs, code snippets, launch context, or a local repository path.
+
 ## GitHub
 
 Today:

@@ -21,33 +21,39 @@ def _read_excerpt(path: Path, max_chars: int = 1400) -> str:
 
 
 def _platform_posts(project_name: str, highlight: Dict[str, str], audience: str) -> Dict[str, str]:
-    file_name = highlight["path"]
+    signal_name = highlight["path"]
     summary = highlight["summary"]
     audience_line = audience or "developers who want the technical signal quickly"
 
     return {
         "github_release": (
             f"## {project_name} update\n\n"
-            f"- Highlight: `{file_name}`\n"
+            f"- Signal: `{signal_name}`\n"
             f"- Why it matters: {summary}\n"
             f"- Built for: {audience_line}\n\n"
             "Try it locally, inspect the output, and open an issue with the next workflow you want supported."
         ),
         "linkedin": (
-            f"I shipped a new {project_name} workflow that turns repository work into a local launch kit.\n\n"
-            f"The current highlight is `{file_name}`: {summary}\n\n"
-            "The goal is simple: help maintainers explain technical progress without uploading private source."
+            f"I shipped a new {project_name} workflow that turns technical work into publish-ready drafts.\n\n"
+            f"The current signal is `{signal_name}`: {summary}\n\n"
+            "The goal is simple: help builders explain progress clearly without starting from a blank page."
         ),
         "x": (
-            f"Building {project_name}: local repo in, launch kit out.\n\n"
-            f"Highlight: `{file_name}`\n"
+            f"Building {project_name}: raw work in, channel-ready drafts out.\n\n"
+            f"Signal: `{signal_name}`\n"
             f"{summary}\n\n"
-            "Useful for maintainers who want sharper release notes, posts, and code visuals."
+            "Useful for builders who want sharper posts, release notes, newsletters, and launch assets."
         ),
         "blog_intro": (
-            f"{project_name} is becoming a local-first launch kit generator for technical projects. "
-            f"This run selected `{file_name}` as the strongest code highlight because {summary.lower()} "
+            f"{project_name} is becoming a local-first publishing engine for technical builders. "
+            f"This run selected `{signal_name}` as the strongest signal because {summary.lower()} "
             "From there, it creates reusable copy, a slide outline, and visual assets that can be edited before publishing."
+        ),
+        "newsletter": (
+            f"Subject: {project_name} update\n\n"
+            f"This week I worked on {project_name}, with the strongest signal coming from `{signal_name}`.\n\n"
+            f"{summary}\n\n"
+            f"This is built for {audience_line}. The goal is to make the work easier to understand, reuse, and share."
         ),
     }
 
@@ -75,14 +81,58 @@ def _markdown_export(project_name: str, highlights: List[Dict[str, str]], posts:
     )
     posts_md = "\n\n".join(f"### {name.replace('_', ' ').title()}\n\n{body}" for name, body in posts.items())
     return (
-        f"# {project_name} Launch Kit\n\n"
-        "## Code Highlights\n\n"
+        f"# {project_name} Kit\n\n"
+        "## Signals\n\n"
         f"{highlights_md}\n\n"
         "## Post Drafts\n\n"
         f"{posts_md}\n\n"
         "## Slide Outline\n\n"
         f"{slide_outline}\n"
     )
+
+
+def _write_launch_kit(
+    kit_dir: Path,
+    project_name: str,
+    repo: str,
+    highlights: List[Dict[str, str]],
+    primary_code: str,
+    audience: str,
+) -> Dict:
+    image_path = kit_dir / "signal-card.png"
+    ImageRenderer(theme="monokai", font_size=18).render_code(primary_code, out_path=image_path)
+    image_base64 = base64.b64encode(image_path.read_bytes()).decode("utf-8")
+
+    posts = _platform_posts(project_name, highlights[0], audience)
+    slide_outline = _slide_outline(project_name, highlights)
+    markdown = _markdown_export(project_name, highlights, posts, slide_outline)
+
+    markdown_path = kit_dir / "signalflow-kit.md"
+    summary_path = kit_dir / "signalflow-kit.json"
+    markdown_path.write_text(markdown, encoding="utf-8")
+
+    result = {
+        "project_name": project_name,
+        "repo": repo,
+        "output_dir": str(kit_dir),
+        "highlights": highlights,
+        "posts": posts,
+        "slide_outline": slide_outline,
+        "markdown": markdown,
+        "assets": {
+            "code_image": str(image_path),
+            "markdown": str(markdown_path),
+            "summary": str(summary_path),
+        },
+        "image_base64": image_base64,
+        "integration_notes": [
+            "Copy drafts into LinkedIn, X, newsletters, blogs, GitHub releases, or docs.",
+            "Keep publishing manual until OAuth integrations are configured by the user.",
+            "Use the Markdown export as the source of truth for launch review.",
+        ],
+    }
+    summary_path.write_text(json.dumps({k: v for k, v in result.items() if k != "image_base64"}, indent=2), encoding="utf-8")
+    return result
 
 
 def create_launch_kit(repo: Path, out_dir: Path, project_name: str = "", audience: str = "", top_n: int = 5) -> Dict:
@@ -92,7 +142,7 @@ def create_launch_kit(repo: Path, out_dir: Path, project_name: str = "", audienc
 
     top_n = max(1, min(int(top_n or 5), 10))
     project_name = project_name.strip() or repo.name
-    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
     kit_dir = Path(out_dir) / f"{_safe_slug(project_name)}-{timestamp}"
     kit_dir.mkdir(parents=True, exist_ok=True)
 
@@ -118,37 +168,25 @@ def create_launch_kit(repo: Path, out_dir: Path, project_name: str = "", audienc
 
     primary = highlights[0]
     primary_code = _read_excerpt(Path(primary["absolute_path"]))
-    image_path = kit_dir / "code-highlight.png"
-    ImageRenderer(theme="monokai", font_size=18).render_code(primary_code, out_path=image_path)
-    image_base64 = base64.b64encode(image_path.read_bytes()).decode("utf-8")
+    return _write_launch_kit(kit_dir, project_name, str(repo), highlights, primary_code, audience)
 
-    posts = _platform_posts(project_name, primary, audience)
-    slide_outline = _slide_outline(project_name, highlights)
-    markdown = _markdown_export(project_name, highlights, posts, slide_outline)
 
-    markdown_path = kit_dir / "launch-kit.md"
-    summary_path = kit_dir / "launch-kit.json"
-    markdown_path.write_text(markdown, encoding="utf-8")
+def create_notes_kit(notes: str, out_dir: Path, project_name: str = "", audience: str = "") -> Dict:
+    notes = notes.strip()
+    if len(notes) < 20:
+        raise RuntimeError("Add at least a few lines of notes, code, changelog, or launch context.")
 
-    result = {
-        "project_name": project_name,
-        "repo": str(repo),
-        "output_dir": str(kit_dir),
-        "highlights": highlights,
-        "posts": posts,
-        "slide_outline": slide_outline,
-        "markdown": markdown,
-        "assets": {
-            "code_image": str(image_path),
-            "markdown": str(markdown_path),
-            "summary": str(summary_path),
-        },
-        "image_base64": image_base64,
-        "integration_notes": [
-            "Copy the GitHub release draft into a GitHub Release or PR description.",
-            "Use the LinkedIn and X drafts as editable starting points.",
-            "Keep publishing manual until OAuth integrations are configured by the user.",
-        ],
-    }
-    summary_path.write_text(json.dumps({k: v for k, v in result.items() if k != "image_base64"}, indent=2), encoding="utf-8")
-    return result
+    project_name = project_name.strip() or "SignalFlow Draft"
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
+    kit_dir = Path(out_dir) / f"{_safe_slug(project_name)}-{timestamp}"
+    kit_dir.mkdir(parents=True, exist_ok=True)
+
+    first_line = next((line.strip() for line in notes.splitlines() if line.strip()), "Pasted launch notes")
+    highlights = [
+        {
+            "path": "pasted-notes",
+            "score": 1.0,
+            "summary": f"Launch context supplied from notes; starts with: {first_line[:140]}",
+        }
+    ]
+    return _write_launch_kit(kit_dir, project_name, "pasted-notes", highlights, notes[:1400], audience)

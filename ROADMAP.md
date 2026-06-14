@@ -4,19 +4,20 @@ SignalFlow should become a focused, useful open-source product rather than a bun
 
 ## Product Bet
 
-Build for developers and maintainers who want to share technical progress publicly without sending their whole repo to a cloud tool.
+Build for builders, developers, founders, and maintainers who want to share technical progress publicly without starting from a blank page or sending private work to a cloud tool.
 
 The one-line promise:
 
-> Turn a local repository into a polished launch kit: code image, short post, changelog summary, and slide outline.
+> Turn technical work into polished launch assets: posts, signal cards, changelog summaries, newsletters, and slide outlines.
 
 ## MVP Workflow
 
-1. Choose a local repository.
-2. SignalFlow ranks important changed files.
-3. The user picks one or more highlights.
+1. Paste notes, changelog text, code, or choose a local repository.
+2. SignalFlow extracts the strongest signal.
+3. The user reviews one or more highlights.
 4. SignalFlow creates:
    - social post variants,
+   - newsletter and blog drafts,
    - a code image,
    - a short technical summary,
    - a slide outline,
