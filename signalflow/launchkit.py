@@ -122,15 +122,57 @@ def _slide_outline(project_name: str, assets: List[Dict]) -> str:
     )
 
 
-def _markdown_export(project_name: str, assets: List[Dict], drafts: Dict[str, str], outline: str, prompt: str) -> str:
+def _media_plan(project_name: str, assets: List[Dict], channels: List[str]) -> List[Dict[str, str]]:
+    signal = _combined_signal(assets)
+    platform_list = ", ".join(CHANNEL_LABELS[channel] for channel in channels)
+    return [
+        {
+            "type": "screen_recording",
+            "title": "Record the user flow",
+            "summary": f"Capture the app/product flow that proves `{signal['path']}` so it can become short clips.",
+        },
+        {
+            "type": "screenshot_set",
+            "title": "Capture key states",
+            "summary": "Take clean screenshots of the before state, main action, and final result for carousel or card formats.",
+        },
+        {
+            "type": "gif_clip",
+            "title": "Create a short loop",
+            "summary": "Turn the strongest 3-6 seconds of the recording into a GIF or silent clip for fast social scanning.",
+        },
+        {
+            "type": "generated_card",
+            "title": "Generate a native post card",
+            "summary": f"Use the generated visual card as a fallback asset for {project_name} when no recording is available.",
+        },
+        {
+            "type": "platform_variants",
+            "title": "Adapt for selected platforms",
+            "summary": f"Prepare aspect-ratio and caption variants for {platform_list}.",
+        },
+    ]
+
+
+def _markdown_export(
+    project_name: str,
+    assets: List[Dict],
+    drafts: Dict[str, str],
+    outline: str,
+    prompt: str,
+    media_plan: List[Dict[str, str]],
+) -> str:
     assets_md = "\n".join(
         f"- `{asset['path']}` - score {asset['score']:.2f}: {asset['summary']}" for asset in assets
     )
     drafts_md = "\n\n".join(f"### {name.replace('_', ' ').title()}\n\n{body}" for name, body in drafts.items())
+    media_md = "\n".join(f"- **{item['title']}** ({item['type']}): {item['summary']}" for item in media_plan)
     return (
         f"# {project_name} Kit\n\n"
         "## Unified Context Signals\n\n"
         f"{assets_md}\n\n"
+        "## Visual Media Plan\n\n"
+        f"{media_md}\n\n"
         "## Channel Drafts\n\n"
         f"{drafts_md}\n\n"
         "## Content Outline\n\n"
@@ -164,7 +206,8 @@ def _write_content_kit(
 
     drafts = _channel_drafts(project_name, context_assets, audience, selected_channels)
     outline = _slide_outline(project_name, public_context)
-    markdown = _markdown_export(project_name, public_context, drafts, outline, prompt)
+    media_plan = _media_plan(project_name, public_context, selected_channels)
+    markdown = _markdown_export(project_name, public_context, drafts, outline, prompt, media_plan)
 
     markdown_path = kit_dir / "signalflow-kit.md"
     summary_path = kit_dir / "signalflow-kit.json"
@@ -194,10 +237,28 @@ def _write_content_kit(
             "markdown": str(markdown_path),
             "summary": str(summary_path),
         },
+        "media_assets": [
+            {
+                "type": "generated_card",
+                "path": str(image_path),
+                "summary": "Generated fallback image card for posts when no screen capture is attached.",
+            },
+            {
+                "type": "planned_recording",
+                "path": "",
+                "summary": "Record the relevant product flow, then convert it into GIF/video variants.",
+            },
+            {
+                "type": "planned_screenshots",
+                "path": "",
+                "summary": "Capture before/action/result states for carousel and static post variants.",
+            },
+        ],
+        "media_plan": media_plan,
         "image_base64": image_base64,
         "integration_notes": [
-            "Use assets as input for a local SLM, API model, cloud gateway, or free chatbot.",
-            "Selected channels control the draft formats.",
+            "Use the description, data, and media plan as input for a local SLM, API model, cloud gateway, or free chatbot.",
+            "Selected channels control the copy, asset, and format variants.",
             "Distribution should use manual review, exports, webhooks, or official platform APIs.",
         ],
     }

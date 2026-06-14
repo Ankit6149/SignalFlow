@@ -463,6 +463,65 @@
   background: #fffaf0;
 }
 
+.capturePanel {
+  display: grid;
+  gap: 12px;
+  border: 1px solid #d8d0c2;
+  border-radius: 8px;
+  background: #fdf7ec;
+  padding: 15px;
+}
+
+.captureActions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.captureStatus {
+  color: #226b57;
+  font-size: 0.84rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.capturePreview {
+  width: 100%;
+  min-height: 160px;
+  border: 1px solid #d8d0c2;
+  border-radius: 8px;
+  background: #171b18;
+}
+
+.capturedList {
+  display: grid;
+  gap: 8px;
+}
+
+.capturedList a {
+  display: grid;
+  gap: 3px;
+  border: 1px solid #d8d0c2;
+  border-radius: 8px;
+  background: #fffaf0;
+  color: #111512;
+  padding: 10px;
+  text-decoration: none;
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.capturedList a:hover {
+  border-color: #b8ad9d;
+  box-shadow: 0 10px 26px rgba(33, 28, 18, 0.08);
+  transform: translateY(-1px);
+}
+
+.capturedList span {
+  color: #536159;
+  font-size: 0.86rem;
+  overflow-wrap: anywhere;
+}
+
 .field input:focus,
 .field textarea:focus {
   border-color: #226b57;
@@ -642,6 +701,46 @@
   gap: 10px;
 }
 
+.mediaPlan {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.mediaPlan article {
+  display: grid;
+  gap: 6px;
+  border: 1px solid #d8d0c2;
+  border-radius: 8px;
+  background: #f4eadb;
+  padding: 14px;
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.mediaPlan article:hover {
+  border-color: #b8ad9d;
+  box-shadow: 0 12px 30px rgba(33, 28, 18, 0.08);
+  transform: translateY(-2px);
+}
+
+.mediaPlan strong {
+  color: #111512;
+}
+
+.mediaPlan span {
+  color: #226b57;
+  font-size: 0.78rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.mediaPlan p {
+  margin: 0;
+  color: #536159;
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
 .assetList div {
   display: grid;
   gap: 4px;
@@ -674,8 +773,10 @@
   }
 
   .twoCols,
+  .captureActions,
   .channelGrid,
-  .summaryBar {
+  .summaryBar,
+  .mediaPlan {
     grid-template-columns: 1fr;
   }
 

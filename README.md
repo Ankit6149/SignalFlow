@@ -1,12 +1,13 @@
-# SignalFlow
+# PostPilot
 
-SignalFlow is a unified context engine for technical content. Add briefs, repositories, URLs/PDF notes, code snippets, or research assets; choose output channels; then generate drafts or copy a prompt into a local SLM, API model, cloud gateway, or free chatbot.
+PostPilot is a local-first posting workspace. Describe what you want to post, add data or assets, choose platforms, and generate a reviewable package with copy, visual-media plans, generated cards, prompts, and export files.
 
-The project is intentionally local-first. It is useful for builders, founders, developers, maintainers, and DevRel teams who want to explain technical work without pasting private source code into a hosted product.
+The project is intentionally local-first. It is useful for creators, builders, founders, developers, maintainers, and small teams who do not want to manually create screenshots, GIFs, short clips, captions, and platform variants from scratch.
 
 ## What Works Today
 
-- Generate drafts from briefs, pasted notes, changelogs, code snippets, screenshots text, repository context, or research excerpts.
+- Generate platform drafts from descriptions, pasted notes, changelogs, code snippets, screenshots text, repository context, or research excerpts.
+- Produce a visual media plan for screenshots, screen recordings, GIF/video loops, generated cards, and platform variants.
 - Scan a repository and rank source files by simple signal-to-noise heuristics.
 - Render syntax-highlighted code snippets to PNG.
 - Generate selected channel formats for LinkedIn, X, Instagram, blogs, newsletters, and release notes.
@@ -76,7 +77,7 @@ Open `http://localhost:3000`.
 From the frontend you can choose the input type, paste or point to source material,
 set the model route/endpoint/model name, select output channels, choose an export
 folder, and prepare a manual, file, webhook, or official-API distribution config.
-API keys are not persisted by SignalFlow; wire them through your own local vault
+API keys are not persisted by PostPilot; wire them through your own local vault
 or deployment environment when connecting a real provider.
 
 ## Useful Commands
@@ -130,9 +131,9 @@ curl -X POST http://127.0.0.1:8000/launch_kit ^
 
 ## Open-Source Direction
 
-The strongest product angle is: **a local-first publishing engine for builders and technical teams**.
+The strongest product angle is: **a local-first autoposting engine that turns descriptions, data, and captured media into platform-ready posting packages**.
 
 See [ROADMAP.md](ROADMAP.md) for the path from prototype to a product people can understand, try, and contribute to.
 See [docs/INTEGRATIONS.md](docs/INTEGRATIONS.md) for the asset-to-model and channel integration strategy.
 
-Security and ethics: see [SECURITY.md](SECURITY.md). SignalFlow must not harvest credentials, bypass platform protections, or publish to third-party services without official APIs and explicit user approval.
+Security and ethics: see [SECURITY.md](SECURITY.md). PostPilot must not harvest credentials, bypass platform protections, or publish to third-party services without official APIs and explicit user approval.

@@ -13,3 +13,4 @@ All notable changes to this project will be documented in this file.
 - Reframed the interface around input channels, unified context, model adapters, content modules, and safe distribution exports.
 - Added a backend context engine for brief, repository, and research/document inputs with model adapter metadata.
 - Added frontend-managed integration settings for model endpoints, model names, output channels, export folders, webhooks, and safe distribution modes.
+- Reframed the product around autoposting packages and added first-class visual media plans for screenshots, screen recordings, GIF/video loops, generated cards, and platform variants.

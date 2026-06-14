@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import styles from "./page.module.css";
 
 const API_BASE = "/api";
@@ -72,9 +72,30 @@ const sampleResult = {
     distribution_mode: "manual",
     webhook_configured: false,
   },
+  media_plan: [
+    {
+      type: "screen_recording",
+      title: "Record the user flow",
+      summary: "Capture the app flow, then convert the strongest moment into a short clip.",
+    },
+    {
+      type: "screenshot_set",
+      title: "Capture key states",
+      summary: "Use before, action, and result screenshots for carousel or static post variants.",
+    },
+    {
+      type: "gif_clip",
+      title: "Create a short loop",
+      summary: "Turn the best 3-6 seconds into a GIF or silent video.",
+    },
+  ],
 };
 
 export default function Home() {
+  const videoPreviewRef = useRef(null);
+  const recorderRef = useRef(null);
+  const streamRef = useRef(null);
+  const chunksRef = useRef([]);
   const [workspaceOpen, setWorkspaceOpen] = useState(false);
   const [sourceMode, setSourceMode] = useState("brief");
   const [repoPath, setRepoPath] = useState("");
@@ -100,6 +121,8 @@ export default function Home() {
   const [result, setResult] = useState(sampleResult);
   const [activeChannel, setActiveChannel] = useState("linkedin");
   const [copiedLabel, setCopiedLabel] = useState("");
+  const [captureStatus, setCaptureStatus] = useState("Idle");
+  const [mediaItems, setMediaItems] = useState([]);
 
   useEffect(() => {
     checkBackendHealth();
@@ -136,6 +159,7 @@ export default function Home() {
             api_key: apiKey ? "<set in your local vault or env>" : "",
           },
           output_channels: selectedChannels,
+          captured_media: mediaItems.map((item) => ({ type: item.type, name: item.name })),
           distribution: {
             mode: distributionMode,
             webhook_url: webhookUrl,
@@ -156,6 +180,7 @@ export default function Home() {
       selectedChannels,
       sourceMode,
       webhookUrl,
+      mediaItems,
     ],
   );
 
@@ -200,6 +225,93 @@ export default function Home() {
       };
     }
     return { input_type: "brief", repo: "", notes };
+  }
+
+  function addMediaItem(item) {
+    setMediaItems((current) => [item, ...current].slice(0, 8));
+  }
+
+  async function startScreenCapture() {
+    setError("");
+    if (!navigator.mediaDevices?.getDisplayMedia) {
+      setError("Screen capture is not available in this browser.");
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        video: { frameRate: 30 },
+        audio: false,
+      });
+      streamRef.current = stream;
+      chunksRef.current = [];
+      if (videoPreviewRef.current) {
+        videoPreviewRef.current.srcObject = stream;
+        await videoPreviewRef.current.play();
+      }
+      const recorder = new MediaRecorder(stream);
+      recorderRef.current = recorder;
+      recorder.ondataavailable = (event) => {
+        if (event.data?.size) {
+          chunksRef.current.push(event.data);
+        }
+      };
+      recorder.onstop = () => {
+        if (!chunksRef.current.length) {
+          return;
+        }
+        const blob = new Blob(chunksRef.current, { type: "video/webm" });
+        const url = URL.createObjectURL(blob);
+        addMediaItem({
+          type: "screen_recording",
+          name: `recording-${new Date().toISOString().replace(/[:.]/g, "-")}.webm`,
+          url,
+        });
+        setCaptureStatus("Recording saved");
+      };
+      stream.getVideoTracks()[0]?.addEventListener("ended", () => stopScreenCapture());
+      recorder.start();
+      setCaptureStatus("Recording screen");
+    } catch (captureError) {
+      setCaptureStatus("Idle");
+      setError(captureError.message || "Screen capture was cancelled.");
+    }
+  }
+
+  function stopScreenCapture() {
+    if (recorderRef.current?.state === "recording") {
+      recorderRef.current.stop();
+    }
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+    streamRef.current = null;
+    if (videoPreviewRef.current) {
+      videoPreviewRef.current.srcObject = null;
+    }
+    setCaptureStatus("Stopped");
+  }
+
+  function captureScreenshot() {
+    const video = videoPreviewRef.current;
+    if (!video?.srcObject || !video.videoWidth || !video.videoHeight) {
+      setError("Start screen capture before taking a screenshot.");
+      return;
+    }
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const context = canvas.getContext("2d");
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        setError("Could not create screenshot.");
+        return;
+      }
+      addMediaItem({
+        type: "screenshot",
+        name: `screenshot-${new Date().toISOString().replace(/[:.]/g, "-")}.png`,
+        url: URL.createObjectURL(blob),
+      });
+      setCaptureStatus("Screenshot captured");
+    }, "image/png");
   }
 
   async function createContentKit(event) {
@@ -421,6 +533,40 @@ export default function Home() {
           <div className={styles.step}>
             <span>2</span>
             <div>
+              <h2>Capture media</h2>
+              <p>Record a flow or take screenshots so the post package has real visual assets.</p>
+            </div>
+          </div>
+
+          <div className={styles.capturePanel}>
+            <div className={styles.captureActions}>
+              <button className={styles.secondaryButton} onClick={startScreenCapture} type="button">
+                Start screen recording
+              </button>
+              <button className={styles.secondaryButton} onClick={captureScreenshot} type="button">
+                Take screenshot
+              </button>
+              <button className={styles.secondaryButton} onClick={stopScreenCapture} type="button">
+                Stop and save
+              </button>
+            </div>
+            <div className={styles.captureStatus}>{captureStatus}</div>
+            <video className={styles.capturePreview} muted playsInline ref={videoPreviewRef} />
+            {mediaItems.length > 0 && (
+              <div className={styles.capturedList}>
+                {mediaItems.map((item) => (
+                  <a href={item.url} key={item.url} rel="noreferrer" target="_blank">
+                    <strong>{item.type}</strong>
+                    <span>{item.name}</span>
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className={styles.step}>
+            <span>3</span>
+            <div>
               <h2>Engine</h2>
               <p>Choose the generation route only if you want to customize it.</p>
             </div>
@@ -470,7 +616,7 @@ export default function Home() {
           </div>
 
           <div className={styles.step}>
-            <span>3</span>
+            <span>4</span>
             <div>
               <h2>Platforms</h2>
               <p>Select where this package should be prepared for posting.</p>
@@ -496,7 +642,7 @@ export default function Home() {
           </label>
 
           <div className={styles.step}>
-            <span>4</span>
+            <span>5</span>
             <div>
               <h2>Publish handoff</h2>
               <p>Keep final publishing explicit, reviewable, and platform-safe.</p>
@@ -641,6 +787,28 @@ export default function Home() {
               </button>
             </div>
             <pre>{JSON.stringify(integrationConfig, null, 2)}</pre>
+          </div>
+
+          <div className={styles.outputCard}>
+            <div className={styles.outputTitle}>
+              <h3>Visual media plan</h3>
+              <button
+                className={styles.secondaryButton}
+                onClick={() => copyText("mediaPlan", JSON.stringify(result?.media_plan || [], null, 2))}
+                type="button"
+              >
+                {copiedLabel === "mediaPlan" ? "Copied" : "Copy"}
+              </button>
+            </div>
+            <div className={styles.mediaPlan}>
+              {(result?.media_plan || []).map((item) => (
+                <article key={`${item.type}-${item.title}`}>
+                  <strong>{item.title}</strong>
+                  <span>{item.type}</span>
+                  <p>{item.summary}</p>
+                </article>
+              ))}
+            </div>
           </div>
 
           <div className={styles.assetList}>
