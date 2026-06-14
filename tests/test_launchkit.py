@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from signalflow.launchkit import create_launch_kit, create_notes_kit
+from signalflow.launchkit import create_launch_kit, create_notes_kit, create_research_kit
 
 
 def test_create_launch_kit(tmp_path):
@@ -46,8 +46,25 @@ def test_create_notes_kit(tmp_path):
         channels=["x"],
     )
 
-    assert result["repo"] == "pasted-notes"
-    assert result["highlights"][0]["path"] == "pasted-notes"
+    assert result["repo"] == "raw-brief"
+    assert result["highlights"][0]["path"] == "raw-brief"
     assert list(result["posts"].keys()) == ["x"]
     assert result["chatbot_prompt"]
     assert Path(result["assets"]["markdown"]).exists()
+
+
+def test_create_research_kit(tmp_path):
+    result = create_research_kit(
+        research_url="https://example.com/research",
+        document_text="Research note about a technical workflow and content orchestration.",
+        out_dir=tmp_path / "out",
+        project_name="Research Demo",
+        audience="technical readers",
+        channels=["blog", "release_notes"],
+        generator="slm",
+    )
+
+    assert result["repo"] == "research"
+    assert result["context_engine"]["input_count"] == 2
+    assert result["model_adapter"]["route"] == "slm"
+    assert list(result["posts"].keys()) == ["blog", "release_notes"]

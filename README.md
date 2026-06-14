@@ -44,6 +44,18 @@ python -m signalflow.cli launch-kit ^
   --channel newsletter
 ```
 
+Create from research/document context:
+
+```bash
+python -m signalflow.cli launch-kit ^
+  --research-url "https://example.com/report" ^
+  --document-text "Paste notes or extracted PDF text here" ^
+  --project-name "My Project" ^
+  --channel blog ^
+  --channel release_notes ^
+  --generator slm
+```
+
 Start the local backend:
 
 ```bash
@@ -98,7 +110,7 @@ Create a launch kit through the API:
 ```bash
 curl -X POST http://127.0.0.1:8000/launch_kit ^
   -H "Content-Type: application/json" ^
-  -d "{\"repo\":\"C:\\path\\to\\repo\",\"project_name\":\"My Project\",\"audience\":\"open-source maintainers\"}"
+  -d "{\"input_type\":\"brief\",\"notes\":\"raw launch brief\",\"project_name\":\"My Project\",\"channels\":[\"linkedin\",\"x\"],\"generator\":\"chatbot\"}"
 ```
 
 ## Project Structure

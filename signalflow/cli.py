@@ -6,7 +6,7 @@ from signalflow.ingestion.walker import DirectoryWalker
 from signalflow.ingestion.snr import SNRScorer
 from signalflow.compositor.image_renderer import ImageRenderer
 from signalflow.compositor.terminal_recorder import TerminalRecorder
-from signalflow.launchkit import create_launch_kit, create_notes_kit
+from signalflow.launchkit import create_launch_kit, create_notes_kit, create_research_kit
 from signalflow.model.adapter import CloudStubAdapter, LocalRESTAdapter
 from signalflow.native import find_rust_renderer, render_code_via_rust
 from signalflow.orchestrator import run_pipeline
@@ -68,7 +68,18 @@ def cmd_stub_generate(args):
 
 
 def cmd_launch_kit(args):
-    if args.notes_file:
+    if args.research_url or args.document_text or args.document_path:
+        result = create_research_kit(
+            research_url=args.research_url,
+            document_text=args.document_text or (Path(args.notes_file).read_text(encoding="utf-8") if args.notes_file else ""),
+            document_path=Path(args.document_path) if args.document_path else None,
+            out_dir=Path(args.out_dir),
+            project_name=args.project_name,
+            audience=args.audience,
+            channels=args.channel,
+            generator=args.generator,
+        )
+    elif args.notes_file:
         result = create_notes_kit(
             notes=Path(args.notes_file).read_text(encoding="utf-8"),
             out_dir=Path(args.out_dir),
@@ -123,6 +134,9 @@ def main(argv=None):
     p_launch = sub.add_parser("launch-kit")
     p_launch.add_argument("--repo", required=False, default=".", help="Repository path to turn into a launch kit")
     p_launch.add_argument("--notes-file", required=False, help="Text/Markdown file with notes, code, changelog, or launch context")
+    p_launch.add_argument("--research-url", required=False, default="", help="Research URL to include as context")
+    p_launch.add_argument("--document-text", required=False, default="", help="Pasted research/document text")
+    p_launch.add_argument("--document-path", required=False, default="", help="Local document path, e.g. .md, .txt, or .pdf metadata")
     p_launch.add_argument("--out-dir", required=False, default="pipeline-output", help="Output folder for launch kits")
     p_launch.add_argument("--project-name", required=False, default="", help="Public project name")
     p_launch.add_argument("--audience", required=False, default="", help="Audience to write for")

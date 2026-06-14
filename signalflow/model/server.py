@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Dict, Any, List
 from signalflow.compositor.image_renderer import ImageRenderer
-from signalflow.launchkit import create_launch_kit, create_notes_kit
+from signalflow.launchkit import create_launch_kit, create_notes_kit, create_research_kit
 from signalflow.orchestrator import run_pipeline
 
 app = FastAPI(title="SignalFlow Model Stub")
@@ -45,8 +45,12 @@ class PipelineRequest(BaseModel):
 
 
 class LaunchKitRequest(BaseModel):
+    input_type: str = ""
     repo: str = ""
     notes: str = ""
+    research_url: str = ""
+    document_text: str = ""
+    document_path: str = ""
     out_dir: str = "pipeline-output"
     project_name: str = ""
     audience: str = ""
@@ -89,7 +93,19 @@ def pipeline(req: PipelineRequest):
 @app.post("/launch_kit")
 def launch_kit(req: LaunchKitRequest):
     try:
-        if req.notes.strip():
+        input_type = (req.input_type or "").strip().lower()
+        if input_type == "research" or req.research_url.strip() or req.document_text.strip() or req.document_path.strip():
+            return create_research_kit(
+                research_url=req.research_url,
+                document_text=req.document_text or req.notes,
+                document_path=Path(req.document_path) if req.document_path else None,
+                out_dir=Path(req.out_dir),
+                project_name=req.project_name,
+                audience=req.audience,
+                channels=req.channels,
+                generator=req.generator,
+            )
+        if input_type in {"brief", "notes"} or req.notes.strip():
             return create_notes_kit(
                 notes=req.notes,
                 out_dir=Path(req.out_dir),
@@ -98,6 +114,8 @@ def launch_kit(req: LaunchKitRequest):
                 channels=req.channels,
                 generator=req.generator,
             )
+        if not req.repo.strip():
+            raise RuntimeError("Choose an input channel: raw brief, repository path, or research/document context.")
         return create_launch_kit(
             repo=Path(req.repo),
             out_dir=Path(req.out_dir),

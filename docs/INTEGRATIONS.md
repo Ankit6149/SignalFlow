@@ -12,6 +12,8 @@ Today:
 
 - Generate local template drafts.
 - Export a prompt that can be pasted into a local SLM, API model, or free chatbot.
+- Return `context_engine` metadata with source types and input count.
+- Return `model_adapter` metadata with selected generator route and readiness status.
 - Keep generated JSON and Markdown in `pipeline-output/` for review.
 - Run `python -m signalflow.cli launch-kit --notes-file <file> --channel linkedin --channel newsletter`.
 

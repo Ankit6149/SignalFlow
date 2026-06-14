@@ -117,8 +117,10 @@ export default function Home() {
     try {
       const payload =
         sourceMode === "repo"
-          ? { repo: repoPath, notes: "" }
-          : { repo: "", notes };
+          ? { input_type: "repo", repo: repoPath, notes: "" }
+          : sourceMode === "research"
+            ? { input_type: "research", repo: "", notes: "", document_text: notes }
+            : { input_type: "brief", repo: "", notes };
       const resp = await fetch(`${API_BASE}/launch_kit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

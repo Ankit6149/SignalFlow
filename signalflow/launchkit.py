@@ -6,25 +6,13 @@ from typing import Dict, List, Optional
 from uuid import uuid4
 
 from signalflow.compositor.image_renderer import ImageRenderer
-from signalflow.ingestion.snr import SNRScorer
-from signalflow.ingestion.walker import DirectoryWalker
-
-
-def _safe_slug(value: str) -> str:
-    cleaned = "".join(ch.lower() if ch.isalnum() else "-" for ch in value)
-    parts = [part for part in cleaned.split("-") if part]
-    return "-".join(parts[:8]) or "launch-kit"
-
-
-def _kit_dir(out_dir: Path, project_name: str) -> Path:
-    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
-    return Path(out_dir) / f"{_safe_slug(project_name)}-{timestamp}-{uuid4().hex[:6]}"
-
-
-def _read_excerpt(path: Path, max_chars: int = 1400) -> str:
-    text = path.read_text(encoding="utf-8", errors="ignore")
-    return text.strip()[:max_chars]
-
+from signalflow.context_engine import (
+    asset_from_text,
+    assets_from_repo,
+    assets_from_research,
+    context_prompt,
+    public_assets,
+)
 
 CHANNEL_LABELS = {
     "linkedin": "LinkedIn",
@@ -35,8 +23,19 @@ CHANNEL_LABELS = {
     "release_notes": "Release Notes",
 }
 
-
 DEFAULT_CHANNELS = ["linkedin", "x", "blog", "newsletter"]
+GENERATOR_ROUTES = {"local", "api", "slm", "chatbot", "cloud"}
+
+
+def _safe_slug(value: str) -> str:
+    cleaned = "".join(ch.lower() if ch.isalnum() else "-" for ch in value)
+    parts = [part for part in cleaned.split("-") if part]
+    return "-".join(parts[:8]) or "signalflow-kit"
+
+
+def _kit_dir(out_dir: Path, project_name: str) -> Path:
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
+    return Path(out_dir) / f"{_safe_slug(project_name)}-{timestamp}-{uuid4().hex[:6]}"
 
 
 def _normal_channels(channels: Optional[List[str]]) -> List[str]:
@@ -50,118 +49,122 @@ def _normal_channels(channels: Optional[List[str]]) -> List[str]:
     return valid or DEFAULT_CHANNELS
 
 
-def _platform_posts(project_name: str, highlight: Dict[str, str], audience: str, channels: Optional[List[str]] = None) -> Dict[str, str]:
-    signal_name = highlight["path"]
-    summary = highlight["summary"]
-    audience_line = audience or "developers who want the technical signal quickly"
+def _normal_generator(generator: str) -> str:
+    route = (generator or "local").strip().lower()
+    return route if route in GENERATOR_ROUTES else "local"
 
-    all_posts = {
-        "release_notes": (
-            f"## {project_name} update\n\n"
-            f"- Signal: `{signal_name}`\n"
-            f"- Why it matters: {summary}\n"
-            f"- Built for: {audience_line}\n\n"
-            "Review this draft, add version details, and publish it wherever your release notes live."
-        ),
+
+def _combined_signal(assets: List[Dict]) -> Dict:
+    primary = assets[0]
+    if len(assets) == 1:
+        return primary
+    return {
+        "path": f"{primary['path']} + {len(assets) - 1} more",
+        "summary": "; ".join(asset["summary"] for asset in assets[:3]),
+        "score": primary.get("score", 1.0),
+    }
+
+
+def _channel_drafts(project_name: str, assets: List[Dict], audience: str, channels: List[str]) -> Dict[str, str]:
+    signal = _combined_signal(assets)
+    signal_name = signal["path"]
+    summary = signal["summary"]
+    audience_line = audience or "technical builders and readers"
+    all_drafts = {
         "linkedin": (
-            f"I shipped a new {project_name} workflow that turns technical work into publish-ready drafts.\n\n"
-            f"The current signal is `{signal_name}`: {summary}\n\n"
-            "The goal is simple: help builders explain progress clearly without starting from a blank page."
+            f"I am working on {project_name}.\n\n"
+            f"The strongest signal right now is `{signal_name}`: {summary}\n\n"
+            f"Built for {audience_line}. The goal is to make the work easier to understand and share."
         ),
         "x": (
-            f"Building {project_name}: raw work in, channel-ready drafts out.\n\n"
+            f"Building {project_name}.\n\n"
             f"Signal: `{signal_name}`\n"
             f"{summary}\n\n"
-            "Useful for builders who want sharper posts, release notes, newsletters, and launch assets."
+            "Turning raw work into channel-ready content."
         ),
         "instagram": (
-            f"New build: {project_name}\n\n"
-            f"Signal: {summary}\n\n"
-            "Turn the work into a simple story, add a visual, and keep the caption direct."
+            f"New from {project_name}\n\n"
+            f"{summary}\n\n"
+            "Use this as a caption starter with the generated signal card."
         ),
         "blog": (
-            f"{project_name} is becoming a local-first publishing engine for technical builders. "
-            f"This run selected `{signal_name}` as the strongest signal because {summary.lower()} "
-            "From there, it creates reusable copy, a slide outline, and visual assets that can be edited before publishing."
+            f"{project_name} is focused on turning technical context into clearer content. "
+            f"The key signal in this run is `{signal_name}`: {summary.lower()} "
+            "This gives the article a concrete starting point instead of a blank page."
         ),
         "newsletter": (
             f"Subject: {project_name} update\n\n"
-            f"This week I worked on {project_name}, with the strongest signal coming from `{signal_name}`.\n\n"
+            f"Here is the strongest signal from this update: `{signal_name}`.\n\n"
             f"{summary}\n\n"
-            f"This is built for {audience_line}. The goal is to make the work easier to understand, reuse, and share."
+            f"This matters for {audience_line} because it turns raw progress into something easy to follow."
+        ),
+        "release_notes": (
+            f"## {project_name} update\n\n"
+            f"- Signal: `{signal_name}`\n"
+            f"- Context: {summary}\n"
+            f"- Audience: {audience_line}\n\n"
+            "Review this draft, add version details, and publish through your official release workflow."
         ),
     }
-    return {key: all_posts[key] for key in _normal_channels(channels)}
+    return {channel: all_drafts[channel] for channel in channels}
 
 
-def _slide_outline(project_name: str, highlights: List[Dict[str, str]]) -> str:
-    bullets = "\n".join(f"- `{item['path']}`: {item['summary']}" for item in highlights)
+def _slide_outline(project_name: str, assets: List[Dict]) -> str:
+    bullets = "\n".join(f"- `{asset['path']}`: {asset['summary']}" for asset in assets)
     return (
-        f"# {project_name} Launch Kit\n\n"
-        "## Problem\n"
-        "- Developers ship meaningful work, but turning it into public updates takes extra time.\n\n"
-        "## What Changed\n"
+        f"# {project_name} Content Brief\n\n"
+        "## Context\n"
         f"{bullets}\n\n"
-        "## Why It Matters\n"
-        "- Keeps source local.\n"
-        "- Turns implementation details into reusable communication assets.\n"
-        "- Gives maintainers a repeatable launch workflow.\n\n"
-        "## Next Step\n"
-        "- Review the generated copy, edit for voice, and publish through official platform workflows."
+        "## Angle\n"
+        "- Explain what changed, why it matters, and who should care.\n\n"
+        "## Distribution\n"
+        "- Review drafts, edit for voice, and publish through manual or official API workflows."
     )
 
 
-def _chatbot_prompt(project_name: str, highlights: List[Dict[str, str]], audience: str, channels: List[str]) -> str:
-    channel_names = ", ".join(CHANNEL_LABELS[channel] for channel in channels)
-    signals = "\n".join(f"- {item['path']}: {item['summary']}" for item in highlights)
-    return (
-        f"You are helping create content for {project_name}.\n"
-        f"Audience: {audience or 'builders and technical readers'}.\n"
-        f"Channels to generate for: {channel_names}.\n\n"
-        "Use these assets/signals:\n"
-        f"{signals}\n\n"
-        "Generate channel-specific drafts. Keep the tone clear, useful, and non-hype. "
-        "Do not claim anything not present in the assets. Return one section per channel."
+def _markdown_export(project_name: str, assets: List[Dict], drafts: Dict[str, str], outline: str, prompt: str) -> str:
+    assets_md = "\n".join(
+        f"- `{asset['path']}` - score {asset['score']:.2f}: {asset['summary']}" for asset in assets
     )
-
-
-def _markdown_export(project_name: str, highlights: List[Dict[str, str]], posts: Dict[str, str], slide_outline: str, prompt: str) -> str:
-    highlights_md = "\n".join(
-        f"- `{item['path']}` - score {item['score']:.2f}: {item['summary']}" for item in highlights
-    )
-    posts_md = "\n\n".join(f"### {name.replace('_', ' ').title()}\n\n{body}" for name, body in posts.items())
+    drafts_md = "\n\n".join(f"### {name.replace('_', ' ').title()}\n\n{body}" for name, body in drafts.items())
     return (
         f"# {project_name} Kit\n\n"
-        "## Signals\n\n"
-        f"{highlights_md}\n\n"
-        "## Post Drafts\n\n"
-        f"{posts_md}\n\n"
-        "## Slide Outline\n\n"
-        f"{slide_outline}\n\n"
+        "## Unified Context Signals\n\n"
+        f"{assets_md}\n\n"
+        "## Channel Drafts\n\n"
+        f"{drafts_md}\n\n"
+        "## Content Outline\n\n"
+        f"{outline}\n\n"
         "## Prompt For SLM/API/Chatbot\n\n"
         f"```text\n{prompt}\n```\n"
     )
 
 
-def _write_launch_kit(
+def _write_content_kit(
     kit_dir: Path,
     project_name: str,
-    repo: str,
-    highlights: List[Dict[str, str]],
-    primary_code: str,
+    source_label: str,
+    context_assets: List[Dict],
     audience: str,
     channels: Optional[List[str]] = None,
     generator: str = "local",
 ) -> Dict:
     selected_channels = _normal_channels(channels)
+    generator_route = _normal_generator(generator)
+    public_context = public_assets(context_assets)
+    channel_names = ", ".join(CHANNEL_LABELS[channel] for channel in selected_channels)
+    prompt = context_prompt(project_name, audience, context_assets, channel_names)
+
     image_path = kit_dir / "signal-card.png"
-    ImageRenderer(theme="monokai", font_size=18).render_code(primary_code, out_path=image_path)
+    ImageRenderer(theme="monokai", font_size=18).render_code(
+        context_assets[0].get("content", context_assets[0]["summary"]),
+        out_path=image_path,
+    )
     image_base64 = base64.b64encode(image_path.read_bytes()).decode("utf-8")
 
-    posts = _platform_posts(project_name, highlights[0], audience, selected_channels)
-    slide_outline = _slide_outline(project_name, highlights)
-    prompt = _chatbot_prompt(project_name, highlights, audience, selected_channels)
-    markdown = _markdown_export(project_name, highlights, posts, slide_outline, prompt)
+    drafts = _channel_drafts(project_name, context_assets, audience, selected_channels)
+    outline = _slide_outline(project_name, public_context)
+    markdown = _markdown_export(project_name, public_context, drafts, outline, prompt)
 
     markdown_path = kit_dir / "signalflow-kit.md"
     summary_path = kit_dir / "signalflow-kit.json"
@@ -169,14 +172,22 @@ def _write_launch_kit(
 
     result = {
         "project_name": project_name,
-        "repo": repo,
+        "repo": source_label,
         "output_dir": str(kit_dir),
-        "highlights": highlights,
-        "posts": posts,
+        "highlights": public_context,
+        "context_engine": {
+            "input_count": len(context_assets),
+            "source_types": sorted({asset.get("source_type", "unknown") for asset in context_assets}),
+        },
+        "model_adapter": {
+            "route": generator_route,
+            "status": "prompt_ready" if generator_route in {"api", "slm", "chatbot", "cloud"} else "local_template",
+        },
+        "posts": drafts,
         "channels": selected_channels,
-        "generator": generator,
+        "generator": generator_route,
         "chatbot_prompt": prompt,
-        "slide_outline": slide_outline,
+        "slide_outline": outline,
         "markdown": markdown,
         "assets": {
             "code_image": str(image_path),
@@ -185,8 +196,8 @@ def _write_launch_kit(
         },
         "image_base64": image_base64,
         "integration_notes": [
-            "Use assets as input for a local SLM, API model, or free chatbot.",
-            "Selected channels control the format of generated drafts.",
+            "Use assets as input for a local SLM, API model, cloud gateway, or free chatbot.",
+            "Selected channels control the draft formats.",
             "Distribution should use manual review, exports, webhooks, or official platform APIs.",
         ],
     }
@@ -194,56 +205,50 @@ def _write_launch_kit(
     return result
 
 
-def create_launch_kit(repo: Path, out_dir: Path, project_name: str = "", audience: str = "", top_n: int = 5, channels: Optional[List[str]] = None, generator: str = "local") -> Dict:
+def create_launch_kit(
+    repo: Path,
+    out_dir: Path,
+    project_name: str = "",
+    audience: str = "",
+    top_n: int = 5,
+    channels: Optional[List[str]] = None,
+    generator: str = "local",
+) -> Dict:
     repo = Path(repo).expanduser().resolve()
-    if not repo.exists() or not repo.is_dir():
-        raise FileNotFoundError(f"Repository path not found: {repo}")
-
-    top_n = max(1, min(int(top_n or 5), 10))
     project_name = project_name.strip() or repo.name
     kit_dir = _kit_dir(out_dir, project_name)
     kit_dir.mkdir(parents=True, exist_ok=True)
-
-    files = list(DirectoryWalker(repo).walk())
-    scored = SNRScorer().score_files(files)
-    ranked = sorted(scored.items(), key=lambda item: item[1], reverse=True)[:top_n]
-    if not ranked:
-        raise RuntimeError("No eligible source files found in repository.")
-
-    highlights = []
-    for path, score in ranked:
-        rel_path = path.relative_to(repo).as_posix()
-        excerpt = _read_excerpt(path)
-        first_line = next((line.strip() for line in excerpt.splitlines() if line.strip()), "Source file selected")
-        highlights.append(
-            {
-                "path": rel_path,
-                "absolute_path": str(path),
-                "score": float(score),
-                "summary": f"High-signal source selected from `{rel_path}`; starts with: {first_line[:140]}",
-            }
-        )
-
-    primary = highlights[0]
-    primary_code = _read_excerpt(Path(primary["absolute_path"]))
-    return _write_launch_kit(kit_dir, project_name, str(repo), highlights, primary_code, audience, channels, generator)
+    context_assets = assets_from_repo(repo, top_n=top_n)
+    return _write_content_kit(kit_dir, project_name, str(repo), context_assets, audience, channels, generator)
 
 
-def create_notes_kit(notes: str, out_dir: Path, project_name: str = "", audience: str = "", channels: Optional[List[str]] = None, generator: str = "local") -> Dict:
-    notes = notes.strip()
-    if len(notes) < 20:
-        raise RuntimeError("Add at least a few lines of notes, code, changelog, or launch context.")
-
+def create_notes_kit(
+    notes: str,
+    out_dir: Path,
+    project_name: str = "",
+    audience: str = "",
+    channels: Optional[List[str]] = None,
+    generator: str = "local",
+) -> Dict:
     project_name = project_name.strip() or "SignalFlow Draft"
     kit_dir = _kit_dir(out_dir, project_name)
     kit_dir.mkdir(parents=True, exist_ok=True)
+    context_assets = [asset_from_text("raw-brief", notes, "brief", score=1.0)]
+    return _write_content_kit(kit_dir, project_name, "raw-brief", context_assets, audience, channels, generator)
 
-    first_line = next((line.strip() for line in notes.splitlines() if line.strip()), "Pasted launch notes")
-    highlights = [
-        {
-            "path": "pasted-notes",
-            "score": 1.0,
-            "summary": f"Launch context supplied from notes; starts with: {first_line[:140]}",
-        }
-    ]
-    return _write_launch_kit(kit_dir, project_name, "pasted-notes", highlights, notes[:1400], audience, channels, generator)
+
+def create_research_kit(
+    research_url: str = "",
+    document_text: str = "",
+    document_path: Optional[Path] = None,
+    out_dir: Path = Path("pipeline-output"),
+    project_name: str = "",
+    audience: str = "",
+    channels: Optional[List[str]] = None,
+    generator: str = "local",
+) -> Dict:
+    project_name = project_name.strip() or "SignalFlow Research"
+    kit_dir = _kit_dir(out_dir, project_name)
+    kit_dir.mkdir(parents=True, exist_ok=True)
+    context_assets = assets_from_research(research_url, document_text, document_path)
+    return _write_content_kit(kit_dir, project_name, "research", context_assets, audience, channels, generator)
