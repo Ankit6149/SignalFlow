@@ -11,6 +11,7 @@ The project is intentionally local-first. It is useful for builders, founders, d
 - Render syntax-highlighted code snippets to PNG.
 - Generate selected channel formats for LinkedIn, X, Instagram, blogs, newsletters, and release notes.
 - Export a model prompt for local SLMs, API models, or free chatbots.
+- Configure input sources, model adapter details, selected channels, export folder, and safe distribution mode from the frontend.
 - Keep distribution safe through manual review, files, webhooks, or official platform APIs.
 - Run a local pipeline that writes Markdown, JSON, and media artifacts.
 - Use a Next.js UI that proxies requests to the local Python backend.
@@ -71,6 +72,12 @@ npm run dev
 ```
 
 Open `http://localhost:3000`.
+
+From the frontend you can choose the input type, paste or point to source material,
+set the model route/endpoint/model name, select output channels, choose an export
+folder, and prepare a manual, file, webhook, or official-API distribution config.
+API keys are not persisted by SignalFlow; wire them through your own local vault
+or deployment environment when connecting a real provider.
 
 ## Useful Commands
 

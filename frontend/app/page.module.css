@@ -1,9 +1,10 @@
 .page {
   min-height: 100vh;
-  background: #f5f2eb;
+  background: #f7f5ef;
   color: #161a17;
-  font-family: "Aptos", "Segoe UI", "Inter", system-ui, sans-serif;
-  padding: 28px;
+  font-family: "Segoe UI", "Inter", "Aptos", system-ui, sans-serif;
+  padding: 38px;
+  animation: pageIn 520ms ease both;
 }
 
 .header {
@@ -11,10 +12,11 @@
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 24px;
   align-items: start;
-  max-width: 1220px;
-  margin: 0 auto 24px;
+  max-width: 1320px;
+  margin: 0 auto 28px;
   border-bottom: 1px solid #d8d0c2;
   padding-bottom: 26px;
+  animation: riseIn 560ms ease both;
 }
 
 .eyebrow {
@@ -41,7 +43,7 @@
 .statusPill,
 .outputTitle span {
   color: #536159;
-  font-family: "Segoe UI", "Inter", system-ui, sans-serif;
+  font-family: "Segoe UI", "Inter", "Aptos", system-ui, sans-serif;
   font-size: 0.98rem;
   line-height: 1.65;
 }
@@ -61,6 +63,13 @@
   background: #fffaf0;
   padding: 10px 13px;
   white-space: nowrap;
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.statusPill:hover {
+  border-color: #b8ad9d;
+  box-shadow: 0 10px 30px rgba(33, 28, 18, 0.08);
+  transform: translateY(-1px);
 }
 
 .statusPill span {
@@ -68,6 +77,7 @@
   height: 9px;
   border-radius: 999px;
   background: #c7a453;
+  animation: statusPulse 1.6s ease-in-out infinite;
 }
 
 .online span {
@@ -80,27 +90,69 @@
 
 .appGrid {
   display: grid;
-  grid-template-columns: minmax(330px, 470px) minmax(0, 1fr);
-  gap: 20px;
-  max-width: 1220px;
+  grid-template-columns: minmax(360px, 520px) minmax(0, 1fr);
+  gap: 28px;
+  max-width: 1320px;
   margin: 0 auto;
+  animation: riseIn 680ms ease 80ms both;
 }
 
 .pipelineMap {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 10px;
-  max-width: 1220px;
-  margin: 0 auto 20px;
+  max-width: 1320px;
+  margin: 0 auto 28px;
+  animation: riseIn 620ms ease 40ms both;
 }
 
 .pipelineMap div {
+  position: relative;
+  overflow: hidden;
   display: grid;
   gap: 4px;
   border: 1px solid #d8d0c2;
   border-radius: 8px;
   background: #fffaf0;
-  padding: 12px;
+  padding: 14px;
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.pipelineMap div::after {
+  position: absolute;
+  inset: auto 0 0;
+  height: 3px;
+  background: linear-gradient(90deg, #226b57, #ea6b4d, #c7a453);
+  content: "";
+  opacity: 0.75;
+  transform: translateX(-100%);
+  animation: flowLine 3.2s ease-in-out infinite;
+}
+
+.pipelineMap div:nth-child(2)::after {
+  animation-delay: 160ms;
+}
+
+.pipelineMap div:nth-child(3)::after {
+  animation-delay: 320ms;
+}
+
+.pipelineMap div:nth-child(4)::after {
+  animation-delay: 480ms;
+}
+
+.pipelineMap div:nth-child(5)::after {
+  animation-delay: 640ms;
+}
+
+.pipelineMap div:hover,
+.builder:hover,
+.results:hover,
+.outputCard:hover,
+.assetList div:hover {
+  border-color: #b8ad9d;
+  box-shadow: 0 18px 46px rgba(33, 28, 18, 0.08);
+  transform: translateY(-2px);
 }
 
 .pipelineMap strong {
@@ -120,13 +172,14 @@
   border: 1px solid #d8d0c2;
   border-radius: 8px;
   background: #fffaf0;
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
 }
 
 .builder {
   align-self: start;
   display: grid;
-  gap: 16px;
-  padding: 18px;
+  gap: 22px;
+  padding: 24px;
 }
 
 .step {
@@ -145,11 +198,17 @@
   background: #226b57;
   color: #ffffff;
   font-weight: 850;
+  transition: background 180ms ease, transform 180ms ease;
+}
+
+.step:hover span {
+  background: #1a5949;
+  transform: scale(1.04);
 }
 
 .step h2 {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1.18rem;
 }
 
 .step p {
@@ -170,7 +229,7 @@
   border: 1px solid #d8d0c2;
   border-radius: 8px;
   background: #f4eadb;
-  padding: 4px;
+  padding: 5px;
 }
 
 .segmented button,
@@ -185,7 +244,33 @@
   cursor: pointer;
   font: inherit;
   font-weight: 750;
-  padding: 9px 12px;
+  min-height: 42px;
+  padding: 10px 12px;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.segmented button:hover,
+.generatorRow button:hover,
+.channelGrid button:hover,
+.tabs button:hover,
+.secondaryButton:hover {
+  border-color: #b8ad9d;
+  box-shadow: 0 8px 20px rgba(33, 28, 18, 0.08);
+  transform: translateY(-1px);
+}
+
+.segmented button:active,
+.generatorRow button:active,
+.channelGrid button:active,
+.tabs button:active,
+.secondaryButton:active,
+.primaryButton:active {
+  transform: translateY(0) scale(0.99);
 }
 
 .segmented button,
@@ -199,13 +284,14 @@
   background: #226b57 !important;
   border-color: #226b57 !important;
   color: #ffffff !important;
+  box-shadow: 0 10px 26px rgba(34, 107, 87, 0.18);
 }
 
 .field {
   display: grid;
   gap: 7px;
   color: #2b332e;
-  font-size: 0.92rem;
+  font-size: 0.94rem;
   font-weight: 780;
 }
 
@@ -219,7 +305,8 @@
   font: inherit;
   line-height: 1.55;
   outline: none;
-  padding: 12px;
+  padding: 13px;
+  transition: border-color 170ms ease, box-shadow 170ms ease, background 170ms ease;
 }
 
 .field textarea {
@@ -227,10 +314,26 @@
   resize: vertical;
 }
 
+.integrationBox {
+  display: grid;
+  gap: 14px;
+  border: 1px solid #d8d0c2;
+  border-radius: 8px;
+  background: #fdf7ec;
+  padding: 15px;
+  transition: border-color 180ms ease, background 180ms ease;
+}
+
+.integrationBox:focus-within {
+  border-color: rgba(34, 107, 87, 0.48);
+  background: #fffaf0;
+}
+
 .field input:focus,
 .field textarea:focus {
   border-color: #226b57;
   box-shadow: 0 0 0 3px rgba(34, 107, 87, 0.14);
+  background: #ffffff;
 }
 
 .twoCols {
@@ -253,12 +356,20 @@
   font: inherit;
   font-size: 1rem;
   font-weight: 900;
-  padding: 14px 16px;
+  min-height: 50px;
+  padding: 15px 16px;
+  transition: box-shadow 180ms ease, filter 180ms ease, transform 180ms ease;
+}
+
+.primaryButton:hover {
+  box-shadow: 0 16px 34px rgba(234, 107, 77, 0.24);
+  filter: saturate(1.04);
 }
 
 .primaryButton:disabled {
   cursor: wait;
   opacity: 0.7;
+  animation: loadingPulse 1s ease-in-out infinite;
 }
 
 .errorText {
@@ -269,7 +380,7 @@
 
 .results {
   min-width: 0;
-  padding: 18px;
+  padding: 24px;
 }
 
 .resultHeader,
@@ -293,16 +404,22 @@
 
 .summaryBar {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  margin-bottom: 14px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
 }
 
 .summaryBar div {
   border: 1px solid #d8d0c2;
   border-radius: 8px;
   background: #f4eadb;
-  padding: 13px;
+  padding: 14px;
+  transition: background 180ms ease, transform 180ms ease;
+}
+
+.summaryBar div:hover {
+  background: #fff4e2;
+  transform: translateY(-1px);
 }
 
 .summaryBar strong,
@@ -312,7 +429,8 @@
 
 .summaryBar strong {
   color: #111512;
-  font-size: 1.35rem;
+  font-size: 1.22rem;
+  overflow-wrap: anywhere;
 }
 
 .summaryBar span {
@@ -321,12 +439,12 @@
 }
 
 .tabs {
-  margin-bottom: 14px;
+  margin-bottom: 18px;
 }
 
 .outputCard {
-  padding: 15px;
-  margin-bottom: 14px;
+  padding: 16px;
+  margin-bottom: 18px;
 }
 
 .outputTitle {
@@ -339,7 +457,7 @@
 }
 
 .outputCard pre {
-  max-height: 360px;
+  max-height: 380px;
   overflow: auto;
   white-space: pre-wrap;
   border: 1px solid #d8d0c2;
@@ -351,12 +469,18 @@
   line-height: 1.6;
   margin: 0;
   padding: 13px;
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.outputCard:hover pre {
+  border-color: #314139;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
 }
 
 .outputGrid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(280px, 0.85fr);
-  gap: 14px;
+  gap: 18px;
 }
 
 .signalImage,
@@ -369,6 +493,7 @@
 
 .signalImage {
   display: block;
+  animation: softReveal 360ms ease both;
 }
 
 .emptyImage {
@@ -380,7 +505,7 @@
 
 .assetList {
   display: grid;
-  gap: 8px;
+  gap: 10px;
 }
 
 .assetList div {
@@ -389,7 +514,8 @@
   border: 1px solid #d8d0c2;
   border-radius: 8px;
   background: #f4eadb;
-  padding: 12px;
+  padding: 14px;
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
 }
 
 .assetList strong {
@@ -408,7 +534,7 @@
 
 @media (max-width: 680px) {
   .page {
-    padding: 16px;
+    padding: 18px;
   }
 
   .twoCols,
@@ -424,5 +550,78 @@
 
   .header h1 {
     font-size: clamp(2.35rem, 16vw, 4rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page,
+  .page *,
+  .page *::before,
+  .page *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
+  }
+}
+
+@keyframes pageIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes riseIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes flowLine {
+  0% {
+    transform: translateX(-100%);
+  }
+  45%,
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes statusPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(34, 107, 87, 0.28);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(34, 107, 87, 0);
+  }
+}
+
+@keyframes loadingPulse {
+  0%,
+  100% {
+    filter: saturate(1);
+  }
+  50% {
+    filter: saturate(1.18) brightness(1.03);
+  }
+}
+
+@keyframes softReveal {
+  from {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }

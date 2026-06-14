@@ -56,7 +56,24 @@ class LaunchKitRequest(BaseModel):
     audience: str = ""
     channels: List[str] = []
     generator: str = "local"
+    model_endpoint: str = ""
+    model_name: str = ""
+    api_key_present: bool = False
+    distribution_mode: str = "manual"
+    webhook_url: str = ""
     top: int = 5
+
+
+def with_integration_config(result: Dict[str, Any], req: LaunchKitRequest) -> Dict[str, Any]:
+    result["integration_config"] = {
+        "model_route": req.generator,
+        "model_endpoint": req.model_endpoint.strip(),
+        "model_name": req.model_name.strip(),
+        "api_key_present": bool(req.api_key_present),
+        "distribution_mode": (req.distribution_mode or "manual").strip(),
+        "webhook_configured": bool(req.webhook_url.strip()),
+    }
+    return result
 
 
 @app.post("/generate_post", response_model=GenerateResponse)
@@ -95,7 +112,7 @@ def launch_kit(req: LaunchKitRequest):
     try:
         input_type = (req.input_type or "").strip().lower()
         if input_type == "research" or req.research_url.strip() or req.document_text.strip() or req.document_path.strip():
-            return create_research_kit(
+            result = create_research_kit(
                 research_url=req.research_url,
                 document_text=req.document_text or req.notes,
                 document_path=Path(req.document_path) if req.document_path else None,
@@ -105,8 +122,9 @@ def launch_kit(req: LaunchKitRequest):
                 channels=req.channels,
                 generator=req.generator,
             )
+            return with_integration_config(result, req)
         if input_type in {"brief", "notes"} or req.notes.strip():
-            return create_notes_kit(
+            result = create_notes_kit(
                 notes=req.notes,
                 out_dir=Path(req.out_dir),
                 project_name=req.project_name,
@@ -114,9 +132,10 @@ def launch_kit(req: LaunchKitRequest):
                 channels=req.channels,
                 generator=req.generator,
             )
+            return with_integration_config(result, req)
         if not req.repo.strip():
             raise RuntimeError("Choose an input channel: raw brief, repository path, or research/document context.")
-        return create_launch_kit(
+        result = create_launch_kit(
             repo=Path(req.repo),
             out_dir=Path(req.out_dir),
             project_name=req.project_name,
@@ -125,6 +144,7 @@ def launch_kit(req: LaunchKitRequest):
             channels=req.channels,
             generator=req.generator,
         )
+        return with_integration_config(result, req)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except RuntimeError as exc:

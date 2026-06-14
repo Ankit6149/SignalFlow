@@ -15,9 +15,23 @@ const CHANNELS = [
 ];
 
 const INPUT_MODES = [
-  ["brief", "Raw brief"],
-  ["repo", "Git repo"],
-  ["research", "URL/PDF notes"],
+  ["brief", "Brief"],
+  ["repo", "Repository"],
+  ["research", "Research"],
+];
+
+const GENERATORS = [
+  ["chatbot", "Chatbot"],
+  ["local", "Local API"],
+  ["slm", "Embedded SLM"],
+  ["api", "Cloud API"],
+];
+
+const DISTRIBUTION_MODES = [
+  ["manual", "Manual review"],
+  ["files", "Files only"],
+  ["webhook", "Webhook"],
+  ["official_api", "Official API"],
 ];
 
 const sampleResult = {
@@ -49,23 +63,33 @@ const sampleResult = {
     markdown: "pipeline-output/signalflow-demo/signalflow-kit.md",
     summary: "pipeline-output/signalflow-demo/signalflow-kit.json",
   },
-  integration_notes: [
-    "Use assets as input for a local SLM, API model, or free chatbot.",
-    "Selected channels control the format of generated drafts.",
-    "Review before publishing.",
-  ],
+  integration_config: {
+    model_route: "chatbot",
+    model_endpoint: "",
+    model_name: "copy-paste prompt",
+    api_key_present: false,
+    distribution_mode: "manual",
+    webhook_configured: false,
+  },
 };
 
 export default function Home() {
   const [sourceMode, setSourceMode] = useState("brief");
   const [repoPath, setRepoPath] = useState("");
+  const [researchUrl, setResearchUrl] = useState("");
+  const [documentPath, setDocumentPath] = useState("");
   const [notes, setNotes] = useState(
     "SignalFlow helps builders turn product work into content.\nAssets can be launch notes, code snippets, changelogs, screenshots, or repo context.\nThe user selects channels, then sends the asset pack to a local SLM, API model, or free chatbot.",
   );
   const [projectName, setProjectName] = useState("SignalFlow");
   const [audience, setAudience] = useState("builders, founders, and technical creators");
   const [generator, setGenerator] = useState("chatbot");
+  const [modelEndpoint, setModelEndpoint] = useState("http://127.0.0.1:8000");
+  const [modelName, setModelName] = useState("copy-paste prompt");
+  const [apiKey, setApiKey] = useState("");
   const [selectedChannels, setSelectedChannels] = useState(["linkedin", "x", "newsletter"]);
+  const [distributionMode, setDistributionMode] = useState("manual");
+  const [webhookUrl, setWebhookUrl] = useState("");
   const [outDir, setOutDir] = useState("pipeline-output");
   const [backendStatus, setBackendStatus] = useState("Checking");
   const [statusTone, setStatusTone] = useState("checking");
@@ -83,6 +107,55 @@ export default function Home() {
     const keys = Object.keys(result?.posts || {});
     return CHANNELS.filter(([key]) => keys.includes(key));
   }, [result]);
+
+  const integrationConfig = useMemo(
+    () => ({
+      ...(result?.integration_config || {}),
+      model_route: generator,
+      model_endpoint: modelEndpoint,
+      model_name: modelName,
+      api_key_present: apiKey.trim().length > 0,
+      distribution_mode: distributionMode,
+      webhook_configured: webhookUrl.trim().length > 0,
+    }),
+    [apiKey, distributionMode, generator, modelEndpoint, modelName, result, webhookUrl],
+  );
+
+  const copyableConfig = useMemo(
+    () =>
+      JSON.stringify(
+        {
+          product: projectName,
+          input_channel: sourceMode,
+          model: {
+            route: generator,
+            endpoint: modelEndpoint,
+            name: modelName,
+            api_key: apiKey ? "<set in your local vault or env>" : "",
+          },
+          output_channels: selectedChannels,
+          distribution: {
+            mode: distributionMode,
+            webhook_url: webhookUrl,
+            export_folder: outDir,
+          },
+        },
+        null,
+        2,
+      ),
+    [
+      apiKey,
+      distributionMode,
+      generator,
+      modelEndpoint,
+      modelName,
+      outDir,
+      projectName,
+      selectedChannels,
+      sourceMode,
+      webhookUrl,
+    ],
+  );
 
   async function checkBackendHealth() {
     try {
@@ -110,27 +183,43 @@ export default function Home() {
     });
   }
 
+  function buildInputPayload() {
+    if (sourceMode === "repo") {
+      return { input_type: "repo", repo: repoPath, notes: "" };
+    }
+    if (sourceMode === "research") {
+      return {
+        input_type: "research",
+        repo: "",
+        notes: "",
+        research_url: researchUrl,
+        document_text: notes,
+        document_path: documentPath,
+      };
+    }
+    return { input_type: "brief", repo: "", notes };
+  }
+
   async function createContentKit(event) {
     event.preventDefault();
     setError("");
     setIsGenerating(true);
     try {
-      const payload =
-        sourceMode === "repo"
-          ? { input_type: "repo", repo: repoPath, notes: "" }
-          : sourceMode === "research"
-            ? { input_type: "research", repo: "", notes: "", document_text: notes }
-            : { input_type: "brief", repo: "", notes };
       const resp = await fetch(`${API_BASE}/launch_kit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...payload,
+          ...buildInputPayload(),
           out_dir: outDir,
           project_name: projectName,
           audience,
           channels: selectedChannels,
           generator,
+          model_endpoint: modelEndpoint,
+          model_name: modelName,
+          api_key_present: apiKey.trim().length > 0,
+          distribution_mode: distributionMode,
+          webhook_url: webhookUrl,
         }),
       });
       const data = await resp.json();
@@ -169,11 +258,10 @@ export default function Home() {
       <header className={styles.header}>
         <div>
           <p className={styles.eyebrow}>SignalFlow</p>
-          <h1>Unified context engine for technical content.</h1>
+          <h1>Turn technical context into channel-ready content.</h1>
           <p>
-            Bring briefs, repositories, URLs, PDFs, or research notes into one
-            context layer, route it through a model adapter, and generate
-            channel-ready content packs.
+            Connect a brief, repository, URL, or document notes, choose a model route,
+            generate drafts, and export a reviewed content kit from one workspace.
           </p>
         </div>
         <div className={`${styles.statusPill} ${styles[statusTone]}`}>
@@ -184,11 +272,11 @@ export default function Home() {
 
       <section className={styles.pipelineMap} aria-label="SignalFlow architecture">
         {[
-          ["Input channels", "Briefs · repos · research"],
-          ["Unified context", "Normalize and extract signal"],
-          ["Model adapter", "Local API · SLM · cloud gateway"],
-          ["Content modules", "Text patterns · canvas · simulation"],
-          ["Distribution export", "Drafts, prompts, files, official APIs"],
+          ["Inputs", "Briefs, repos, research"],
+          ["Context", "Signal extraction"],
+          ["Model", "Local, SLM, API, chatbot"],
+          ["Drafts", "Social and long-form"],
+          ["Export", "Files, webhook, official APIs"],
         ].map(([title, body]) => (
           <div key={title}>
             <strong>{title}</strong>
@@ -202,8 +290,8 @@ export default function Home() {
           <div className={styles.step}>
             <span>1</span>
             <div>
-              <h2>Choose input channel</h2>
-              <p>Start with a raw brief, git repository, or research/PDF notes.</p>
+              <h2>Input</h2>
+              <p>Add the source context SignalFlow should understand.</p>
             </div>
           </div>
 
@@ -222,7 +310,7 @@ export default function Home() {
 
           {sourceMode === "repo" ? (
             <label className={styles.field}>
-              Repo path
+              Repository path
               <input
                 value={repoPath}
                 onChange={(event) => setRepoPath(event.target.value)}
@@ -230,13 +318,40 @@ export default function Home() {
                 required={sourceMode === "repo"}
               />
             </label>
+          ) : sourceMode === "research" ? (
+            <div className={styles.integrationBox}>
+              <label className={styles.field}>
+                Research URL
+                <input
+                  value={researchUrl}
+                  onChange={(event) => setResearchUrl(event.target.value)}
+                  placeholder="https://example.com/research"
+                />
+              </label>
+              <label className={styles.field}>
+                Document path
+                <input
+                  value={documentPath}
+                  onChange={(event) => setDocumentPath(event.target.value)}
+                  placeholder="C:/Users/you/docs/brief.pdf"
+                />
+              </label>
+              <label className={styles.field}>
+                Extracted notes
+                <textarea
+                  value={notes}
+                  onChange={(event) => setNotes(event.target.value)}
+                  rows={8}
+                />
+              </label>
+            </div>
           ) : (
             <label className={styles.field}>
-              {sourceMode === "research" ? "Research URL, PDF notes, or document excerpts" : "Raw tech brief or prompt"}
+              Brief
               <textarea
                 value={notes}
                 onChange={(event) => setNotes(event.target.value)}
-                rows={10}
+                rows={9}
                 required={sourceMode !== "repo"}
               />
             </label>
@@ -256,8 +371,59 @@ export default function Home() {
           <div className={styles.step}>
             <span>2</span>
             <div>
-              <h2>Select channels</h2>
-              <p>These are output formats. Publishing stays manual or official-API based.</p>
+              <h2>Model adapter</h2>
+              <p>Choose where the unified context should be sent.</p>
+            </div>
+          </div>
+
+          <div className={styles.generatorRow}>
+            {GENERATORS.map(([key, label]) => (
+              <button
+                className={generator === key ? styles.activeSegment : ""}
+                key={key}
+                onClick={() => setGenerator(key)}
+                type="button"
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          <div className={styles.integrationBox}>
+            <div className={styles.twoCols}>
+              <label className={styles.field}>
+                Endpoint
+                <input
+                  value={modelEndpoint}
+                  onChange={(event) => setModelEndpoint(event.target.value)}
+                  placeholder="http://127.0.0.1:8000"
+                />
+              </label>
+              <label className={styles.field}>
+                Model
+                <input
+                  value={modelName}
+                  onChange={(event) => setModelName(event.target.value)}
+                  placeholder="llama-3.2 / gpt / custom"
+                />
+              </label>
+            </div>
+            <label className={styles.field}>
+              API key
+              <input
+                type="password"
+                value={apiKey}
+                onChange={(event) => setApiKey(event.target.value)}
+                placeholder="Stored only in this browser field"
+              />
+            </label>
+          </div>
+
+          <div className={styles.step}>
+            <span>3</span>
+            <div>
+              <h2>Outputs</h2>
+              <p>Select content channels and the export destination.</p>
             </div>
           </div>
 
@@ -274,34 +440,52 @@ export default function Home() {
             ))}
           </div>
 
-          <div className={styles.step}>
-            <span>3</span>
-            <div>
-              <h2>Choose generator</h2>
-              <p>Route the unified context through a local API, SLM, cloud gateway, or chatbot prompt.</p>
-            </div>
-          </div>
-
-          <div className={styles.generatorRow}>
-            {["local", "api", "slm", "chatbot"].map((item) => (
-              <button
-                className={generator === item ? styles.activeSegment : ""}
-                key={item}
-                onClick={() => setGenerator(item)}
-                type="button"
-              >
-                {item.toUpperCase()}
-              </button>
-            ))}
-          </div>
-
           <label className={styles.field}>
             Export folder
             <input value={outDir} onChange={(event) => setOutDir(event.target.value)} />
           </label>
 
+          <div className={styles.step}>
+            <span>4</span>
+            <div>
+              <h2>Distribution</h2>
+              <p>Keep publishing explicit, reviewable, and platform-safe.</p>
+            </div>
+          </div>
+
+          <div className={styles.generatorRow}>
+            {DISTRIBUTION_MODES.map(([key, label]) => (
+              <button
+                className={distributionMode === key ? styles.activeSegment : ""}
+                key={key}
+                onClick={() => setDistributionMode(key)}
+                type="button"
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          <div className={styles.integrationBox}>
+            <label className={styles.field}>
+              Webhook or official API URL
+              <input
+                value={webhookUrl}
+                onChange={(event) => setWebhookUrl(event.target.value)}
+                placeholder="https://hooks.example.com/signalflow"
+              />
+            </label>
+            <button
+              className={styles.secondaryButton}
+              onClick={() => copyText("config", copyableConfig)}
+              type="button"
+            >
+              {copiedLabel === "config" ? "Copied config" : "Copy integration config"}
+            </button>
+          </div>
+
           <button className={styles.primaryButton} disabled={isGenerating}>
-            {isGenerating ? "Generating..." : "Generate content"}
+            {isGenerating ? "Generating..." : "Generate content kit"}
           </button>
           {error && <p className={styles.errorText}>{error}</p>}
         </form>
@@ -309,7 +493,7 @@ export default function Home() {
         <section className={styles.results}>
           <div className={styles.resultHeader}>
             <div>
-              <p className={styles.eyebrow}>Generated</p>
+              <p className={styles.eyebrow}>Generated kit</p>
               <h2>{result.project_name}</h2>
             </div>
             <button
@@ -332,7 +516,11 @@ export default function Home() {
             </div>
             <div>
               <strong>{result.generator || "local"}</strong>
-              <span>generator</span>
+              <span>model route</span>
+            </div>
+            <div>
+              <strong>{integrationConfig.distribution_mode || "manual"}</strong>
+              <span>distribution</span>
             </div>
           </div>
 
@@ -389,6 +577,20 @@ export default function Home() {
                 <div className={styles.emptyImage}>Generate to preview the card.</div>
               )}
             </div>
+          </div>
+
+          <div className={styles.outputCard}>
+            <div className={styles.outputTitle}>
+              <h3>Integration config</h3>
+              <button
+                className={styles.secondaryButton}
+                onClick={() => copyText("resultConfig", JSON.stringify(integrationConfig, null, 2))}
+                type="button"
+              >
+                {copiedLabel === "resultConfig" ? "Copied" : "Copy"}
+              </button>
+            </div>
+            <pre>{JSON.stringify(integrationConfig, null, 2)}</pre>
           </div>
 
           <div className={styles.assetList}>
