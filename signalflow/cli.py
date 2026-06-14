@@ -5,7 +5,8 @@ from signalflow.ingestion.walker import DirectoryWalker
 from signalflow.ingestion.snr import SNRScorer
 from signalflow.compositor.image_renderer import ImageRenderer
 from signalflow.compositor.terminal_recorder import TerminalRecorder
-from signalflow.model.adapter import CloudStubAdapter
+from signalflow.model.adapter import CloudStubAdapter, LocalRESTAdapter
+import uvicorn
 
 
 def cmd_scan(args):
@@ -41,9 +42,15 @@ def cmd_record(args):
 
 
 def cmd_stub_generate(args):
-    adapter = CloudStubAdapter()
+    # Prefer local REST adapter; fall back to cloud stub
     payload = {"CoreTokens": Path(args.file).read_text(encoding="utf-8")}
-    text = adapter.generate_post_text("", payload, args.target)
+    try:
+        adapter = LocalRESTAdapter()
+        adapter.initialize({"base_url": args.base_url} if hasattr(args, 'base_url') else {})
+        text = adapter.generate_post_text("", payload, args.target)
+    except Exception:
+        adapter = CloudStubAdapter()
+        text = adapter.generate_post_text("", payload, args.target)
     print(text)
 
 
@@ -67,6 +74,11 @@ def main(argv=None):
     p_stub = sub.add_parser("stub-generate")
     p_stub.add_argument("--file", required=True)
     p_stub.add_argument("--target", required=True)
+    p_stub.add_argument("--base-url", required=False, help="Local model server base URL, e.g. http://127.0.0.1:8000")
+
+    p_serve = sub.add_parser("serve")
+    p_serve.add_argument("--host", default="127.0.0.1")
+    p_serve.add_argument("--port", type=int, default=8000)
 
     args = parser.parse_args(argv)
     if args.cmd == "scan":
@@ -77,6 +89,9 @@ def main(argv=None):
         cmd_record(args)
     elif args.cmd == "stub-generate":
         cmd_stub_generate(args)
+    elif args.cmd == "serve":
+        # Run FastAPI model stub via uvicorn
+        uvicorn.run("signalflow.model.server:app", host=args.host, port=args.port, log_level="info")
     else:
         parser.print_help()
 
