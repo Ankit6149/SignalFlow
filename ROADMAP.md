@@ -1,39 +1,40 @@
-# Roadmap
+# PostPilot Roadmap
 
-SignalFlow should become a focused, useful open-source product rather than a bundle of demos.
+PostPilot should become a focused, useful open-source autoposting workspace rather than a bundle of demos.
 
 ## Product Bet
 
-Build for builders, developers, founders, and maintainers who want to share technical progress publicly without starting from a blank page or sending private work to a cloud tool.
+Build for creators, builders, developers, founders, maintainers, and small teams who want to post publicly without manually writing every caption, recording every asset, creating every GIF, and formatting every channel by hand.
 
 The one-line promise:
 
-> Turn briefs, repositories, research assets, and documents into selected-channel content through local templates, SLMs, API models, cloud gateways, or chatbot prompts.
+> Describe once, add data or media, and generate formatted posting packages for selected social accounts.
 
 ## MVP Workflow
 
-1. Paste notes, changelog text, code, or choose a local repository.
-2. SignalFlow extracts the strongest signal.
-3. The user reviews one or more highlights.
-4. SignalFlow creates:
-   - social post variants,
-   - newsletter and blog drafts,
-   - a code image,
-   - a short technical summary,
-   - a slide outline,
-   - a local export folder.
-5. Nothing publishes automatically.
+1. User describes what should be posted.
+2. User optionally adds data, links, files, repository context, screenshots, or screen recordings.
+3. PostPilot builds a formatted package for selected social accounts.
+4. PostPilot creates:
+   - platform-specific post variants,
+   - captions and long-form drafts,
+   - visual media plan,
+   - generated card asset,
+   - screenshot/recording/GIF handoff,
+   - model prompt,
+   - Markdown and JSON exports.
+5. Publishing stays reviewable through manual copy, webhooks, or official APIs.
 
 ## Priorities
 
 ### 1. Make the First Run Excellent
 
 - Replace placeholder repo paths with a guided empty state.
-- Show one primary action: "Create launch kit".
+- Show one primary action: "Generate full post package".
 - Add clear backend status and setup help when the API is offline.
 - Save outputs into one timestamped folder.
 - Include a sample repo/demo mode so visitors can try the product in one minute.
-- Add copy/export actions for every generated draft.
+- Add copy/export actions for every generated draft and asset.
 
 ### 2. Make the Core Engine Trustworthy
 
@@ -45,12 +46,12 @@ The one-line promise:
 
 ### 3. Make Outputs Worth Sharing
 
-- Add platform presets: X, LinkedIn, blog intro, release notes.
+- Add platform presets: X, LinkedIn, Instagram, blog intro, newsletter, and release notes.
 - Add tone controls: technical, founder, DevRel, concise.
 - Add editable templates before export.
 - Improve code image themes and dimensions.
-- Generate a Markdown launch kit alongside JSON.
-- Add a GitHub draft release helper using official GitHub APIs.
+- Generate a Markdown posting package alongside JSON.
+- Add official-API draft publishing helpers for supported platforms.
 
 ### 4. Make It Contributor Friendly
 
@@ -63,7 +64,7 @@ The one-line promise:
 
 ## What Not To Build Yet
 
-- Auto-posting to social platforms.
+- Unreviewed auto-posting to social platforms.
 - Complex cloud accounts.
 - Browser/session scraping.
 - A large multi-language native stack before the Python/Next.js path feels great.
@@ -72,7 +73,7 @@ The one-line promise:
 
 - Add a `--since` option that uses `git diff` to rank recently changed files.
 - Add a Markdown export next to `pipeline_summary.json`.
-- Add LinkedIn/X post templates to the local stub.
+- Add richer LinkedIn/X/Instagram post templates to the local stub.
 - Add frontend error states for offline backend responses.
 - Add a sample project fixture for demos and tests.
 - Add OAuth-backed draft publishing adapters behind explicit user approval.

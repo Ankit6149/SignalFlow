@@ -1,10 +1,10 @@
-# Integrations
+# PostPilot Integrations
 
-SignalFlow is local-first. It generates assets and drafts that users can review before publishing through official channels.
+PostPilot is local-first. It generates formatted posting packages that users can review before publishing through official channels.
 
-Inputs can be pasted notes, changelogs, code snippets, screenshot text, launch context, or a local repository path.
+Inputs can be a simple description, pasted notes, changelogs, code snippets, screenshot text, launch context, metrics, research, screen recordings, screenshots, links, or a local repository path.
 
-SignalFlow treats repositories, files, screenshots, changelogs, research excerpts, URLs/PDF notes, and raw briefs as **input channels**. Selected channels are output formats, not connected posting accounts.
+PostPilot treats repositories, files, screenshots, screen recordings, changelogs, research excerpts, URLs/PDF notes, and raw descriptions as **input assets**. Selected social accounts or channels determine the output format.
 
 ## Model Generation
 
@@ -16,11 +16,12 @@ Today:
 - Return `model_adapter` metadata with selected generator route and readiness status.
 - Keep generated JSON and Markdown in `pipeline-output/` for review.
 - Run `python -m signalflow.cli launch-kit --notes-file <file> --channel linkedin --channel newsletter`.
+- Generate visual media plans for screenshots, screen recordings, GIF/video loops, generated cards, and platform variants.
 
 Recommended next integration:
 
 1. Add provider adapters for OpenAI-compatible APIs, local SLM servers, and clipboard-only chatbot flows.
-2. Require users to choose channels before generation.
+2. Let users connect/select a model route once, then use autopilot defaults.
 3. Store API keys only in local environment variables or OS keychain.
 4. Never publish automatically without explicit approval.
 5. Use official APIs, webhooks, exports, or manual copy. Do not depend on private platform APIs or stealth transport.
@@ -31,11 +32,12 @@ Example manual release flow:
 python -m signalflow.cli launch-kit --notes-file launch-notes.md --channel linkedin --channel x
 ```
 
-## LinkedIn and X
+## Selected Social Accounts
 
 Today:
 
-- Generate editable post drafts for LinkedIn and X.
+- Generate editable post drafts for LinkedIn, X, Instagram, blog, newsletter, and release notes.
+- Generate a media plan that explains what screenshots, recordings, GIFs, cards, or clips should be used for each package.
 - Keep publishing manual so users can adjust tone and comply with platform rules.
 
 Recommended next integration:
@@ -43,13 +45,13 @@ Recommended next integration:
 1. Add OAuth-based account connection.
 2. Store tokens only in an OS keychain or encrypted local store.
 3. Support draft creation before publishing.
-4. Add per-platform preview and character validation.
+4. Add per-platform preview, character validation, and media aspect-ratio validation.
 
 ## Blogs and Docs
 
 Today:
 
-- Generate a blog intro and slide outline.
+- Generate a blog intro, newsletter draft, release note, and reusable Markdown package.
 - Export Markdown that can be pasted into docs, newsletters, or static-site posts.
 
 Recommended next integration:

@@ -15,3 +15,4 @@ All notable changes to this project will be documented in this file.
 - Added frontend-managed integration settings for model endpoints, model names, output channels, export folders, webhooks, and safe distribution modes.
 - Reframed the product around autoposting packages and added first-class visual media plans for screenshots, screen recordings, GIF/video loops, generated cards, and platform variants.
 - Simplified the frontend into a low-click autopilot flow with advanced controls hidden behind an optional panel.
+- Added SEO/AEO discoverability files, GitHub topic guidance, package keywords, and deployable `robots.txt`/`llms.txt` files.

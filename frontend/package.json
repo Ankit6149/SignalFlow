@@ -1,7 +1,22 @@
 {
-  "name": "signalflow-frontend",
+  "name": "postpilot-frontend",
   "version": "0.1.0",
   "private": true,
+  "description": "Local-first autoposting workspace for generating formatted social media posting packages from descriptions, data, screenshots, and screen recordings.",
+  "keywords": [
+    "ai",
+    "social-media",
+    "social-media-automation",
+    "autoposting",
+    "post-generator",
+    "content-automation",
+    "screen-recording",
+    "screenshot",
+    "gif-generator",
+    "creator-tools",
+    "developer-marketing",
+    "local-first"
+  ],
   "scripts": {
     "dev": "next dev",
     "build": "next build",

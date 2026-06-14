@@ -1,0 +1,20 @@
+# PostPilot
+
+> PostPilot is a local-first autoposting workspace that turns a user description, data, and captured media into formatted posting packages for selected social platforms.
+
+## What It Does
+
+- Generates platform-ready posting packages from one description.
+- Uses optional notes, links, repositories, screenshots, screen recordings, and research.
+- Produces post copy, visual media plans, generated cards, prompts, Markdown exports, and JSON summaries.
+- Supports LinkedIn, X, Instagram, blogs, newsletters, and release notes.
+- Keeps final publishing reviewable and platform-safe.
+
+## Good Search Summary
+
+PostPilot helps creators, founders, developers, and small teams describe once and generate social posts, captions, screenshots/GIF planning, media cards, and export files for selected social channels.
+
+## Links
+
+- GitHub: https://github.com/Ankit6149/SignalFlow
+- README: https://github.com/Ankit6149/SignalFlow#readme

@@ -1,10 +1,12 @@
 # PostPilot
 
-PostPilot is a local-first posting workspace. Describe what you want to post, add data or assets, choose platforms, and generate a reviewable package with copy, visual-media plans, generated cards, prompts, and export files.
+PostPilot is a local-first AI social media automation workspace. Describe what you want to post, add data or assets, choose selected social media accounts, and generate a reviewable posting package with formatted copy, visual-media plans, generated cards, prompts, and export files.
 
 The project is intentionally local-first. It is useful for creators, builders, founders, developers, maintainers, and small teams who do not want to manually create screenshots, GIFs, short clips, captions, and platform variants from scratch.
 
-The product goal is low-click autopilot: the user provides information, connects or selects a model route once, and PostPilot prepares the full posting package with sensible defaults. Advanced controls stay available, but they should not be required for the first successful run.
+The product goal is low-click autopilot: the user provides information, connects or selects a model route once, and PostPilot prepares the full formatted package for every selected channel with sensible defaults. Advanced controls stay available, but they should not be required for the first successful run.
+
+Good search summary: **AI autoposting tool that turns descriptions, screenshots, screen recordings, links, and data into formatted social media posts for LinkedIn, X, Instagram, blogs, newsletters, and release notes.**
 
 ## What Works Today
 
@@ -19,6 +21,7 @@ The product goal is low-click autopilot: the user provides information, connects
 - Keep distribution safe through manual review, files, webhooks, or official platform APIs.
 - Run a local pipeline that writes Markdown, JSON, and media artifacts.
 - Use a Next.js UI that proxies requests to the local Python backend.
+- Includes `llms.txt`, `llms-full.txt`, `robots.txt`, and a discoverability checklist for AI/search visibility.
 
 ## Quick Start
 
@@ -138,5 +141,6 @@ The strongest product angle is: **a local-first autoposting engine that turns de
 
 See [ROADMAP.md](ROADMAP.md) for the path from prototype to a product people can understand, try, and contribute to.
 See [docs/INTEGRATIONS.md](docs/INTEGRATIONS.md) for the asset-to-model and channel integration strategy.
+See [docs/DISCOVERABILITY.md](docs/DISCOVERABILITY.md) for GitHub topics, search keywords, and AI visibility setup.
 
 Security and ethics: see [SECURITY.md](SECURITY.md). PostPilot must not harvest credentials, bypass platform protections, or publish to third-party services without official APIs and explicit user approval.

@@ -1,0 +1,69 @@
+# PostPilot Full Context
+
+PostPilot is an open-source, local-first autoposting workspace. The user gives information once, optionally captures visual media, selects social/output channels, and receives a formatted posting package. The package can include copy, generated visual cards, screenshot/recording/GIF plans, model prompts, Markdown exports, JSON summaries, and safe publishing handoff metadata.
+
+## Product Positioning
+
+PostPilot is not only a caption generator. It is intended to reduce the manual work involved in preparing social posts: writing copy, deciding what format each platform needs, capturing screenshots, recording screens, turning media into GIF/video ideas, and preparing assets for review.
+
+## Audience
+
+- Solo creators
+- Founders
+- Indie hackers
+- Developers
+- Open-source maintainers
+- DevRel teams
+- Product builders
+- Small marketing teams
+
+## Problem
+
+Users often need to post product updates, demos, launches, changelogs, tutorials, and technical progress across multiple platforms. Doing this manually requires:
+
+- Writing platform-specific copy
+- Taking screenshots
+- Recording product flows
+- Creating GIFs or short videos
+- Deciding post structure
+- Reformatting for every channel
+- Copying assets between tools
+- Reviewing before posting
+
+PostPilot aims to reduce that into one main action: provide information, then generate a complete reviewable package.
+
+## Outputs
+
+- LinkedIn post drafts
+- X post drafts
+- Instagram caption starters
+- Blog drafts
+- Newsletter drafts
+- Release notes
+- Generated image/card asset
+- Visual media plan
+- Screen recording and screenshot capture entries
+- Model prompt for local SLM/API/chatbot use
+- Markdown export
+- JSON export
+- Integration metadata
+
+## Current Architecture
+
+- Frontend: Next.js App Router UI.
+- Backend: Python FastAPI server exposed through local CLI.
+- Core package: `signalflow/` contains ingestion, scoring, image rendering, context generation, and launch/post kit logic.
+- Local-first model: users can keep data local and route prompts to local SLMs, API models, cloud gateways, or copy-paste chatbot workflows.
+
+## Safety Principles
+
+PostPilot should use manual review, official APIs, exports, or webhooks for distribution. It should not use stealth platform clients, private GraphQL clients, credential scraping, browser-session scraping, or publishing without explicit approval.
+
+## Repository Links
+
+- README: [README.md](README.md)
+- Roadmap: [ROADMAP.md](ROADMAP.md)
+- Integrations: [docs/INTEGRATIONS.md](docs/INTEGRATIONS.md)
+- Security: [SECURITY.md](SECURITY.md)
+- Frontend: [frontend/app/page.js](frontend/app/page.js)
+- Backend generation: [signalflow/launchkit.py](signalflow/launchkit.py)
