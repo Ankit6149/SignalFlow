@@ -21,6 +21,15 @@ python -m pip install -r requirements.txt
 python -m signalflow.cli scan --repo "C:\path\to\repo" --top 10
 ```
 
+Create a launch kit from the CLI:
+
+```bash
+python -m signalflow.cli launch-kit ^
+  --repo "C:\path\to\repo" ^
+  --project-name "My Project" ^
+  --audience "open-source maintainers"
+```
+
 Start the local backend:
 
 ```bash
@@ -49,6 +58,12 @@ Run the full local pipeline:
 
 ```bash
 python -m signalflow.cli pipeline --repo "C:\path\to\repo" --out-dir pipeline-output --top 5
+```
+
+Create only the launch kit:
+
+```bash
+python -m signalflow.cli launch-kit --repo "C:\path\to\repo" --out-dir pipeline-output --top 5
 ```
 
 Run tests:

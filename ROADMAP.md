@@ -32,6 +32,7 @@ The one-line promise:
 - Add clear backend status and setup help when the API is offline.
 - Save outputs into one timestamped folder.
 - Include a sample repo/demo mode so visitors can try the product in one minute.
+- Add copy/export actions for every generated draft.
 
 ### 2. Make the Core Engine Trustworthy
 
@@ -57,6 +58,7 @@ The one-line promise:
 - Add CI for Python tests and frontend build.
 - Document architecture in `docs/architecture.md`.
 - Publish a small set of labeled starter issues.
+- Keep the CLI stable so integrations can build on it without depending on the UI.
 
 ## What Not To Build Yet
 

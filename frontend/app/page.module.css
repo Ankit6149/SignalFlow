@@ -69,7 +69,8 @@
 }
 
 .statusCard button,
-.tabs button {
+.tabs button,
+.secondaryButton {
   border: 1px solid rgba(236, 244, 239, 0.14);
   background: #172124;
   color: #ecf4ef;
@@ -147,6 +148,16 @@
 .primaryButton:disabled {
   cursor: wait;
   opacity: 0.72;
+}
+
+.secondaryButton {
+  min-width: 118px;
+}
+
+.secondaryButton:hover,
+.statusCard button:hover,
+.tabs button:hover {
+  border-color: rgba(97, 216, 182, 0.55);
 }
 
 .errorText {
@@ -318,6 +329,10 @@
   line-height: 1.55;
   margin: 0;
   padding: 14px;
+}
+
+.markdownBox {
+  max-height: 300px;
 }
 
 .codeImage,

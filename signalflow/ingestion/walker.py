@@ -4,27 +4,39 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Iterable, List
 
 IGNORE_DIRS = {
-    "node_modules",
-    "vendor",
-    "dist",
-    "build",
-    "target",
     ".git",
+    ".mypy_cache",
+    ".next",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".test-tmp",
     "__pycache__",
+    "build",
+    "coverage",
+    "dist",
+    "env",
+    "node_modules",
+    "pipeline-output",
+    "target",
+    "test-temp-local",
+    "vendor",
     "venv",
 }
 
 CODE_EXTENSIONS = {
-    ".py",
-    ".js",
-    ".ts",
-    ".go",
-    ".rs",
-    ".java",
     ".c",
     ".cpp",
+    ".css",
+    ".go",
     ".h",
     ".hpp",
+    ".java",
+    ".jsx",
+    ".py",
+    ".js",
+    ".rs",
+    ".ts",
+    ".tsx",
 }
 
 

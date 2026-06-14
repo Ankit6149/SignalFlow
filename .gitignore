@@ -46,7 +46,9 @@ frontend/node_modules/
 # Local generated artifacts
 .pytest_cache/
 .test-tmp/
+pytest-*/
 pipeline-output/
+test-temp-local/
 *.png
 *.mp4
 *.pdf

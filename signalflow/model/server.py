@@ -1,7 +1,7 @@
 import base64
 import tempfile
 from pathlib import Path
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Dict, Any
@@ -85,13 +85,20 @@ def pipeline(req: PipelineRequest):
 
 @app.post("/launch_kit")
 def launch_kit(req: LaunchKitRequest):
-    return create_launch_kit(
-        repo=Path(req.repo),
-        out_dir=Path(req.out_dir),
-        project_name=req.project_name,
-        audience=req.audience,
-        top_n=req.top,
-    )
+    try:
+        return create_launch_kit(
+            repo=Path(req.repo),
+            out_dir=Path(req.out_dir),
+            project_name=req.project_name,
+            audience=req.audience,
+            top_n=req.top,
+        )
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except RuntimeError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Launch kit failed: {exc}") from exc
 
 
 @app.get("/health")

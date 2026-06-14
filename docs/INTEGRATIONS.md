@@ -9,6 +9,7 @@ Today:
 - Generate a GitHub release draft in the launch kit.
 - Generate a Markdown export that can be copied into a release, issue, PR, or discussion.
 - Keep generated JSON and Markdown in `pipeline-output/` for review.
+- Run `python -m signalflow.cli launch-kit --repo <repo>` in local scripts or release prep checklists.
 
 Recommended next integration:
 
@@ -16,6 +17,13 @@ Recommended next integration:
 2. Require the user to confirm the repository, tag, title, and release body.
 3. Use `gh release create --draft` or the official GitHub API.
 4. Never publish automatically without explicit approval.
+
+Example manual release flow:
+
+```bash
+python -m signalflow.cli launch-kit --repo . --project-name "SignalFlow"
+gh release create v0.1.0 --draft --notes-file pipeline-output/<kit-folder>/launch-kit.md
+```
 
 ## LinkedIn and X
 

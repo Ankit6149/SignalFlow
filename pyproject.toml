@@ -15,4 +15,12 @@ where = ["."]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
-cache_dir = ".pytest_cache"
+norecursedirs = [
+    ".git",
+    ".pytest_cache",
+    ".test-tmp",
+    "frontend",
+    "node_modules",
+    "pipeline-output",
+    "test-temp-local",
+]

@@ -90,6 +90,7 @@ def create_launch_kit(repo: Path, out_dir: Path, project_name: str = "", audienc
     if not repo.exists() or not repo.is_dir():
         raise FileNotFoundError(f"Repository path not found: {repo}")
 
+    top_n = max(1, min(int(top_n or 5), 10))
     project_name = project_name.strip() or repo.name
     timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     kit_dir = Path(out_dir) / f"{_safe_slug(project_name)}-{timestamp}"
@@ -112,12 +113,11 @@ def create_launch_kit(repo: Path, out_dir: Path, project_name: str = "", audienc
                 "absolute_path": str(path),
                 "score": float(score),
                 "summary": f"High-signal source selected from `{rel_path}`; starts with: {first_line[:140]}",
-                "excerpt": excerpt,
             }
         )
 
     primary = highlights[0]
-    primary_code = primary["excerpt"] or Path(primary["absolute_path"]).read_text(encoding="utf-8", errors="ignore")[:1400]
+    primary_code = _read_excerpt(Path(primary["absolute_path"]))
     image_path = kit_dir / "code-highlight.png"
     ImageRenderer(theme="monokai", font_size=18).render_code(primary_code, out_path=image_path)
     image_base64 = base64.b64encode(image_path.read_bytes()).decode("utf-8")

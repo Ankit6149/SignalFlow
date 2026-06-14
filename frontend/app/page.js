@@ -62,6 +62,7 @@ export default function Home() {
   const [error, setError] = useState("");
   const [result, setResult] = useState(sampleResult);
   const [activeChannel, setActiveChannel] = useState("github_release");
+  const [copiedLabel, setCopiedLabel] = useState("");
 
   useEffect(() => {
     checkBackendHealth();
@@ -120,6 +121,19 @@ export default function Home() {
       setError(launchError.message);
     } finally {
       setIsGenerating(false);
+    }
+  }
+
+  async function copyText(label, text) {
+    if (!text) {
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedLabel(label);
+      window.setTimeout(() => setCopiedLabel(""), 1600);
+    } catch {
+      setError("Clipboard access was blocked. Select the text and copy it manually.");
     }
   }
 
@@ -257,7 +271,13 @@ export default function Home() {
             <div className={styles.sectionBlock}>
               <div className={styles.sectionTitle}>
                 <h3>Channel Drafts</h3>
-                <span>Edit before publishing</span>
+                <button
+                  className={styles.secondaryButton}
+                  onClick={() => copyText("draft", currentPost)}
+                  type="button"
+                >
+                  {copiedLabel === "draft" ? "Copied" : "Copy draft"}
+                </button>
               </div>
               <div className={styles.tabs}>
                 {channels.map(([key, label]) => (
@@ -290,9 +310,29 @@ export default function Home() {
           <section className={styles.sectionBlock}>
             <div className={styles.sectionTitle}>
               <h3>Slide Outline</h3>
-              <span>Presentation starter</span>
+              <button
+                className={styles.secondaryButton}
+                onClick={() => copyText("slides", result?.slide_outline || "")}
+                type="button"
+              >
+                {copiedLabel === "slides" ? "Copied" : "Copy outline"}
+              </button>
             </div>
             <pre className={styles.copyBox}>{result?.slide_outline || ""}</pre>
+          </section>
+
+          <section className={styles.sectionBlock}>
+            <div className={styles.sectionTitle}>
+              <h3>Markdown Export</h3>
+              <button
+                className={styles.secondaryButton}
+                onClick={() => copyText("markdown", result?.markdown || "")}
+                type="button"
+              >
+                {copiedLabel === "markdown" ? "Copied" : "Copy Markdown"}
+              </button>
+            </div>
+            <pre className={`${styles.copyBox} ${styles.markdownBox}`}>{result?.markdown || ""}</pre>
           </section>
 
           <section className={styles.integrationStrip}>

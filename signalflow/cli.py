@@ -1,10 +1,12 @@
 import argparse
+import json
 import sys
 from pathlib import Path
 from signalflow.ingestion.walker import DirectoryWalker
 from signalflow.ingestion.snr import SNRScorer
 from signalflow.compositor.image_renderer import ImageRenderer
 from signalflow.compositor.terminal_recorder import TerminalRecorder
+from signalflow.launchkit import create_launch_kit
 from signalflow.model.adapter import CloudStubAdapter, LocalRESTAdapter
 from signalflow.native import find_rust_renderer, render_code_via_rust
 from signalflow.orchestrator import run_pipeline
@@ -65,6 +67,20 @@ def cmd_stub_generate(args):
     print(text)
 
 
+def cmd_launch_kit(args):
+    result = create_launch_kit(
+        repo=Path(args.repo),
+        out_dir=Path(args.out_dir),
+        project_name=args.project_name,
+        audience=args.audience,
+        top_n=args.top,
+    )
+    printable = {key: value for key, value in result.items() if key != "image_base64"}
+    for highlight in printable.get("highlights", []):
+        highlight.pop("absolute_path", None)
+    print(json.dumps(printable, indent=2))
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description="SignalFlow - Orchestrator CLI")
     sub = parser.add_subparsers(dest="cmd")
@@ -92,6 +108,13 @@ def main(argv=None):
     p_pipeline.add_argument("--out-dir", required=False, default="pipeline-output", help="Output folder for pipeline artifacts")
     p_pipeline.add_argument("--top", type=int, default=5, help="Top N candidate files")
 
+    p_launch = sub.add_parser("launch-kit")
+    p_launch.add_argument("--repo", required=True, help="Repository path to turn into a launch kit")
+    p_launch.add_argument("--out-dir", required=False, default="pipeline-output", help="Output folder for launch kits")
+    p_launch.add_argument("--project-name", required=False, default="", help="Public project name")
+    p_launch.add_argument("--audience", required=False, default="", help="Audience to write for")
+    p_launch.add_argument("--top", type=int, default=5, help="Number of highlights to include")
+
     p_serve = sub.add_parser("serve")
     p_serve.add_argument("--host", default="127.0.0.1")
     p_serve.add_argument("--port", type=int, default=8000)
@@ -107,6 +130,8 @@ def main(argv=None):
         cmd_stub_generate(args)
     elif args.cmd == "pipeline":
         run_pipeline(Path(args.repo), Path(args.out_dir), args.top)
+    elif args.cmd == "launch-kit":
+        cmd_launch_kit(args)
     elif args.cmd == "serve":
         # Run FastAPI model stub via uvicorn
         uvicorn.run("signalflow.model.server:app", host=args.host, port=args.port, log_level="info")
