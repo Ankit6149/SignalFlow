@@ -8,4 +8,8 @@ Pillow
 Pygments
 reportlab
 markdown2
+fastapi
+uvicorn
+pydantic
+requests
 

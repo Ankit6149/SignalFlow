@@ -18,7 +18,7 @@ class ModelAdapter(ABC):
 
 
 class LocalRESTAdapter(ModelAdapter):
-    def __init__(self, base_url: str = "http://127.0.0.1:11434"):
+    def __init__(self, base_url: str = "http://127.0.0.1:8000"):
         self.base_url = base_url
 
     def initialize(self, config: Dict[str, Any]):
