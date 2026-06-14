@@ -14,11 +14,31 @@ Quick start (install Python deps then run the CLI):
 python -m pip install -r requirements.txt
 python -m signalflow.cli scan --repo "C:\\path\\to\\repo" --top 10
 ```
+Optional native component builds:
 
+```bash
+cd rust_media_compositor
+cargo build --release
+
+cd ../go_transport
+go build -o transport.exe .
+```
 Rendering a code image:
 
 ```bash
 python -m signalflow.cli render --file examples/example.py --out code.png
+```
+
+Run the full local pipeline:
+
+```bash
+python -m signalflow.cli pipeline --repo "C:\\path\\to\\repo" --out-dir output --top 5
+```
+
+Start the local model stub:
+
+```bash
+python -m signalflow.cli serve --host 127.0.0.1 --port 8000
 ```
 
 Generate presentation PDF from Markdown slides:
