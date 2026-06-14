@@ -25,14 +25,22 @@ Good search summary: **AI autoposting tool that turns descriptions, screenshots,
 Run the app:
 
 ```bash
-cd frontend
 npm install
 npm run dev
 ```
 
 Open `http://localhost:3000`.
 
-For open-source hosting, deploy the Next.js app in `frontend/`. SignalFlow Studio is designed as one hosted app: UI, generation routes, media capture, and package formatting live together.
+For open-source hosting, deploy the repository to Vercel as a Next.js app. The root `package.json` and `vercel.json` already route Vercel to `frontend/`, so the repo should build as one hosted app: UI, generation routes, media capture, and package formatting live together.
+
+Vercel settings:
+
+```text
+Framework Preset: Next.js
+Install Command: npm install --prefix frontend
+Build Command: npm run build
+Output Directory: frontend/.next
+```
 
 From the frontend you can choose the input type, paste source material,
 select output channels, capture media, and prepare a manual, file, webhook,
@@ -45,7 +53,6 @@ or deployment environment when connecting a real provider.
 Build the frontend:
 
 ```bash
-cd frontend
 npm run build
 ```
 
