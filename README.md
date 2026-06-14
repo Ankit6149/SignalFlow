@@ -31,16 +31,20 @@ npm run dev
 
 Open `http://localhost:3000`.
 
-For open-source hosting, deploy the repository to Vercel as a Next.js app. The root `package.json` and `vercel.json` already route Vercel to `frontend/`, so the repo should build as one hosted app: UI, generation routes, media capture, and package formatting live together.
+For open-source hosting, deploy the repository to Vercel as a Next.js app and set the Vercel root directory to `frontend`. The app builds as one hosted product: UI, generation routes, media capture, crawler files, and package formatting live together.
 
 Vercel settings:
 
 ```text
+Root Directory: frontend
 Framework Preset: Next.js
-Install Command: npm install --prefix frontend
+Install Command: npm install
 Build Command: npm run build
-Output Directory: frontend/.next
+Output Directory: .next
 ```
+
+Do not use `npm install --prefix frontend` when Vercel Root Directory is already
+set to `frontend`; that makes Vercel look for `frontend/frontend/package.json`.
 
 ### Protect Your Hosted Demo
 

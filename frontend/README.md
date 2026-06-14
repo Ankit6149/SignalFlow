@@ -25,6 +25,14 @@ for open self-hosted installs.
 Do not use a `NEXT_PUBLIC_` name for this value. It is read only by server-side
 API routes, and the browser receives only the signed session token.
 
+Vercel project settings when this folder is selected as Root Directory:
+
+```text
+Install Command: npm install
+Build Command: npm run build
+Output Directory: .next
+```
+
 Build check:
 
 ```bash
