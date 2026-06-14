@@ -19,12 +19,15 @@ def test_create_launch_kit(tmp_path):
         out_dir=tmp_path / "out",
         project_name="Demo Project",
         audience="maintainers",
+        channels=["linkedin", "newsletter"],
         top_n=1,
     )
 
     assert result["project_name"] == "Demo Project"
     assert result["highlights"][0]["path"] == "app.py"
-    assert "github_release" in result["posts"]
+    assert "linkedin" in result["posts"]
+    assert "newsletter" in result["posts"]
+    assert "x" not in result["posts"]
     assert Path(result["assets"]["code_image"]).exists()
     assert Path(result["assets"]["markdown"]).exists()
     assert Path(result["assets"]["summary"]).exists()
@@ -40,9 +43,11 @@ def test_create_notes_kit(tmp_path):
         out_dir=tmp_path / "out",
         project_name="Demo Notes",
         audience="builders",
+        channels=["x"],
     )
 
     assert result["repo"] == "pasted-notes"
     assert result["highlights"][0]["path"] == "pasted-notes"
-    assert "newsletter" in result["posts"]
+    assert list(result["posts"].keys()) == ["x"]
+    assert result["chatbot_prompt"]
     assert Path(result["assets"]["markdown"]).exists()

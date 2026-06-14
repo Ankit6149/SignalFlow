@@ -9,3 +9,4 @@ All notable changes to this project will be documented in this file.
 - Added a safe launch-kit API and redesigned the frontend as a guided product workflow.
 - Added a CLI launch-kit command, safer scanning defaults, copy actions, and clearer integration docs.
 - Added notes/changelog input so SignalFlow works beyond repository-only publishing.
+- Simplified the UI around assets, selected channels, and model/chatbot generation.

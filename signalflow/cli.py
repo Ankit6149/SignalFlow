@@ -74,6 +74,8 @@ def cmd_launch_kit(args):
             out_dir=Path(args.out_dir),
             project_name=args.project_name,
             audience=args.audience,
+            channels=args.channel,
+            generator=args.generator,
         )
     else:
         result = create_launch_kit(
@@ -82,6 +84,8 @@ def cmd_launch_kit(args):
             project_name=args.project_name,
             audience=args.audience,
             top_n=args.top,
+            channels=args.channel,
+            generator=args.generator,
         )
     printable = {key: value for key, value in result.items() if key != "image_base64"}
     for highlight in printable.get("highlights", []):
@@ -122,6 +126,8 @@ def main(argv=None):
     p_launch.add_argument("--out-dir", required=False, default="pipeline-output", help="Output folder for launch kits")
     p_launch.add_argument("--project-name", required=False, default="", help="Public project name")
     p_launch.add_argument("--audience", required=False, default="", help="Audience to write for")
+    p_launch.add_argument("--channel", action="append", default=[], help="Output channel format: linkedin, x, instagram, blog, newsletter, release_notes")
+    p_launch.add_argument("--generator", required=False, default="local", help="Generator path: local, api, slm, or chatbot")
     p_launch.add_argument("--top", type=int, default=5, help="Number of highlights to include")
 
     p_serve = sub.add_parser("serve")

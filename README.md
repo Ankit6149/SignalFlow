@@ -1,15 +1,16 @@
 # SignalFlow
 
-SignalFlow turns technical work into a small publishing kit: ranked code highlights, shareable signal cards, post copy, launch notes, slide outlines, and Markdown exports.
+SignalFlow turns technical assets into channel-ready content. Add notes, changelogs, code snippets, screenshots text, or repo context; choose channels; then generate drafts or copy a prompt into a local SLM, API model, or free chatbot.
 
 The project is intentionally local-first. It is useful for builders, founders, developers, maintainers, and DevRel teams who want to explain technical work without pasting private source code into a hosted product.
 
 ## What Works Today
 
-- Generate drafts from pasted notes, changelogs, code snippets, or repository context.
+- Generate drafts from pasted notes, changelogs, code snippets, screenshots text, or repository context.
 - Scan a repository and rank source files by simple signal-to-noise heuristics.
 - Render syntax-highlighted code snippets to PNG.
-- Generate channel drafts for LinkedIn, X, blogs, newsletters, and GitHub releases.
+- Generate selected channel formats for LinkedIn, X, Instagram, blogs, newsletters, and release notes.
+- Export a model prompt for local SLMs, API models, or free chatbots.
 - Run a local pipeline that writes Markdown, JSON, and media artifacts.
 - Use a Next.js UI that proxies requests to the local Python backend.
 
@@ -37,7 +38,9 @@ Create from a notes file instead of a repository:
 python -m signalflow.cli launch-kit ^
   --notes-file launch-notes.md ^
   --project-name "My Project" ^
-  --audience "technical founders"
+  --audience "technical founders" ^
+  --channel linkedin ^
+  --channel newsletter
 ```
 
 Start the local backend:
@@ -110,6 +113,6 @@ curl -X POST http://127.0.0.1:8000/launch_kit ^
 The strongest product angle is: **a local-first publishing engine for builders and technical teams**.
 
 See [ROADMAP.md](ROADMAP.md) for the path from prototype to a product people can understand, try, and contribute to.
-See [docs/INTEGRATIONS.md](docs/INTEGRATIONS.md) for the GitHub, social, and blog integration strategy.
+See [docs/INTEGRATIONS.md](docs/INTEGRATIONS.md) for the asset-to-model and channel integration strategy.
 
 Security and ethics: see [SECURITY.md](SECURITY.md). SignalFlow must not harvest credentials, bypass platform protections, or publish to third-party services without official APIs and explicit user approval.

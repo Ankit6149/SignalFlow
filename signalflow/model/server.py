@@ -4,7 +4,7 @@ from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import Dict, Any
+from typing import Dict, Any, List
 from signalflow.compositor.image_renderer import ImageRenderer
 from signalflow.launchkit import create_launch_kit, create_notes_kit
 from signalflow.orchestrator import run_pipeline
@@ -50,6 +50,8 @@ class LaunchKitRequest(BaseModel):
     out_dir: str = "pipeline-output"
     project_name: str = ""
     audience: str = ""
+    channels: List[str] = []
+    generator: str = "local"
     top: int = 5
 
 
@@ -93,6 +95,8 @@ def launch_kit(req: LaunchKitRequest):
                 out_dir=Path(req.out_dir),
                 project_name=req.project_name,
                 audience=req.audience,
+                channels=req.channels,
+                generator=req.generator,
             )
         return create_launch_kit(
             repo=Path(req.repo),
@@ -100,6 +104,8 @@ def launch_kit(req: LaunchKitRequest):
             project_name=req.project_name,
             audience=req.audience,
             top_n=req.top,
+            channels=req.channels,
+            generator=req.generator,
         )
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc

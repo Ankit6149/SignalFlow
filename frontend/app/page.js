@@ -5,57 +5,62 @@ import styles from "./page.module.css";
 
 const API_BASE = "/api";
 
+const CHANNELS = [
+  ["linkedin", "LinkedIn"],
+  ["x", "X"],
+  ["instagram", "Instagram"],
+  ["blog", "Blog"],
+  ["newsletter", "Newsletter"],
+  ["release_notes", "Release notes"],
+];
+
 const sampleResult = {
   project_name: "SignalFlow",
   output_dir: "pipeline-output/signalflow-demo",
   highlights: [
     {
-      path: "pasted-notes",
+      path: "assets",
       score: 1,
       summary:
-        "Launch context supplied from notes; starts with: Added local-first content generation for builders.",
+        "Assets supplied from notes; starts with: Turn code, notes, and launch context into channel-ready content.",
     },
   ],
+  channels: ["linkedin", "x", "newsletter"],
+  generator: "chatbot",
+  chatbot_prompt:
+    "You are helping create content for SignalFlow.\nAudience: builders and technical founders.\nChannels: LinkedIn, X, Newsletter.\nUse the supplied assets and return one section per channel.",
   posts: {
     linkedin:
-      "I am building SignalFlow, a local-first way to turn technical work into publish-ready content.\n\nIt takes code, notes, changelogs, or repo context and creates drafts for LinkedIn, X, newsletters, blogs, and release notes.",
+      "I am building SignalFlow, a simple way to turn raw product work into channel-ready content.\n\nAdd assets, choose channels, generate drafts, then review before publishing.",
     x:
-      "Building SignalFlow: turn technical work into posts, release notes, newsletters, and launch assets.\n\nLocal-first. Builder-focused. No auto-posting surprises.",
-    blog_intro:
-      "SignalFlow helps builders find the signal in their work and share it across channels without starting from a blank page.",
+      "SignalFlow turns rough work into publish-ready drafts.\n\nAssets in. Channels selected. Content out.",
     newsletter:
-      "Subject: SignalFlow update\n\nI am working on SignalFlow, a local-first content engine for technical builders. It turns raw project context into channel-ready drafts and launch assets.",
-    github_release:
-      "## SignalFlow update\n\nSignalFlow now creates editable launch assets from technical context while keeping source local.",
+      "Subject: SignalFlow update\n\nSignalFlow now helps builders turn notes, code, and launch context into channel-specific drafts.",
   },
-  slide_outline:
-    "# SignalFlow\n\n## Signal\n- Builders ship work but struggle to explain it consistently.\n\n## Flow\n- Add repo context or notes.\n- Generate channel drafts.\n- Review, copy, publish manually.\n\n## Outcome\n- More consistent visibility without uploading private source.",
-  markdown:
-    "# SignalFlow Kit\n\n## Channel Drafts\n\nReady-to-edit drafts for LinkedIn, X, newsletters, blogs, and GitHub.",
+  markdown: "# SignalFlow Kit\n\nReady-to-edit drafts for selected channels.",
   assets: {
     code_image: "pipeline-output/signalflow-demo/signal-card.png",
     markdown: "pipeline-output/signalflow-demo/signalflow-kit.md",
     summary: "pipeline-output/signalflow-demo/signalflow-kit.json",
   },
   integration_notes: [
-    "Copy drafts into LinkedIn, X, newsletters, blogs, GitHub releases, or docs.",
-    "Keep publishing manual until OAuth integrations are configured by the user.",
-    "Use the Markdown export as the source of truth for launch review.",
+    "Use assets as input for a local SLM, API model, or free chatbot.",
+    "Selected channels control the format of generated drafts.",
+    "Review before publishing.",
   ],
 };
 
 export default function Home() {
-  const [sourceMode, setSourceMode] = useState("notes");
+  const [sourceMode, setSourceMode] = useState("assets");
   const [repoPath, setRepoPath] = useState("");
   const [notes, setNotes] = useState(
-    "Shipped a local-first content workflow for builders.\nIt turns code, changelogs, repo context, or notes into LinkedIn, X, blog, newsletter, and release drafts.\nThe product keeps publishing manual and source local.",
+    "SignalFlow helps builders turn product work into content.\nAssets can be launch notes, code snippets, changelogs, screenshots, or repo context.\nThe user selects channels, then sends the asset pack to a local SLM, API model, or free chatbot.",
   );
   const [projectName, setProjectName] = useState("SignalFlow");
-  const [audience, setAudience] = useState(
-    "builders, indie hackers, open-source maintainers, and technical founders",
-  );
+  const [audience, setAudience] = useState("builders, founders, and technical creators");
+  const [generator, setGenerator] = useState("chatbot");
+  const [selectedChannels, setSelectedChannels] = useState(["linkedin", "x", "newsletter"]);
   const [outDir, setOutDir] = useState("pipeline-output");
-  const [top, setTop] = useState(5);
   const [backendStatus, setBackendStatus] = useState("Checking");
   const [statusTone, setStatusTone] = useState("checking");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -68,16 +73,10 @@ export default function Home() {
     checkBackendHealth();
   }, []);
 
-  const channels = useMemo(
-    () => [
-      ["linkedin", "LinkedIn"],
-      ["x", "X"],
-      ["blog_intro", "Blog"],
-      ["newsletter", "Newsletter"],
-      ["github_release", "GitHub"],
-    ],
-    [],
-  );
+  const resultChannels = useMemo(() => {
+    const keys = Object.keys(result?.posts || {});
+    return CHANNELS.filter(([key]) => keys.includes(key));
+  }, [result]);
 
   async function checkBackendHealth() {
     try {
@@ -96,7 +95,16 @@ export default function Home() {
     }
   }
 
-  async function createLaunchKit(event) {
+  function toggleChannel(channel) {
+    setSelectedChannels((current) => {
+      if (current.includes(channel)) {
+        return current.length === 1 ? current : current.filter((item) => item !== channel);
+      }
+      return [...current, channel];
+    });
+  }
+
+  async function createContentKit(event) {
     event.preventDefault();
     setError("");
     setIsGenerating(true);
@@ -113,15 +121,16 @@ export default function Home() {
           out_dir: outDir,
           project_name: projectName,
           audience,
-          top: Number(top),
+          channels: selectedChannels,
+          generator,
         }),
       });
       const data = await resp.json();
       if (!resp.ok) {
-        throw new Error(data?.detail || data?.error || "SignalFlow could not create the kit");
+        throw new Error(data?.detail || data?.error || "SignalFlow could not generate content");
       }
       setResult(data);
-      setActiveChannel(data?.posts?.linkedin ? "linkedin" : Object.keys(data?.posts || {})[0]);
+      setActiveChannel(Object.keys(data?.posts || {})[0] || "linkedin");
     } catch (launchError) {
       setError(launchError.message);
     } finally {
@@ -146,259 +155,230 @@ export default function Home() {
   const imageSrc = result?.image_base64
     ? `data:image/png;base64,${result.image_base64}`
     : "";
-  const backendOnline = statusTone === "online";
 
   return (
-    <main className={styles.shell}>
-      <section className={styles.heroBand}>
-        <nav className={styles.nav}>
-          <strong>SignalFlow</strong>
-          <span>Local-first publishing engine</span>
-        </nav>
-        <div className={styles.heroGrid}>
-          <div className={styles.heroCopy}>
-            <p className={styles.eyebrow}>Find the signal. Share it everywhere.</p>
-            <h1>Turn your work into posts, release notes, and launch assets.</h1>
-            <p>
-              SignalFlow creates channel-ready drafts from repo context, code,
-              changelogs, or rough notes while keeping publishing manual and
-              source local.
-            </p>
-            <div className={styles.heroActions}>
-              <a href="#workspace">Create a kit</a>
-              <button type="button" onClick={() => copyText("cli", "python -m signalflow.cli launch-kit --repo .")}>
-                {copiedLabel === "cli" ? "Copied" : "Copy CLI"}
-              </button>
-            </div>
-          </div>
-          <div className={styles.previewPanel}>
-            <div className={styles.previewHeader}>
-              <span>Channels</span>
-              <strong>LinkedIn · X · Blog · Newsletter · GitHub</strong>
-            </div>
-            <pre>{sampleResult.posts.linkedin}</pre>
-          </div>
+    <main className={styles.page}>
+      <header className={styles.header}>
+        <div>
+          <p className={styles.eyebrow}>SignalFlow</p>
+          <h1>Assets in. Channel-ready content out.</h1>
+          <p>
+            Add product assets, choose channels, then generate drafts through a
+            local template, API model, SLM, or free chatbot prompt.
+          </p>
         </div>
-      </section>
+        <div className={`${styles.statusPill} ${styles[statusTone]}`}>
+          <span />
+          Backend {backendStatus}
+        </div>
+      </header>
 
-      <section className={styles.workspace} id="workspace">
-        <aside className={styles.controlPanel}>
-          <div className={`${styles.statusCard} ${styles[statusTone]}`}>
-            <span className={styles.statusDot} />
+      <section className={styles.appGrid}>
+        <form className={styles.builder} onSubmit={createContentKit}>
+          <div className={styles.step}>
+            <span>1</span>
             <div>
-              <strong>Backend {backendStatus}</strong>
-              <small>{backendOnline ? "Ready to generate" : "Run python -m signalflow.cli serve --host 127.0.0.1 --port 8000"}</small>
+              <h2>Add assets</h2>
+              <p>Paste notes, changelog, code, screenshots text, or scan a local repo.</p>
             </div>
-            <button type="button" onClick={checkBackendHealth}>
-              Check
+          </div>
+
+          <div className={styles.segmented}>
+            <button
+              className={sourceMode === "assets" ? styles.activeSegment : ""}
+              onClick={() => setSourceMode("assets")}
+              type="button"
+            >
+              Paste assets
+            </button>
+            <button
+              className={sourceMode === "repo" ? styles.activeSegment : ""}
+              onClick={() => setSourceMode("repo")}
+              type="button"
+            >
+              Scan repo
             </button>
           </div>
 
-          <form className={styles.form} onSubmit={createLaunchKit}>
-            <div className={styles.modeSwitch}>
-              <button
-                className={sourceMode === "notes" ? styles.activeMode : ""}
-                onClick={() => setSourceMode("notes")}
-                type="button"
-              >
-                Notes
-              </button>
-              <button
-                className={sourceMode === "repo" ? styles.activeMode : ""}
-                onClick={() => setSourceMode("repo")}
-                type="button"
-              >
-                Repo
-              </button>
-            </div>
-
-            {sourceMode === "repo" ? (
-              <label>
-                Repository path
-                <input
-                  value={repoPath}
-                  onChange={(event) => setRepoPath(event.target.value)}
-                  placeholder="C:/Users/you/projects/my-repo"
-                  required={sourceMode === "repo"}
-                />
-              </label>
-            ) : (
-              <label>
-                Notes, code, changelog, or launch context
-                <textarea
-                  className={styles.notesArea}
-                  value={notes}
-                  onChange={(event) => setNotes(event.target.value)}
-                  rows={9}
-                  required={sourceMode === "notes"}
-                />
-              </label>
-            )}
-
-            <label>
-              Product or project name
+          {sourceMode === "repo" ? (
+            <label className={styles.field}>
+              Repo path
               <input
-                value={projectName}
-                onChange={(event) => setProjectName(event.target.value)}
-                placeholder="SignalFlow"
+                value={repoPath}
+                onChange={(event) => setRepoPath(event.target.value)}
+                placeholder="C:/Users/you/projects/my-product"
+                required={sourceMode === "repo"}
               />
             </label>
-
-            <label>
-              Audience
+          ) : (
+            <label className={styles.field}>
+              Asset pack
               <textarea
-                value={audience}
-                onChange={(event) => setAudience(event.target.value)}
-                rows={3}
+                value={notes}
+                onChange={(event) => setNotes(event.target.value)}
+                rows={10}
+                required={sourceMode === "assets"}
               />
             </label>
+          )}
 
-            <div className={styles.formGrid}>
-              <label>
-                Output folder
-                <input
-                  value={outDir}
-                  onChange={(event) => setOutDir(event.target.value)}
-                />
-              </label>
-              <label>
-                Signals
-                <input
-                  min="1"
-                  max="10"
-                  type="number"
-                  value={top}
-                  onChange={(event) => setTop(event.target.value)}
-                  disabled={sourceMode === "notes"}
-                />
-              </label>
+          <div className={styles.twoCols}>
+            <label className={styles.field}>
+              Product
+              <input value={projectName} onChange={(event) => setProjectName(event.target.value)} />
+            </label>
+            <label className={styles.field}>
+              Audience
+              <input value={audience} onChange={(event) => setAudience(event.target.value)} />
+            </label>
+          </div>
+
+          <div className={styles.step}>
+            <span>2</span>
+            <div>
+              <h2>Select channels</h2>
+              <p>These are content formats, not connected posting accounts.</p>
             </div>
+          </div>
 
-            <button className={styles.primaryButton} disabled={isGenerating}>
-              {isGenerating ? "Creating SignalFlow kit..." : "Generate drafts"}
-            </button>
-            {error && <p className={styles.errorText}>{error}</p>}
-          </form>
-        </aside>
+          <div className={styles.channelGrid}>
+            {CHANNELS.map(([key, label]) => (
+              <button
+                className={selectedChannels.includes(key) ? styles.selectedChannel : ""}
+                key={key}
+                onClick={() => toggleChannel(key)}
+                type="button"
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          <div className={styles.step}>
+            <span>3</span>
+            <div>
+              <h2>Choose generator</h2>
+              <p>Use local drafts now, or copy the prompt into your preferred model.</p>
+            </div>
+          </div>
+
+          <div className={styles.generatorRow}>
+            {["local", "api", "slm", "chatbot"].map((item) => (
+              <button
+                className={generator === item ? styles.activeSegment : ""}
+                key={item}
+                onClick={() => setGenerator(item)}
+                type="button"
+              >
+                {item.toUpperCase()}
+              </button>
+            ))}
+          </div>
+
+          <label className={styles.field}>
+            Export folder
+            <input value={outDir} onChange={(event) => setOutDir(event.target.value)} />
+          </label>
+
+          <button className={styles.primaryButton} disabled={isGenerating}>
+            {isGenerating ? "Generating..." : "Generate content"}
+          </button>
+          {error && <p className={styles.errorText}>{error}</p>}
+        </form>
 
         <section className={styles.results}>
-          <div className={styles.resultsHeader}>
+          <div className={styles.resultHeader}>
             <div>
-              <p className={styles.eyebrow}>Generated kit</p>
-              <h2>{result?.project_name || "Ready when you are"}</h2>
+              <p className={styles.eyebrow}>Generated</p>
+              <h2>{result.project_name}</h2>
             </div>
-            <div className={styles.outputPath}>
-              <span>Export</span>
-              <strong>{result?.output_dir || "Not generated yet"}</strong>
-            </div>
+            <button
+              className={styles.secondaryButton}
+              onClick={() => copyText("prompt", result.chatbot_prompt || "")}
+              type="button"
+            >
+              {copiedLabel === "prompt" ? "Copied" : "Copy model prompt"}
+            </button>
           </div>
 
-          <div className={styles.metrics}>
+          <div className={styles.summaryBar}>
             <div>
               <strong>{result?.highlights?.length || 0}</strong>
-              <span>signals</span>
+              <span>assets</span>
             </div>
             <div>
-              <strong>{Object.keys(result?.posts || {}).length}</strong>
+              <strong>{resultChannels.length}</strong>
               <span>channels</span>
             </div>
             <div>
-              <strong>Manual</strong>
-              <span>review before publish</span>
+              <strong>{result.generator || "local"}</strong>
+              <span>generator</span>
             </div>
           </div>
 
-          <section className={styles.sectionBlock}>
-            <div className={styles.sectionTitle}>
-              <h3>Signals</h3>
-              <span>What the drafts are based on</span>
-            </div>
-            <div className={styles.highlightList}>
-              {(result?.highlights || []).map((item) => (
-                <article className={styles.highlightCard} key={item.path}>
-                  <div>
-                    <strong>{item.path}</strong>
-                    <p>{item.summary}</p>
-                  </div>
-                  <span>{Number(item.score || 0).toFixed(2)}</span>
-                </article>
-              ))}
-            </div>
-          </section>
+          <div className={styles.tabs}>
+            {resultChannels.map(([key, label]) => (
+              <button
+                className={activeChannel === key ? styles.activeTab : ""}
+                key={key}
+                onClick={() => setActiveChannel(key)}
+                type="button"
+              >
+                {label}
+              </button>
+            ))}
+          </div>
 
-          <section className={styles.splitPanel}>
-            <div className={styles.sectionBlock}>
-              <div className={styles.sectionTitle}>
-                <h3>Channel Drafts</h3>
+          <div className={styles.outputCard}>
+            <div className={styles.outputTitle}>
+              <h3>{CHANNELS.find(([key]) => key === activeChannel)?.[1] || "Draft"}</h3>
+              <button
+                className={styles.secondaryButton}
+                onClick={() => copyText("draft", currentPost)}
+                type="button"
+              >
+                {copiedLabel === "draft" ? "Copied" : "Copy draft"}
+              </button>
+            </div>
+            <pre>{currentPost}</pre>
+          </div>
+
+          <div className={styles.outputGrid}>
+            <div className={styles.outputCard}>
+              <div className={styles.outputTitle}>
+                <h3>Model prompt</h3>
                 <button
                   className={styles.secondaryButton}
-                  onClick={() => copyText("draft", currentPost)}
+                  onClick={() => copyText("prompt2", result.chatbot_prompt || "")}
                   type="button"
                 >
-                  {copiedLabel === "draft" ? "Copied" : "Copy draft"}
+                  {copiedLabel === "prompt2" ? "Copied" : "Copy"}
                 </button>
               </div>
-              <div className={styles.tabs}>
-                {channels.map(([key, label]) => (
-                  <button
-                    className={activeChannel === key ? styles.activeTab : ""}
-                    key={key}
-                    onClick={() => setActiveChannel(key)}
-                    type="button"
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-              <pre className={styles.copyBox}>{currentPost}</pre>
+              <pre>{result.chatbot_prompt}</pre>
             </div>
 
-            <div className={styles.sectionBlock}>
-              <div className={styles.sectionTitle}>
-                <h3>Signal Card</h3>
-                <span>{result?.assets?.code_image || "Generated PNG preview"}</span>
+            <div className={styles.outputCard}>
+              <div className={styles.outputTitle}>
+                <h3>Signal card</h3>
+                <span>{result?.assets?.code_image || "PNG asset"}</span>
               </div>
               {imageSrc ? (
-                <img className={styles.codeImage} src={imageSrc} alt="Generated SignalFlow card" />
+                <img className={styles.signalImage} src={imageSrc} alt="Generated signal card" />
               ) : (
-                <div className={styles.imagePlaceholder}>Generate a kit to preview the PNG.</div>
+                <div className={styles.emptyImage}>Generate to preview the card.</div>
               )}
             </div>
-          </section>
+          </div>
 
-          <section className={styles.sectionBlock}>
-            <div className={styles.sectionTitle}>
-              <h3>Launch Outline</h3>
-              <button
-                className={styles.secondaryButton}
-                onClick={() => copyText("slides", result?.slide_outline || "")}
-                type="button"
-              >
-                {copiedLabel === "slides" ? "Copied" : "Copy outline"}
-              </button>
-            </div>
-            <pre className={styles.copyBox}>{result?.slide_outline || ""}</pre>
-          </section>
-
-          <section className={styles.sectionBlock}>
-            <div className={styles.sectionTitle}>
-              <h3>Markdown Export</h3>
-              <button
-                className={styles.secondaryButton}
-                onClick={() => copyText("markdown", result?.markdown || "")}
-                type="button"
-              >
-                {copiedLabel === "markdown" ? "Copied" : "Copy Markdown"}
-              </button>
-            </div>
-            <pre className={`${styles.copyBox} ${styles.markdownBox}`}>{result?.markdown || ""}</pre>
-          </section>
-
-          <section className={styles.integrationStrip}>
-            {(result?.integration_notes || []).map((note) => (
-              <div key={note}>{note}</div>
+          <div className={styles.assetList}>
+            {(result?.highlights || []).map((asset) => (
+              <div key={asset.path}>
+                <strong>{asset.path}</strong>
+                <span>{asset.summary}</span>
+              </div>
             ))}
-          </section>
+          </div>
         </section>
       </section>
     </main>

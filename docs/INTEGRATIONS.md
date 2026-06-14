@@ -2,29 +2,30 @@
 
 SignalFlow is local-first. It generates assets and drafts that users can review before publishing through official channels.
 
-Inputs can be pasted notes, changelogs, code snippets, launch context, or a local repository path.
+Inputs can be pasted notes, changelogs, code snippets, screenshot text, launch context, or a local repository path.
 
-## GitHub
+SignalFlow treats repositories, files, screenshots, changelogs, and notes as **assets**. Channels are output formats selected by the user.
+
+## Model Generation
 
 Today:
 
-- Generate a GitHub release draft in the launch kit.
-- Generate a Markdown export that can be copied into a release, issue, PR, or discussion.
+- Generate local template drafts.
+- Export a prompt that can be pasted into a local SLM, API model, or free chatbot.
 - Keep generated JSON and Markdown in `pipeline-output/` for review.
-- Run `python -m signalflow.cli launch-kit --repo <repo>` in local scripts or release prep checklists.
+- Run `python -m signalflow.cli launch-kit --notes-file <file> --channel linkedin --channel newsletter`.
 
 Recommended next integration:
 
-1. Add a GitHub CLI helper that creates a draft release from `launch-kit.md`.
-2. Require the user to confirm the repository, tag, title, and release body.
-3. Use `gh release create --draft` or the official GitHub API.
+1. Add provider adapters for OpenAI-compatible APIs, local SLM servers, and clipboard-only chatbot flows.
+2. Require users to choose channels before generation.
+3. Store API keys only in local environment variables or OS keychain.
 4. Never publish automatically without explicit approval.
 
 Example manual release flow:
 
 ```bash
-python -m signalflow.cli launch-kit --repo . --project-name "SignalFlow"
-gh release create v0.1.0 --draft --notes-file pipeline-output/<kit-folder>/launch-kit.md
+python -m signalflow.cli launch-kit --notes-file launch-notes.md --channel linkedin --channel x
 ```
 
 ## LinkedIn and X

@@ -8,7 +8,7 @@ Build for builders, developers, founders, and maintainers who want to share tech
 
 The one-line promise:
 
-> Turn technical work into polished launch assets: posts, signal cards, changelog summaries, newsletters, and slide outlines.
+> Turn technical assets into selected-channel content through local templates, SLMs, API models, or chatbot prompts.
 
 ## MVP Workflow
 
