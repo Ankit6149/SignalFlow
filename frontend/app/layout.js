@@ -1,8 +1,8 @@
 import "../app/globals.css";
 
 export const metadata = {
-  title: "SignalFlow - Local Launch Kit Generator",
-  description: "Create local-first developer launch assets from a repository.",
+  title: "PostPilot - Describe Once, Post Everywhere",
+  description: "Create platform-ready posting packages from descriptions, data, and assets.",
 };
 
 export default function RootLayout({ children }) {

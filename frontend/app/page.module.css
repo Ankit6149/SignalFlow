@@ -54,6 +54,13 @@
   font-size: 1.05rem;
 }
 
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+}
+
 .statusPill {
   display: inline-flex;
   align-items: center;
@@ -97,6 +104,133 @@
   animation: riseIn 680ms ease 80ms both;
 }
 
+.explainer,
+.startPanel {
+  max-width: 1320px;
+  margin: 0 auto 28px;
+}
+
+.explainer {
+  display: grid;
+  gap: 18px;
+  animation: riseIn 620ms cubic-bezier(0.2, 0.8, 0.2, 1) 70ms both;
+}
+
+.explainerIntro {
+  display: grid;
+  gap: 6px;
+}
+
+.explainerIntro h2,
+.startPanel h2 {
+  max-width: 720px;
+  margin: 0;
+  color: #111512;
+  font-size: clamp(1.8rem, 4vw, 3.2rem);
+  line-height: 1.02;
+  letter-spacing: 0;
+}
+
+.explainGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.explainCard,
+.startPanel {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #d8d0c2;
+  border-radius: 8px;
+  background: #fffaf0;
+}
+
+.explainCard {
+  display: grid;
+  gap: 12px;
+  min-height: 180px;
+  padding: 18px;
+  animation: cardIn 560ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.explainCard:nth-child(2) {
+  animation-delay: 80ms;
+}
+
+.explainCard:nth-child(3) {
+  animation-delay: 160ms;
+}
+
+.explainCard:nth-child(4) {
+  animation-delay: 240ms;
+}
+
+.explainCard::before,
+.startPanel::before {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 0%, rgba(255, 255, 255, 0.64) 45%, transparent 68%);
+  content: "";
+  opacity: 0;
+  transform: translateX(-70%);
+  transition: opacity 180ms ease;
+}
+
+.explainCard:hover::before,
+.startPanel:hover::before {
+  opacity: 1;
+  animation: panelSheen 850ms ease both;
+}
+
+.explainCard:hover {
+  border-color: #b8ad9d;
+  box-shadow: 0 18px 46px rgba(33, 28, 18, 0.08);
+  transform: translateY(-3px);
+}
+
+.explainCard span {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 999px;
+  background: #226b57;
+  color: #ffffff;
+  font-weight: 900;
+}
+
+.explainCard h3 {
+  margin: 0;
+  color: #111512;
+  font-size: 1.08rem;
+}
+
+.explainCard p,
+.startPanel p {
+  margin: 0;
+  color: #536159;
+  font-size: 0.98rem;
+  line-height: 1.65;
+}
+
+.startPanel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: center;
+  padding: 24px;
+  animation: riseIn 620ms cubic-bezier(0.2, 0.8, 0.2, 1) 140ms both;
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.startPanel:hover {
+  border-color: #b8ad9d;
+  box-shadow: 0 18px 46px rgba(33, 28, 18, 0.08);
+  transform: translateY(-2px);
+}
+
 .pipelineMap {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -124,25 +258,25 @@
   height: 3px;
   background: linear-gradient(90deg, #226b57, #ea6b4d, #c7a453);
   content: "";
-  opacity: 0.75;
+  opacity: 0;
   transform: translateX(-100%);
-  animation: flowLine 3.2s ease-in-out infinite;
+  animation: flowLine 900ms cubic-bezier(0.2, 0.8, 0.2, 1) 500ms both;
 }
 
 .pipelineMap div:nth-child(2)::after {
-  animation-delay: 160ms;
+  animation-delay: 620ms;
 }
 
 .pipelineMap div:nth-child(3)::after {
-  animation-delay: 320ms;
+  animation-delay: 740ms;
 }
 
 .pipelineMap div:nth-child(4)::after {
-  animation-delay: 480ms;
+  animation-delay: 860ms;
 }
 
 .pipelineMap div:nth-child(5)::after {
-  animation-delay: 640ms;
+  animation-delay: 980ms;
 }
 
 .pipelineMap div:hover,
@@ -527,7 +661,9 @@
   .header,
   .appGrid,
   .outputGrid,
-  .pipelineMap {
+  .pipelineMap,
+  .explainGrid,
+  .startPanel {
     grid-template-columns: 1fr;
   }
 }
@@ -587,11 +723,38 @@
 
 @keyframes flowLine {
   0% {
+    opacity: 0;
     transform: translateX(-100%);
   }
-  45%,
+  20% {
+    opacity: 0.75;
+  }
+  70% {
+    opacity: 0.75;
+  }
   100% {
+    opacity: 0;
     transform: translateX(100%);
+  }
+}
+
+@keyframes cardIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes panelSheen {
+  from {
+    transform: translateX(-70%);
+  }
+  to {
+    transform: translateX(110%);
   }
 }
 

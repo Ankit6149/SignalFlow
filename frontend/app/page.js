@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import styles from "./page.module.css";
 
 const API_BASE = "/api";
+const PRODUCT_NAME = "PostPilot";
 
 const CHANNELS = [
   ["linkedin", "LinkedIn"],
@@ -35,33 +36,33 @@ const DISTRIBUTION_MODES = [
 ];
 
 const sampleResult = {
-  project_name: "SignalFlow",
-  output_dir: "pipeline-output/signalflow-demo",
+  project_name: PRODUCT_NAME,
+  output_dir: "pipeline-output/postpilot-demo",
   highlights: [
     {
       path: "assets",
       score: 1,
       summary:
-        "Assets supplied from notes; starts with: Turn code, notes, and launch context into channel-ready content.",
+        "Assets supplied from notes; starts with: Describe the update, add data, and let the app build the post package.",
     },
   ],
   channels: ["linkedin", "x", "newsletter"],
   generator: "chatbot",
   chatbot_prompt:
-    "You are helping create content for SignalFlow.\nAudience: builders and technical founders.\nChannels: LinkedIn, X, Newsletter.\nUse the supplied assets and return one section per channel.",
+    `You are helping create content for ${PRODUCT_NAME}.\nAudience: builders and technical founders.\nChannels: LinkedIn, X, Newsletter.\nUse the supplied assets and return one section per channel.`,
   posts: {
     linkedin:
-      "I am building SignalFlow, a simple way to turn raw product work into channel-ready content.\n\nAdd assets, choose channels, generate drafts, then review before publishing.",
+      `I am building ${PRODUCT_NAME}, a simple way to turn a description and source data into ready-to-review platform posts.\n\nDescribe the update, add data, choose platforms, and generate the post package.`,
     x:
-      "SignalFlow turns rough work into publish-ready drafts.\n\nAssets in. Channels selected. Content out.",
+      `${PRODUCT_NAME} turns a short description and data into platform-ready posts.\n\nDescribe it once. Pick platforms. Review the package.`,
     newsletter:
-      "Subject: SignalFlow update\n\nSignalFlow now helps builders turn notes, code, and launch context into channel-specific drafts.",
+      `Subject: ${PRODUCT_NAME} update\n\n${PRODUCT_NAME} helps users create copy, visual-ready assets, and channel-specific posting packages from one description.`,
   },
-  markdown: "# SignalFlow Kit\n\nReady-to-edit drafts for selected channels.",
+  markdown: `# ${PRODUCT_NAME} Kit\n\nReady-to-edit drafts for selected channels.`,
   assets: {
-    code_image: "pipeline-output/signalflow-demo/signal-card.png",
-    markdown: "pipeline-output/signalflow-demo/signalflow-kit.md",
-    summary: "pipeline-output/signalflow-demo/signalflow-kit.json",
+    code_image: "pipeline-output/postpilot-demo/post-card.png",
+    markdown: "pipeline-output/postpilot-demo/post-kit.md",
+    summary: "pipeline-output/postpilot-demo/post-kit.json",
   },
   integration_config: {
     model_route: "chatbot",
@@ -74,14 +75,15 @@ const sampleResult = {
 };
 
 export default function Home() {
+  const [workspaceOpen, setWorkspaceOpen] = useState(false);
   const [sourceMode, setSourceMode] = useState("brief");
   const [repoPath, setRepoPath] = useState("");
   const [researchUrl, setResearchUrl] = useState("");
   const [documentPath, setDocumentPath] = useState("");
   const [notes, setNotes] = useState(
-    "SignalFlow helps builders turn product work into content.\nAssets can be launch notes, code snippets, changelogs, screenshots, or repo context.\nThe user selects channels, then sends the asset pack to a local SLM, API model, or free chatbot.",
+    `${PRODUCT_NAME} helps users create posts without manually making screenshots, GIFs, videos, and platform-specific copy.\nDescribe what happened, add source data or assets, choose platforms, then generate a complete posting package for review.`,
   );
-  const [projectName, setProjectName] = useState("SignalFlow");
+  const [projectName, setProjectName] = useState(PRODUCT_NAME);
   const [audience, setAudience] = useState("builders, founders, and technical creators");
   const [generator, setGenerator] = useState("chatbot");
   const [modelEndpoint, setModelEndpoint] = useState("http://127.0.0.1:8000");
@@ -224,7 +226,7 @@ export default function Home() {
       });
       const data = await resp.json();
       if (!resp.ok) {
-        throw new Error(data?.detail || data?.error || "SignalFlow could not generate content");
+        throw new Error(data?.detail || data?.error || `${PRODUCT_NAME} could not generate content`);
       }
       setResult(data);
       setActiveChannel(Object.keys(data?.posts || {})[0] || "linkedin");
@@ -257,12 +259,24 @@ export default function Home() {
     <main className={styles.page}>
       <header className={styles.header}>
         <div>
-          <p className={styles.eyebrow}>SignalFlow</p>
-          <h1>Turn technical context into channel-ready content.</h1>
+          <p className={styles.eyebrow}>{PRODUCT_NAME}</p>
+          <h1>Describe once. Get the full posting package.</h1>
           <p>
-            Connect a brief, repository, URL, or document notes, choose a model route,
-            generate drafts, and export a reviewed content kit from one workspace.
+            Add a description and data, choose platforms, and let the workspace
+            prepare copy, visual-ready assets, prompts, and export files.
           </p>
+          <div className={styles.heroActions}>
+            <button className={styles.primaryButton} onClick={() => setWorkspaceOpen(true)} type="button">
+              Open step workspace
+            </button>
+            <button
+              className={styles.secondaryButton}
+              onClick={() => copyText("name", PRODUCT_NAME)}
+              type="button"
+            >
+              {copiedLabel === "name" ? "Copied name" : "Copy product name"}
+            </button>
+          </div>
         </div>
         <div className={`${styles.statusPill} ${styles[statusTone]}`}>
           <span />
@@ -270,13 +284,34 @@ export default function Home() {
         </div>
       </header>
 
-      <section className={styles.pipelineMap} aria-label="SignalFlow architecture">
+      <section className={styles.explainer} aria-label={`${PRODUCT_NAME} overview`}>
+        <div className={styles.explainerIntro}>
+          <p className={styles.eyebrow}>How it works</p>
+          <h2>One clean path from source material to reviewed content.</h2>
+        </div>
+        <div className={styles.explainGrid}>
+          {[
+            ["1", "Describe the post", "Write what happened, what should be announced, and who should care."],
+            ["2", "Add data", "Attach notes, repo context, research, metrics, links, or existing assets."],
+            ["3", "Pick platforms", "Select the places you want to post: LinkedIn, X, Instagram, blog, newsletter, and more."],
+            ["4", "Generate package", "Get copy, visual-ready cards, model prompts, exports, and safe publish handoff."],
+          ].map(([number, title, body]) => (
+            <article className={styles.explainCard} key={title}>
+              <span>{number}</span>
+              <h3>{title}</h3>
+              <p>{body}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className={styles.pipelineMap} aria-label={`${PRODUCT_NAME} architecture`}>
         {[
-          ["Inputs", "Briefs, repos, research"],
-          ["Context", "Signal extraction"],
-          ["Model", "Local, SLM, API, chatbot"],
-          ["Drafts", "Social and long-form"],
-          ["Export", "Files, webhook, official APIs"],
+          ["Describe", "What to post"],
+          ["Data", "Notes, links, files"],
+          ["Plan", "Platform formats"],
+          ["Create", "Copy and assets"],
+          ["Publish", "Review and handoff"],
         ].map(([title, body]) => (
           <div key={title}>
             <strong>{title}</strong>
@@ -285,13 +320,28 @@ export default function Home() {
         ))}
       </section>
 
+      {!workspaceOpen ? (
+        <section className={styles.startPanel}>
+          <div>
+            <p className={styles.eyebrow}>Ready</p>
+            <h2>Open the workspace when the flow makes sense.</h2>
+            <p>
+              The product stays step-based after this point, so users can create
+              the first post package without learning every integration upfront.
+            </p>
+          </div>
+          <button className={styles.primaryButton} onClick={() => setWorkspaceOpen(true)} type="button">
+            Start with step 1
+          </button>
+        </section>
+      ) : (
       <section className={styles.appGrid}>
         <form className={styles.builder} onSubmit={createContentKit}>
           <div className={styles.step}>
             <span>1</span>
             <div>
-              <h2>Input</h2>
-              <p>Add the source context SignalFlow should understand.</p>
+              <h2>Describe</h2>
+              <p>Tell {PRODUCT_NAME} what happened and what should be posted.</p>
             </div>
           </div>
 
@@ -347,7 +397,7 @@ export default function Home() {
             </div>
           ) : (
             <label className={styles.field}>
-              Brief
+              What should be posted?
               <textarea
                 value={notes}
                 onChange={(event) => setNotes(event.target.value)}
@@ -371,8 +421,8 @@ export default function Home() {
           <div className={styles.step}>
             <span>2</span>
             <div>
-              <h2>Model adapter</h2>
-              <p>Choose where the unified context should be sent.</p>
+              <h2>Engine</h2>
+              <p>Choose the generation route only if you want to customize it.</p>
             </div>
           </div>
 
@@ -422,8 +472,8 @@ export default function Home() {
           <div className={styles.step}>
             <span>3</span>
             <div>
-              <h2>Outputs</h2>
-              <p>Select content channels and the export destination.</p>
+              <h2>Platforms</h2>
+              <p>Select where this package should be prepared for posting.</p>
             </div>
           </div>
 
@@ -448,8 +498,8 @@ export default function Home() {
           <div className={styles.step}>
             <span>4</span>
             <div>
-              <h2>Distribution</h2>
-              <p>Keep publishing explicit, reviewable, and platform-safe.</p>
+              <h2>Publish handoff</h2>
+              <p>Keep final publishing explicit, reviewable, and platform-safe.</p>
             </div>
           </div>
 
@@ -472,7 +522,7 @@ export default function Home() {
               <input
                 value={webhookUrl}
                 onChange={(event) => setWebhookUrl(event.target.value)}
-                placeholder="https://hooks.example.com/signalflow"
+                placeholder="https://hooks.example.com/postpilot"
               />
             </label>
             <button
@@ -485,7 +535,7 @@ export default function Home() {
           </div>
 
           <button className={styles.primaryButton} disabled={isGenerating}>
-            {isGenerating ? "Generating..." : "Generate content kit"}
+            {isGenerating ? "Generating..." : "Generate post package"}
           </button>
           {error && <p className={styles.errorText}>{error}</p>}
         </form>
@@ -603,6 +653,7 @@ export default function Home() {
           </div>
         </section>
       </section>
+      )}
     </main>
   );
 }
