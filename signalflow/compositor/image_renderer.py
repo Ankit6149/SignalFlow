@@ -27,24 +27,29 @@ class ImageRenderer:
         self.font_size = font_size
         self.theme = theme
         self.font = None
+        self.font_path = None
         # resolve font
         if font_path and Path(font_path).exists():
             try:
                 self.font = ImageFont.truetype(font_path, font_size)
+                self.font_path = font_path
             except Exception:
                 self.font = None
+                self.font_path = None
 
         if self.font is None:
             for p in COMMON_FONTS:
                 if Path(p).exists():
                     try:
                         self.font = ImageFont.truetype(p, font_size)
+                        self.font_path = p
                         break
                     except Exception:
                         continue
 
         if self.font is None:
             self.font = ImageFont.load_default()
+            self.font_path = None
 
     def render_code(self, code: str, lexer_name: Optional[str] = None, out_path: Optional[Path] = None, width: int = 1200, bg_color="#0f1720") -> Path:
         if lexer_name:
@@ -56,8 +61,9 @@ class ImageRenderer:
             lexer = guess_lexer(code)
 
         # Try using Pygments ImageFormatter which emits PNG bytes
-        formatter = ImageFormatter(font_name="DejaVu Sans Mono", font_size=self.font_size, line_numbers=False, style=self.theme)
         try:
+            font_name = self.font_path if self.font_path else "DejaVu Sans Mono"
+            formatter = ImageFormatter(font_name=font_name, font_size=self.font_size, line_numbers=False, style=self.theme)
             data = highlight(code, lexer, formatter)
             if out_path is None:
                 out_path = Path(tempfile.mkdtemp()) / "code.png"
@@ -70,7 +76,8 @@ class ImageRenderer:
             # Fallback: render onto a PIL canvas line-by-line
             lines = code.splitlines() or [" "]
             # estimate image size
-            line_height = self.font.getsize("Ay")[1] + 4
+            measure_canvas = ImageDraw.Draw(Image.new("RGB", (1, 1)))
+            line_height = measure_canvas.textbbox((0, 0), "Ay", font=self.font)[3] + 4
             img_height = max(200, line_height * len(lines) + 20)
             img = Image.new("RGBA", (width, img_height), (15, 23, 32, 255))
             draw = ImageDraw.Draw(img)

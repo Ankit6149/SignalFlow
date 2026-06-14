@@ -6,6 +6,8 @@ from signalflow.ingestion.snr import SNRScorer
 from signalflow.compositor.image_renderer import ImageRenderer
 from signalflow.compositor.terminal_recorder import TerminalRecorder
 from signalflow.model.adapter import CloudStubAdapter, LocalRESTAdapter
+from signalflow.native import find_rust_renderer, render_code_via_rust
+from signalflow.orchestrator import run_pipeline
 import uvicorn
 
 
@@ -29,8 +31,17 @@ def cmd_scan(args):
 
 def cmd_render(args):
     code = Path(args.file).read_text(encoding="utf-8")
+    out_path = Path(args.out)
+    if find_rust_renderer() is not None:
+        try:
+            out = render_code_via_rust(code, out_path)
+            print(f"Wrote code image via Rust renderer to: {out}")
+            return
+        except Exception:
+            pass
+
     renderer = ImageRenderer()
-    out = renderer.render_code(code, lexer_name=args.lexer, out_path=Path(args.out))
+    out = renderer.render_code(code, lexer_name=args.lexer, out_path=out_path)
     print(f"Wrote code image to: {out}")
 
 
@@ -76,6 +87,11 @@ def main(argv=None):
     p_stub.add_argument("--target", required=True)
     p_stub.add_argument("--base-url", required=False, help="Local model server base URL, e.g. http://127.0.0.1:8000")
 
+    p_pipeline = sub.add_parser("pipeline")
+    p_pipeline.add_argument("--repo", required=True, help="Repository path to ingest")
+    p_pipeline.add_argument("--out-dir", required=False, default="pipeline-output", help="Output folder for pipeline artifacts")
+    p_pipeline.add_argument("--top", type=int, default=5, help="Top N candidate files")
+
     p_serve = sub.add_parser("serve")
     p_serve.add_argument("--host", default="127.0.0.1")
     p_serve.add_argument("--port", type=int, default=8000)
@@ -89,6 +105,8 @@ def main(argv=None):
         cmd_record(args)
     elif args.cmd == "stub-generate":
         cmd_stub_generate(args)
+    elif args.cmd == "pipeline":
+        run_pipeline(Path(args.repo), Path(args.out_dir), args.top)
     elif args.cmd == "serve":
         # Run FastAPI model stub via uvicorn
         uvicorn.run("signalflow.model.server:app", host=args.host, port=args.port, log_level="info")
