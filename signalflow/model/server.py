@@ -1,7 +1,12 @@
+import base64
+import tempfile
+from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Dict, Any
+from signalflow.compositor.image_renderer import ImageRenderer
+from signalflow.orchestrator import run_pipeline
 
 app = FastAPI(title="SignalFlow Model Stub")
 app.add_middleware(
@@ -23,9 +28,23 @@ class GenerateResponse(BaseModel):
     text: str
 
 
+class RenderRequest(BaseModel):
+    code: str
+    lexer: str = ""
+
+
+class RenderResponse(BaseModel):
+    image_base64: str
+
+
+class PipelineRequest(BaseModel):
+    repo: str
+    out_dir: str = "pipeline-output"
+    top: int = 5
+
+
 @app.post("/generate_post", response_model=GenerateResponse)
 def generate_post(req: GenerateRequest):
-    # Very small deterministic stub: echo first 280 chars with platform hint
     core = req.payload.get("CoreTokens", "")
     snippet = core.strip().replace("\n", " ")[:280]
     text = f"[SignalFlow stub for {req.target}] {snippet}"
@@ -37,3 +56,24 @@ def generate_presentation(req: GenerateRequest):
     core = req.payload.get("CoreTokens", "")
     md = f"# Presentation\n\n{core[:400]}"
     return {"markdown": md}
+
+
+@app.post("/render_code", response_model=RenderResponse)
+def render_code(req: RenderRequest):
+    renderer = ImageRenderer()
+    tmp_dir = Path(tempfile.mkdtemp())
+    out_path = tmp_dir / "render.png"
+    image_file = renderer.render_code(req.code, lexer_name=req.lexer or None, out_path=out_path)
+    encoded = base64.b64encode(image_file.read_bytes()).decode("utf-8")
+    return {"image_base64": encoded}
+
+
+@app.post("/run_pipeline")
+def pipeline(req: PipelineRequest):
+    summary = run_pipeline(Path(req.repo), Path(req.out_dir), req.top)
+    return summary
+
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
