@@ -56,8 +56,9 @@ Keep these files available at the site root after deployment:
 - `/robots.txt`
 - `/llms.txt`
 - `/llms-full.txt` if the hosting setup supports it
+- `/schema.jsonld`
 
-The repository includes root copies for GitHub readers and `frontend/public/` copies for the Next.js app.
+The repository includes root copies for GitHub readers and `frontend/public/` copies for the Next.js app. The app also injects the JSON-LD schema into the page layout so crawlers can read it without separately fetching `/schema.jsonld`.
 
 ## README Structure
 

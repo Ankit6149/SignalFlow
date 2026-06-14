@@ -1,0 +1,80 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://github.com/Ankit6149/SignalFlow-Studio#organization",
+      "name": "SignalFlow Studio",
+      "url": "https://github.com/Ankit6149/SignalFlow-Studio"
+    },
+    {
+      "@type": ["SoftwareApplication", "WebApplication"],
+      "@id": "https://github.com/Ankit6149/SignalFlow-Studio#software",
+      "name": "SignalFlow Studio",
+      "applicationCategory": "BusinessApplication",
+      "applicationSubCategory": "AI social media automation",
+      "operatingSystem": "Web",
+      "url": "https://github.com/Ankit6149/SignalFlow-Studio",
+      "codeRepository": "https://github.com/Ankit6149/SignalFlow-Studio",
+      "isAccessibleForFree": true,
+      "license": "https://github.com/Ankit6149/SignalFlow-Studio/blob/master/LICENSE",
+      "creator": {
+        "@id": "https://github.com/Ankit6149/SignalFlow-Studio#organization"
+      },
+      "description": "SignalFlow Studio is a local-first AI social media automation workspace that turns one description, data, screenshots, and screen recordings into formatted posting packages for selected social media accounts.",
+      "keywords": [
+        "AI social media automation",
+        "autoposting",
+        "social media post generator",
+        "screen recording to social post",
+        "screenshot to social post",
+        "formatted posting package",
+        "creator tools",
+        "developer marketing",
+        "local-first"
+      ],
+      "featureList": [
+        "Generate formatted posts for selected social media accounts",
+        "Create visual media plans for screenshots, screen recordings, GIFs, and cards",
+        "Capture screenshots and screen recordings in the web app",
+        "Generate Markdown and JSON posting packages",
+        "Prepare reviewable publishing handoff through manual exports, webhooks, or official APIs"
+      ],
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      }
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://github.com/Ankit6149/SignalFlow-Studio#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is SignalFlow Studio?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "SignalFlow Studio is an open-source autoposting workspace that turns one description, data, screenshots, and screen recordings into formatted posting packages for selected social media accounts."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does SignalFlow Studio need a separate backend?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. SignalFlow Studio is designed as one hosted Next.js app with UI, generation routes, media capture, and package formatting together."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What can SignalFlow Studio generate?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "It generates platform-specific post drafts, visual media plans, generated cards, model prompts, Markdown exports, JSON summaries, and safe publishing handoff metadata."
+          }
+        }
+      ]
+    }
+  ]
+}
