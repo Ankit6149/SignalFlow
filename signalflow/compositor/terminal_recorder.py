@@ -32,36 +32,36 @@ class TerminalRecorder:
         draw.text((margin, margin), text, font=self.font, fill=self.fg_color)
         img.save(path)
 
-    def record(self, commands: List[str], out_mp4: Path, frame_delay: float = 0.08):
+    def record(self, commands: List[str], out_mp4: Path, frame_delay: float = 0.08, keep_frames: bool = False):
         tmpdir = Path(tempfile.mkdtemp())
         frames = []
         try:
             for i, cmd in enumerate(commands):
                 proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
                 output = []
-                for line in proc.stdout:
-                    output.append(line.rstrip("\n"))
-                    # render current output as a frame
-                    frame_path = tmpdir / f"frame_{i}_{len(output)}.png"
-                    self._render_text_frame("\n".join(output), frame_path)
-                    frames.append(frame_path)
+                try:
+                    for line in proc.stdout:
+                        output.append(line.rstrip("\n"))
+                        frame_path = tmpdir / f"frame_{i}_{len(output)}.png"
+                        self._render_text_frame("\n".join(output), frame_path)
+                        frames.append(frame_path)
+                except Exception:
+                    proc.kill()
+                    proc.wait()
                 proc.wait()
-                # small pause to show final state
                 time.sleep(0.2)
 
             if not frames:
                 raise RuntimeError("No frames generated; check commands and environment.")
 
-            # Build ffmpeg input list
             listfile = tmpdir / "frames.txt"
             with open(listfile, "w", encoding="utf-8") as f:
                 for fr in frames:
+                    # ffmpeg expects POSIX paths inside the concat file
                     f.write(f"file '{fr.as_posix()}'\n")
                     f.write(f"duration {frame_delay}\n")
-                # repeat last frame
                 f.write(f"file '{frames[-1].as_posix()}'\n")
 
-            # Run ffmpeg to create mp4
             cmd = [
                 "ffmpeg",
                 "-y",
@@ -80,5 +80,8 @@ class TerminalRecorder:
             subprocess.run(cmd, check=True)
             return out_mp4
         finally:
-            # do not delete frames for now to allow inspection
-            pass
+            if not keep_frames:
+                try:
+                    shutil.rmtree(tmpdir)
+                except Exception:
+                    pass

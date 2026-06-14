@@ -1,13 +1,20 @@
 from PIL import Image, ImageDraw, ImageFont
 from pygments import highlight
 from pygments.lexers import get_lexer_by_name, guess_lexer
-from pygments.formatters import HtmlFormatter
-from pygments.token import Token
-from pygments.style import Style
 from pygments.formatters import ImageFormatter
 import tempfile
 from pathlib import Path
 from typing import Optional
+import shutil
+import os
+
+
+COMMON_FONTS = [
+    "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",
+    "/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf",
+    "C:/Windows/Fonts/DejaVuSansMono.ttf",
+    "C:/Windows/Fonts/Courier_New.ttf",
+]
 
 
 class ImageRenderer:
@@ -18,12 +25,25 @@ class ImageRenderer:
 
     def __init__(self, font_path: Optional[str] = None, font_size: int = 16, theme: str = "default"):
         self.font_size = font_size
-        try:
-            if font_path:
+        self.theme = theme
+        self.font = None
+        # resolve font
+        if font_path and Path(font_path).exists():
+            try:
                 self.font = ImageFont.truetype(font_path, font_size)
-            else:
-                self.font = ImageFont.load_default()
-        except Exception:
+            except Exception:
+                self.font = None
+
+        if self.font is None:
+            for p in COMMON_FONTS:
+                if Path(p).exists():
+                    try:
+                        self.font = ImageFont.truetype(p, font_size)
+                        break
+                    except Exception:
+                        continue
+
+        if self.font is None:
             self.font = ImageFont.load_default()
 
     def render_code(self, code: str, lexer_name: Optional[str] = None, out_path: Optional[Path] = None, width: int = 1200, bg_color="#0f1720") -> Path:
@@ -35,19 +55,33 @@ class ImageRenderer:
         else:
             lexer = guess_lexer(code)
 
-        # Use Pygments ImageFormatter for simple PIL integration
-        formatter = ImageFormatter(font_name="DejaVu Sans Mono", font_size=self.font_size, line_numbers=False, style="default")
+        # Try using Pygments ImageFormatter which emits PNG bytes
+        formatter = ImageFormatter(font_name="DejaVu Sans Mono", font_size=self.font_size, line_numbers=False, style=self.theme)
+        try:
+            data = highlight(code, lexer, formatter)
+            if out_path is None:
+                out_path = Path(tempfile.mkdtemp()) / "code.png"
+            else:
+                out_path = Path(out_path)
+            with open(out_path, "wb") as f:
+                f.write(data)
+            return out_path
+        except Exception:
+            # Fallback: render onto a PIL canvas line-by-line
+            lines = code.splitlines() or [" "]
+            # estimate image size
+            line_height = self.font.getsize("Ay")[1] + 4
+            img_height = max(200, line_height * len(lines) + 20)
+            img = Image.new("RGBA", (width, img_height), (15, 23, 32, 255))
+            draw = ImageDraw.Draw(img)
+            y = 10
+            for ln in lines:
+                draw.text((10, y), ln, font=self.font, fill=(230, 230, 230))
+                y += line_height
 
-        # highlight returns bytes for ImageFormatter
-        data = highlight(code, lexer, formatter)
-
-        # Pygments ImageFormatter returns PNG bytes
-        if out_path is None:
-            out_path = Path(tempfile.mkdtemp()) / "code.png"
-        else:
-            out_path = Path(out_path)
-
-        with open(out_path, "wb") as f:
-            f.write(data)
-
-        return out_path
+            if out_path is None:
+                out_path = Path(tempfile.mkdtemp()) / "code.png"
+            else:
+                out_path = Path(out_path)
+            img.save(out_path)
+            return out_path
