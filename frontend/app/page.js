@@ -7,12 +7,11 @@ const API_BASE = "/api";
 const PRODUCT_NAME = "SignalFlow Studio";
 const ACCESS_TOKEN_STORAGE_KEY = "signalflow_owner_token";
 
-const INPUT_TYPES = [
-  ["text", "Text or idea"],
-  ["links", "Links"],
-  ["docs", "Docs"],
-  ["repo", "GitHub repo"],
-  ["media", "Screenshots / recordings"],
+const MODEL_ROUTES = [
+  ["prompt", "Free chatbot", "Copy a clean prompt into any chatbot."],
+  ["local", "Local SLM", "Use Ollama, LM Studio, or a local OpenAI-compatible server."],
+  ["api", "API model", "Connect your own OpenAI-compatible endpoint."],
+  ["cloud", "Cloud gateway", "Use your hosted model or workflow endpoint."],
 ];
 
 const CHANNELS = [
@@ -41,36 +40,24 @@ const OUTPUT_TYPES = [
   ["doc", "Doc"],
 ];
 
+const STEPS = ["Model", "Inputs", "Outputs", "Package"];
+
 const DEFAULT_RESULT = {
   project_name: PRODUCT_NAME,
   posts: {
-    linkedin:
-      "Describe what you built, add links or assets, choose outputs, and SignalFlow Studio prepares a complete posting package.",
-    x: "One input -> channel-ready captions, visuals, docs, and handoff files.",
-    instagram: "Turn product context into captions, image directions, video hooks, and carousel slides.",
+    linkedin: "Connect a model, add context, choose outputs, and generate a ready-to-review package.",
   },
-  channels: ["linkedin", "x", "instagram"],
-  outputs: ["caption", "text", "image", "video"],
-  markdown: `# ${PRODUCT_NAME} package\n\nAdd inputs, choose outputs, and generate a reviewable post kit.`,
-  chatbot_prompt: `Create a complete social content package for ${PRODUCT_NAME}.`,
+  channels: ["linkedin"],
+  outputs: ["caption", "text", "image"],
+  markdown: `# ${PRODUCT_NAME} package\n\nYour generated package will appear here.`,
   media_plan: [
     {
       type: "image",
-      title: "Generated visual card",
-      summary: "Use the strongest product signal as a clean social image.",
-    },
-    {
-      type: "video",
-      title: "Short demo clip",
-      summary: "Record the core workflow and convert it into a 10-20 second product clip.",
+      title: "Visual direction",
+      summary: "A generated social image or screenshot direction appears after generation.",
     },
   ],
-  documents: [
-    {
-      title: "Posting brief",
-      summary: "A structured doc with angle, audience, channels, captions, and visual instructions.",
-    },
-  ],
+  documents: [],
   assets: {
     markdown: "post-package.md",
     summary: "post-package.json",
@@ -84,29 +71,18 @@ export default function Home() {
   const streamRef = useRef(null);
   const chunksRef = useRef([]);
 
-  const [brief, setBrief] = useState(
-    "Describe what changed, what data matters, and what the audience should understand.",
-  );
+  const [step, setStep] = useState(0);
+  const [modelRoute, setModelRoute] = useState("prompt");
+  const [modelEndpoint, setModelEndpoint] = useState("");
+  const [modelName, setModelName] = useState("copy-paste prompt");
+  const [apiKeyPresent, setApiKeyPresent] = useState(false);
+  const [brief, setBrief] = useState("");
   const [links, setLinks] = useState("");
   const [repoUrl, setRepoUrl] = useState("");
   const [fileNames, setFileNames] = useState([]);
   const [mediaItems, setMediaItems] = useState([]);
-  const [selectedChannels, setSelectedChannels] = useState([
-    "linkedin",
-    "x",
-    "instagram",
-    "reddit",
-    "newsletter",
-    "blog",
-  ]);
-  const [selectedOutputs, setSelectedOutputs] = useState([
-    "caption",
-    "text",
-    "image",
-    "video",
-    "carousel",
-    "doc",
-  ]);
+  const [selectedChannels, setSelectedChannels] = useState(["linkedin", "x", "instagram", "newsletter"]);
+  const [selectedOutputs, setSelectedOutputs] = useState(["caption", "text", "image", "video", "doc"]);
   const [audience, setAudience] = useState("builders, founders, creators, and technical teams");
   const [accessLocked, setAccessLocked] = useState(false);
   const [accessToken, setAccessToken] = useState("");
@@ -118,6 +94,7 @@ export default function Home() {
   const [activeChannel, setActiveChannel] = useState("linkedin");
   const [copiedLabel, setCopiedLabel] = useState("");
   const [captureStatus, setCaptureStatus] = useState("Ready");
+  const [hasGenerated, setHasGenerated] = useState(false);
 
   useEffect(() => {
     setAccessToken(window.localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY) || "");
@@ -129,14 +106,9 @@ export default function Home() {
     return CHANNELS.filter(([key]) => available.includes(key));
   }, [result]);
 
-  const inputSummary = useMemo(
-    () => [
-      brief.trim() ? "description" : "",
-      links.trim() ? "links" : "",
-      repoUrl.trim() ? "repo" : "",
-      fileNames.length ? `${fileNames.length} docs` : "",
-      mediaItems.length ? `${mediaItems.length} media` : "",
-    ].filter(Boolean),
+  const sourceCount = useMemo(
+    () =>
+      [brief.trim(), links.trim(), repoUrl.trim(), fileNames.length, mediaItems.length].filter(Boolean).length,
     [brief, fileNames.length, links, mediaItems.length, repoUrl],
   );
 
@@ -205,10 +177,7 @@ export default function Home() {
     }
 
     try {
-      const stream = await navigator.mediaDevices.getDisplayMedia({
-        video: { frameRate: 30 },
-        audio: false,
-      });
+      const stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 30 }, audio: false });
       streamRef.current = stream;
       chunksRef.current = [];
       if (videoPreviewRef.current) {
@@ -305,6 +274,10 @@ export default function Home() {
           output_types: selectedOutputs,
           audience,
           project_name: PRODUCT_NAME,
+          generator: modelRoute,
+          model_endpoint: modelEndpoint,
+          model_name: modelName,
+          api_key_present: apiKeyPresent,
         }),
       });
       const data = await resp.json();
@@ -319,6 +292,8 @@ export default function Home() {
 
       setResult(data);
       setActiveChannel(Object.keys(data?.posts || {})[0] || "linkedin");
+      setHasGenerated(true);
+      setStep(3);
     } catch (generateError) {
       setError(generateError.message);
     } finally {
@@ -347,20 +322,13 @@ export default function Home() {
   return (
     <main className={styles.page}>
       <section className={styles.hero}>
-        <div>
-          <p className={styles.eyebrow}>{PRODUCT_NAME}</p>
-          <h1>Drop the context. Get the finished posting package.</h1>
-          <p>
-            Give it text, links, docs, repo context, screenshots, or recordings.
-            Choose what you want back: captions, posts, images, video ideas,
-            GIF plans, carousels, docs, or channel-ready exports.
-          </p>
-        </div>
-        <div className={styles.heroFlow} aria-label="Product flow">
-          {["Inputs", "Understand", "Create", "Package"].map((item) => (
-            <span key={item}>{item}</span>
-          ))}
-        </div>
+        <div className={styles.brandMark}>SF</div>
+        <p className={styles.eyebrow}>{PRODUCT_NAME}</p>
+        <h1>Inputs in. Finished content out.</h1>
+        <p>
+          Connect your model, add whatever context you have, choose the formats,
+          and get a clean package of captions, visuals, docs, and channel drafts.
+        </p>
       </section>
 
       {accessLocked && (
@@ -368,7 +336,6 @@ export default function Home() {
           <div>
             <p className={styles.eyebrow}>Private hosted demo</p>
             <h2>{accessToken ? "Owner session active" : "Unlock generation"}</h2>
-            <p>The UI is public. Generation is private on your hosted link.</p>
           </div>
           {accessToken ? (
             <button
@@ -399,216 +366,306 @@ export default function Home() {
         </section>
       )}
 
-      <form className={styles.workspace} onSubmit={generatePackage}>
-        <section className={styles.inputPanel}>
-          <div className={styles.sectionHeader}>
-            <span>1</span>
-            <div>
-              <p className={styles.eyebrow}>Inputs</p>
-              <h2>Send anything useful</h2>
-              <p>Only add what you have. Empty fields are ignored.</p>
-            </div>
-          </div>
-
-          <div className={styles.inputTypes}>
-            {INPUT_TYPES.map(([key, label]) => (
-              <span key={key}>{label}</span>
-            ))}
-          </div>
-
-          <label className={styles.bigField}>
-            Description, notes, changelog, idea, raw brief
-            <textarea value={brief} onChange={(event) => setBrief(event.target.value)} rows={8} />
-          </label>
-
-          <div className={styles.twoCols}>
-            <label className={styles.field}>
-              Links or research URLs
-              <textarea
-                value={links}
-                onChange={(event) => setLinks(event.target.value)}
-                placeholder="Paste one or many URLs"
-                rows={5}
-              />
-            </label>
-            <label className={styles.field}>
-              GitHub repo or project link
-              <textarea
-                value={repoUrl}
-                onChange={(event) => setRepoUrl(event.target.value)}
-                placeholder="https://github.com/user/repo"
-                rows={5}
-              />
-            </label>
-          </div>
-
-          <div className={styles.uploadGrid}>
-            <label className={styles.uploadBox}>
-              <input multiple onChange={handleFiles} type="file" />
-              <strong>Attach docs or assets</strong>
-              <span>{fileNames.length ? fileNames.join(", ") : "PDF, notes, images, logs, briefs"}</span>
-            </label>
-            <div className={styles.captureBox}>
-              <div>
-                <strong>Record or screenshot</strong>
-                <span>{captureStatus}</span>
-              </div>
-              <div className={styles.captureActions}>
-                <button className={styles.secondaryButton} onClick={startScreenCapture} type="button">
-                  Record
-                </button>
-                <button className={styles.secondaryButton} onClick={captureScreenshot} type="button">
-                  Screenshot
-                </button>
-                <button className={styles.secondaryButton} onClick={stopScreenCapture} type="button">
-                  Stop
-                </button>
-              </div>
-              <video className={styles.preview} muted playsInline ref={videoPreviewRef} />
-            </div>
-          </div>
-        </section>
-
-        <section className={styles.choicePanel}>
-          <div className={styles.sectionHeader}>
-            <span>2</span>
-            <div>
-              <p className={styles.eyebrow}>Outputs</p>
-              <h2>Choose what you want back</h2>
-              <p>Pick formats and channels. The app prepares everything together.</p>
-            </div>
-          </div>
-
-          <label className={styles.field}>
-            Audience
-            <input value={audience} onChange={(event) => setAudience(event.target.value)} />
-          </label>
-
-          <div>
-            <h3>Result formats</h3>
-            <div className={styles.optionGrid}>
-              {OUTPUT_TYPES.map(([key, label]) => (
-                <button
-                  className={selectedOutputs.includes(key) ? styles.selected : ""}
-                  key={key}
-                  onClick={() => toggleValue(key, setSelectedOutputs)}
-                  type="button"
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <h3>Channels</h3>
-            <div className={styles.channelGrid}>
-              {CHANNELS.map(([key, label]) => (
-                <button
-                  className={selectedChannels.includes(key) ? styles.selected : ""}
-                  key={key}
-                  onClick={() => toggleValue(key, setSelectedChannels)}
-                  type="button"
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className={styles.readyBox}>
-            <strong>{inputSummary.length ? inputSummary.join(" + ") : "Waiting for input"}</strong>
-            <span>
-              {selectedOutputs.length} formats for {selectedChannels.length} channels
-            </span>
-          </div>
-
-          <button className={styles.primaryButton} disabled={isGenerating || (accessLocked && !accessToken)}>
-            {isGenerating ? "Creating package..." : "Generate package"}
-          </button>
-          {error && <p className={styles.errorText}>{error}</p>}
-        </section>
-      </form>
-
-      <section className={styles.results}>
-        <div className={styles.resultTop}>
-          <div>
-            <p className={styles.eyebrow}>Results</p>
-            <h2>Ready-to-review package</h2>
-          </div>
-          <button className={styles.secondaryButton} onClick={() => copyText("markdown", result.markdown)} type="button">
-            {copiedLabel === "markdown" ? "Copied" : "Copy full doc"}
-          </button>
-        </div>
-
-        <div className={styles.resultStats}>
-          <div>
-            <strong>{visibleChannels.length}</strong>
-            <span>channels</span>
-          </div>
-          <div>
-            <strong>{result?.outputs?.length || selectedOutputs.length}</strong>
-            <span>formats</span>
-          </div>
-          <div>
-            <strong>{result?.media_plan?.length || 0}</strong>
-            <span>visual assets</span>
-          </div>
-        </div>
-
-        <div className={styles.tabs}>
-          {visibleChannels.map(([key, label]) => (
+      <section className={styles.shell}>
+        <aside className={styles.stepRail} aria-label="Workflow steps">
+          {STEPS.map((label, index) => (
             <button
-              className={activeChannel === key ? styles.activeTab : ""}
-              key={key}
-              onClick={() => setActiveChannel(key)}
+              className={index === step ? styles.currentStep : index < step ? styles.doneStep : ""}
+              key={label}
+              onClick={() => setStep(index)}
               type="button"
             >
+              <span>{index + 1}</span>
               {label}
             </button>
           ))}
-        </div>
+        </aside>
 
-        <div className={styles.resultGrid}>
-          <article className={styles.outputCard}>
-            <div className={styles.cardTitle}>
-              <h3>{CHANNELS.find(([key]) => key === activeChannel)?.[1] || "Channel"} draft</h3>
-              <button className={styles.secondaryButton} onClick={() => copyText("post", currentPost)} type="button">
-                {copiedLabel === "post" ? "Copied" : "Copy"}
-              </button>
-            </div>
-            <pre>{currentPost}</pre>
-          </article>
+        <form className={styles.stage} onSubmit={generatePackage}>
+          {step === 0 && (
+            <section className={styles.panel}>
+              <div className={styles.panelIntro}>
+                <p className={styles.eyebrow}>Step 1</p>
+                <h2>Connect how the content should be generated.</h2>
+                <p>Start simple with a chatbot prompt, or connect your local SLM/LLM route when you are ready.</p>
+              </div>
 
-          <article className={styles.outputCard}>
-            <div className={styles.cardTitle}>
-              <h3>Image / visual</h3>
-              <span>{result?.assets?.code_image || "generated asset"}</span>
-            </div>
-            {imageSrc ? (
-              <img className={styles.visualAsset} src={imageSrc} alt="Generated social visual" />
-            ) : (
-              <div className={styles.emptyAsset}>Generate to preview visual assets.</div>
-            )}
-          </article>
-        </div>
+              <div className={styles.modelGrid}>
+                {MODEL_ROUTES.map(([key, title, body]) => (
+                  <button
+                    className={modelRoute === key ? styles.selectedCard : ""}
+                    key={key}
+                    onClick={() => setModelRoute(key)}
+                    type="button"
+                  >
+                    <span>{title}</span>
+                    <p>{body}</p>
+                  </button>
+                ))}
+              </div>
 
-        <div className={styles.assetGrid}>
-          {(result?.media_plan || []).map((item) => (
-            <article key={`${item.type}-${item.title}`}>
-              <span>{item.type}</span>
-              <strong>{item.title}</strong>
-              <p>{item.summary}</p>
-            </article>
-          ))}
-          {(result?.documents || []).map((item) => (
-            <article key={item.title}>
-              <span>doc</span>
-              <strong>{item.title}</strong>
-              <p>{item.summary}</p>
-            </article>
-          ))}
-        </div>
+              {modelRoute !== "prompt" && (
+                <div className={styles.softBox}>
+                  <label className={styles.field}>
+                    Endpoint
+                    <input
+                      onChange={(event) => setModelEndpoint(event.target.value)}
+                      placeholder="http://localhost:11434/v1 or https://api.example.com/v1"
+                      value={modelEndpoint}
+                    />
+                  </label>
+                  <label className={styles.field}>
+                    Model name
+                    <input
+                      onChange={(event) => setModelName(event.target.value)}
+                      placeholder="llama3, qwen, gpt-4o-mini, custom"
+                      value={modelName}
+                    />
+                  </label>
+                  <label className={styles.checkRow}>
+                    <input
+                      checked={apiKeyPresent}
+                      onChange={(event) => setApiKeyPresent(event.target.checked)}
+                      type="checkbox"
+                    />
+                    I will provide my key through my own deployment or local setup.
+                  </label>
+                </div>
+              )}
+
+              <div className={styles.actions}>
+                <button className={styles.primaryButton} onClick={() => setStep(1)} type="button">
+                  Continue to inputs
+                </button>
+              </div>
+            </section>
+          )}
+
+          {step === 1 && (
+            <section className={styles.panel}>
+              <div className={styles.panelIntro}>
+                <p className={styles.eyebrow}>Step 2</p>
+                <h2>Give the raw material.</h2>
+                <p>Text, links, docs, repo, screenshots, recordings. Add only what you have.</p>
+              </div>
+
+              <label className={styles.heroInput}>
+                Main description
+                <textarea
+                  onChange={(event) => setBrief(event.target.value)}
+                  placeholder="What happened? What should people understand? What should be created?"
+                  rows={9}
+                  value={brief}
+                />
+              </label>
+
+              <div className={styles.twoCols}>
+                <label className={styles.field}>
+                  Links
+                  <textarea
+                    onChange={(event) => setLinks(event.target.value)}
+                    placeholder="Research links, product URLs, demos, docs"
+                    rows={4}
+                    value={links}
+                  />
+                </label>
+                <label className={styles.field}>
+                  GitHub repo
+                  <textarea
+                    onChange={(event) => setRepoUrl(event.target.value)}
+                    placeholder="https://github.com/user/repo"
+                    rows={4}
+                    value={repoUrl}
+                  />
+                </label>
+              </div>
+
+              <div className={styles.mediaGrid}>
+                <label className={styles.uploadTile}>
+                  <input multiple onChange={handleFiles} type="file" />
+                  <strong>Attach docs or assets</strong>
+                  <span>{fileNames.length ? fileNames.join(", ") : "PDF, notes, images, briefs, logs"}</span>
+                </label>
+                <div className={styles.captureTile}>
+                  <strong>Capture product media</strong>
+                  <span>{captureStatus}</span>
+                  <div className={styles.miniActions}>
+                    <button className={styles.secondaryButton} onClick={startScreenCapture} type="button">
+                      Record
+                    </button>
+                    <button className={styles.secondaryButton} onClick={captureScreenshot} type="button">
+                      Screenshot
+                    </button>
+                    <button className={styles.secondaryButton} onClick={stopScreenCapture} type="button">
+                      Stop
+                    </button>
+                  </div>
+                  <video className={styles.preview} muted playsInline ref={videoPreviewRef} />
+                </div>
+              </div>
+
+              <div className={styles.actions}>
+                <button className={styles.secondaryButton} onClick={() => setStep(0)} type="button">
+                  Back
+                </button>
+                <button className={styles.primaryButton} onClick={() => setStep(2)} type="button">
+                  Continue to outputs
+                </button>
+              </div>
+            </section>
+          )}
+
+          {step === 2 && (
+            <section className={styles.panel}>
+              <div className={styles.panelIntro}>
+                <p className={styles.eyebrow}>Step 3</p>
+                <h2>Choose what you want back.</h2>
+                <p>Pick the formats and places. SignalFlow creates the package in one run.</p>
+              </div>
+
+              <label className={styles.field}>
+                Audience
+                <input onChange={(event) => setAudience(event.target.value)} value={audience} />
+              </label>
+
+              <div className={styles.pickGroup}>
+                <h3>Formats</h3>
+                <div className={styles.pillGrid}>
+                  {OUTPUT_TYPES.map(([key, label]) => (
+                    <button
+                      className={selectedOutputs.includes(key) ? styles.selectedPill : ""}
+                      key={key}
+                      onClick={() => toggleValue(key, setSelectedOutputs)}
+                      type="button"
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className={styles.pickGroup}>
+                <h3>Channels</h3>
+                <div className={styles.pillGrid}>
+                  {CHANNELS.map(([key, label]) => (
+                    <button
+                      className={selectedChannels.includes(key) ? styles.selectedPill : ""}
+                      key={key}
+                      onClick={() => toggleValue(key, setSelectedChannels)}
+                      type="button"
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className={styles.summaryStrip}>
+                <span>{sourceCount || 0} input groups</span>
+                <span>{selectedOutputs.length} formats</span>
+                <span>{selectedChannels.length} channels</span>
+              </div>
+
+              <div className={styles.actions}>
+                <button className={styles.secondaryButton} onClick={() => setStep(1)} type="button">
+                  Back
+                </button>
+                <button className={styles.primaryButton} disabled={isGenerating || (accessLocked && !accessToken)}>
+                  {isGenerating ? "Creating package..." : "Generate package"}
+                </button>
+              </div>
+              {error && <p className={styles.errorText}>{error}</p>}
+            </section>
+          )}
+
+          {step === 3 && (
+            <section className={styles.panel}>
+              <div className={styles.panelIntro}>
+                <p className={styles.eyebrow}>Step 4</p>
+                <h2>{hasGenerated ? "Your package is ready." : "Generate when ready."}</h2>
+                <p>Review, copy, and use the generated material wherever you publish.</p>
+              </div>
+
+              <div className={styles.resultStats}>
+                <div>
+                  <strong>{visibleChannels.length}</strong>
+                  <span>channels</span>
+                </div>
+                <div>
+                  <strong>{result?.outputs?.length || selectedOutputs.length}</strong>
+                  <span>formats</span>
+                </div>
+                <div>
+                  <strong>{result?.media_plan?.length || 0}</strong>
+                  <span>assets</span>
+                </div>
+              </div>
+
+              <div className={styles.tabs}>
+                {visibleChannels.map(([key, label]) => (
+                  <button
+                    className={activeChannel === key ? styles.activeTab : ""}
+                    key={key}
+                    onClick={() => setActiveChannel(key)}
+                    type="button"
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              <div className={styles.resultGrid}>
+                <article className={styles.outputCard}>
+                  <div className={styles.cardTitle}>
+                    <h3>{CHANNELS.find(([key]) => key === activeChannel)?.[1] || "Channel"} draft</h3>
+                    <button className={styles.secondaryButton} onClick={() => copyText("post", currentPost)} type="button">
+                      {copiedLabel === "post" ? "Copied" : "Copy"}
+                    </button>
+                  </div>
+                  <pre>{currentPost}</pre>
+                </article>
+
+                <article className={styles.outputCard}>
+                  <div className={styles.cardTitle}>
+                    <h3>Visual asset</h3>
+                    <span>{result?.assets?.code_image || "post-card.svg"}</span>
+                  </div>
+                  {imageSrc ? (
+                    <img className={styles.visualAsset} src={imageSrc} alt="Generated social visual" />
+                  ) : (
+                    <div className={styles.emptyAsset}>Generate to preview visuals.</div>
+                  )}
+                </article>
+              </div>
+
+              <div className={styles.assetGrid}>
+                {(result?.media_plan || []).map((item) => (
+                  <article key={`${item.type}-${item.title}`}>
+                    <span>{item.type}</span>
+                    <strong>{item.title}</strong>
+                    <p>{item.summary}</p>
+                  </article>
+                ))}
+                {(result?.documents || []).map((item) => (
+                  <article key={item.title}>
+                    <span>doc</span>
+                    <strong>{item.title}</strong>
+                    <p>{item.summary}</p>
+                  </article>
+                ))}
+              </div>
+
+              <div className={styles.actions}>
+                <button className={styles.secondaryButton} onClick={() => setStep(2)} type="button">
+                  Edit outputs
+                </button>
+                <button className={styles.primaryButton} onClick={() => copyText("markdown", result.markdown)} type="button">
+                  {copiedLabel === "markdown" ? "Copied" : "Copy full package"}
+                </button>
+              </div>
+            </section>
+          )}
+        </form>
       </section>
     </main>
   );
