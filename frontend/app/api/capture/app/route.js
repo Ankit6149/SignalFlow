@@ -1,6 +1,10 @@
 import { requireOwnerAccess } from "../../_auth";
 import { captureAppScreenshot } from "../../../../lib/capture/appCapture";
 
+/**
+ * EXPERIMENTAL/INTERNAL ONLY - Not used in main V1 product path.
+ * Retained for future automation modules.
+ */
 export async function POST(request) {
   const accessError = requireOwnerAccess(request);
   if (accessError) {

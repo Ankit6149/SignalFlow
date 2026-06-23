@@ -1,7 +1,8 @@
 import { requireOwnerAccess } from "../_auth";
 
 /**
- * Handles V1 review-first posting/publishing.
+ * EXPERIMENTAL/INTERNAL ONLY - Not used in main V1 product path.
+ * Handles review-first posting/publishing.
  * Only attempts official posting if official tokens are configured in the environment.
  */
 export async function POST(request) {

@@ -89,7 +89,6 @@ export default function Home() {
   const [documentText, setDocumentText] = useState("");
   const [fileNames, setFileNames] = useState([]);
   const [mediaItems, setMediaItems] = useState([]);
-  const [enableAutoCapture, setEnableAutoCapture] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [preparedPackage, setPreparedPackage] = useState(null);
   const [isLoadingPrepare, setIsLoadingPrepare] = useState(false);
@@ -453,15 +452,16 @@ export default function Home() {
 
     setError("");
     setIsGenerating(true);
-    setLoadingStatus("Reading repo...");
+    setLoadingStatus("Reading repository context...");
 
     const checkInterval = setInterval(() => {
       setLoadingStatus((current) => {
-        if (current === "Reading repo...") return "Scraping links...";
-        if (current === "Scraping links...") return "Capturing live app...";
-        if (current === "Capturing live app...") return "Assembling context brief...";
-        if (current === "Assembling context brief...") return "Calling model provider...";
-        if (current === "Calling model provider...") return "Compiling package outputs...";
+        if (current === "Reading repository context...") return "Reading docs and links...";
+        if (current === "Reading docs and links...") return "Reading app URL context...";
+        if (current === "Reading app URL context...") return "Preparing manual asset plan...";
+        if (current === "Preparing manual asset plan...") return "Assembling product brief...";
+        if (current === "Assembling product brief...") return "Calling selected model or fallback...";
+        if (current === "Calling selected model or fallback...") return "Compiling exports...";
         return "Finalizing package...";
       });
     }, 1800);
@@ -486,7 +486,6 @@ export default function Home() {
           repo: repoUrl,
           docs_url: docsUrl,
           app_url: appUrl,
-          enable_auto_capture: enableAutoCapture,
           document_text: combinedDocText,
           media_items: reqMedia,
           channels: selectedChannels,
@@ -873,22 +872,16 @@ export default function Home() {
               <div className={styles.twoCols}>
                 <div style={{ display: "grid", gap: 10 }}>
                   <label className={styles.field}>
-                    Live App URL (Used for context)
+                    Live App URL (context only)
                     <input
                       onChange={(event) => setAppUrl(event.target.value)}
                       placeholder="e.g. http://localhost:3000 or https://example.com"
                       type="text"
                       value={appUrl}
                     />
-                  </label>
-                  <label className={styles.checkRow} style={{ marginTop: 4 }}>
-                    <input
-                      type="checkbox"
-                      checked={enableAutoCapture}
-                      onChange={(e) => setEnableAutoCapture(e.target.checked)}
-                      style={{ width: "auto", cursor: "pointer" }}
-                    />
-                    Enable automated screenshots (Experimental, requires server Playwright)
+                    <span style={{ fontSize: "0.8rem", color: "#667069", marginTop: 4 }}>
+                      For now, SignalFlow does not auto-capture this app URL. Upload screenshots or record your screen manually.
+                    </span>
                   </label>
                 </div>
                 <label className={styles.field}>
@@ -1371,9 +1364,9 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <h3 style={{ marginTop: 40, marginBottom: 15 }}>Post & Publish Content</h3>
+                  <h3 style={{ marginTop: 40, marginBottom: 15 }}>Prepare Manual Posting Package</h3>
                   
-                  <div style={{ background: "#fffaf0", border: "1px solid rgba(18,22,18,0.1)", padding: 22, borderRadius: 8, boxDizing: "border-box", display: "grid", gap: 20 }}>
+                  <div style={{ background: "#fffaf0", border: "1px solid rgba(18,22,18,0.1)", padding: 22, borderRadius: 8, boxSizing: "border-box", display: "grid", gap: 20 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 15 }}>
                       <div>
                         <strong>Select publishing channel:</strong>
@@ -1391,51 +1384,34 @@ export default function Home() {
                         </select>
                       </div>
                       <div>
-                        <span style={{ fontSize: "0.85rem", padding: "4px 8px", borderRadius: 4, background: isPublishConfigured ? "#24715d" : "#ede7db", color: isPublishConfigured ? "#fff" : "#667069", fontWeight: "bold" }}>
-                          {isPublishConfigured ? "✓ API Integration Configured" : "⚠ Manual Handoff Only"}
+                        <span style={{ fontSize: "0.85rem", padding: "4px 8px", borderRadius: 4, background: "#ede7db", color: "#667069", fontWeight: "bold" }}>
+                          ⚠ Manual posting flow active
                         </span>
                       </div>
                     </div>
 
                     <div style={{ background: "#171b18", padding: 15, borderRadius: 8, color: "#f4f7f2", fontSize: "0.9rem" }}>
-                      <strong style={{ display: "block", color: "#38bdf8", marginBottom: 8 }}>Final Publication Content:</strong>
+                      <strong style={{ display: "block", color: "#38bdf8", marginBottom: 8 }}>Final Content (Copy-ready):</strong>
                       <pre style={{ margin: 0, whiteSpace: "pre-wrap", fontFamily: "monospace" }}>{result?.posts?.[publishPlatform] || "No content compiled."}</pre>
                     </div>
 
                     <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                       <button 
-                        className={styles.secondaryButton} 
+                        className={styles.primaryButton} 
                         onClick={() => copyText("publish", result?.posts?.[publishPlatform])}
                         type="button"
                       >
-                        {copiedLabel === "publish" ? "Copied!" : "1. Copy to Clipboard"}
+                        {copiedLabel === "publish" ? "✓ Copied!" : "Copy Post Text"}
                       </button>
                       
                       <button 
                         className={styles.secondaryButton} 
-                        onClick={() => triggerExport("/api/export/markdown", "md")}
+                        onClick={() => triggerExport("/api/export/zip", "zip")}
                         type="button"
                       >
-                        2. Download Posting Brief
-                      </button>
-
-                      <button 
-                        className={styles.primaryButton}
-                        onClick={handlePublishAction}
-                        disabled={isPublishingToApi}
-                        type="button"
-                        style={{ background: isPublishConfigured ? "#24715d" : "#ede7db", color: isPublishConfigured ? "#fff" : "#121612", fontWeight: "bold" }}
-                      >
-                        {isPublishingToApi ? "Publishing via API..." : "Publish via API"}
+                        Download ZIP Package
                       </button>
                     </div>
-
-                    {publishStatusMsg && (
-                      <div style={{ padding: 15, borderRadius: 8, background: publishStatusMsg.includes("Error") || publishStatusMsg.includes("not configured") ? "rgba(169, 52, 38, 0.08)" : "rgba(36, 113, 93, 0.08)", border: "1px solid", borderColor: publishStatusMsg.includes("Error") || publishStatusMsg.includes("not configured") ? "#a93426" : "#24715d" }}>
-                        <strong>Publishing Status:</strong>
-                        <p style={{ margin: "5px 0 0", color: "#121612" }}>{publishStatusMsg}</p>
-                      </div>
-                    )}
 
                     {preparedPackage && (
                       <div style={{ background: "#fff", border: "1px solid rgba(18,22,18,0.1)", padding: 22, borderRadius: 8, display: "grid", gap: 15 }}>
@@ -1450,6 +1426,12 @@ export default function Home() {
                         {preparedPackage.warning && (
                           <div style={{ background: "rgba(234, 107, 77, 0.08)", border: "1px solid #ea6b4d", padding: 12, borderRadius: 6, color: "#ea6b4d", fontSize: "0.95rem", fontWeight: "bold" }}>
                             ⚠️ {preparedPackage.warning}
+                          </div>
+                        )}
+
+                        {preparedPackage.hashtags && preparedPackage.hashtags.length > 0 && (
+                          <div>
+                            <strong>Hashtags</strong>: {preparedPackage.hashtags.map(h => `#${h}`).join(" ")}
                           </div>
                         )}
 

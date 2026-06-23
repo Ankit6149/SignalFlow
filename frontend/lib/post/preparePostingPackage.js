@@ -14,7 +14,10 @@ export function preparePostingPackage(platform, content, pkg = {}) {
   const hashtags = [];
   // Extract hashtags from package if available
   const posts = pkg.posts || {};
-  const platformData = posts[platform] || {};
+  let mappedKey = platform;
+  if (platform === "hn") mappedKey = "hackernews";
+  if (platform === "release_notes") mappedKey = "releaseNotes";
+  const platformData = posts[mappedKey] || {};
   if (Array.isArray(platformData.hashtags)) {
     hashtags.push(...platformData.hashtags);
   }

@@ -2,6 +2,8 @@ import fs from "fs";
 import path from "path";
 
 /**
+ * EXPERIMENTAL/INTERNAL ONLY - Not used in main V1 product path.
+ * Retained for future automation modules.
  * Headless capture of an app URL using Playwright.
  * Saves screenshot to the public directory.
  * Falls back gracefully if Playwright is not installed or errors.
