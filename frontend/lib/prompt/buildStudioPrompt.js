@@ -202,12 +202,14 @@ INSTRUCTIONS & RULES:
   "media": {
     "screenshotPlan": [],
     "videoScript": [],
+    "voiceoverScript": [],
+    "shotList": [],
+    "recordingGuide": [],
     "carouselPlan": [],
     "thumbnailIdeas": [],
+    "videoTimeline": [],
     "altText": [],
     "assetChecklist": [],
-    "shotList": [],
-    "videoEditingTimeline": [],
     "thumbnailPrompt": ""
   },
   "publishing": {

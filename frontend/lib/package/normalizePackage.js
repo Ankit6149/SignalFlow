@@ -1,4 +1,5 @@
 import { generateLocalTemplatePackage } from "./templatePackage";
+import { buildVideoPrompt } from "../video/buildVideoPrompt";
 
 /**
  * Ensures that a package object strictly conforms to the expected structure.
@@ -53,13 +54,15 @@ export function normalizePackage(rawPkg, inputs) {
     media: {
       screenshotPlan: Array.isArray(rawPkg?.media?.screenshotPlan) ? rawPkg.media.screenshotPlan : baseline.media.screenshotPlan,
       videoScript: Array.isArray(rawPkg?.media?.videoScript) ? rawPkg.media.videoScript : baseline.media.videoScript,
+      voiceoverScript: Array.isArray(rawPkg?.media?.voiceoverScript) ? rawPkg.media.voiceoverScript : baseline.media.voiceoverScript,
+      shotList: Array.isArray(rawPkg?.media?.shotList) ? rawPkg.media.shotList : baseline.media.shotList,
+      recordingGuide: Array.isArray(rawPkg?.media?.recordingGuide) ? rawPkg.media.recordingGuide : baseline.media.recordingGuide,
       carouselPlan: Array.isArray(rawPkg?.media?.carouselPlan) ? rawPkg.media.carouselPlan : baseline.media.carouselPlan,
       thumbnailIdeas: Array.isArray(rawPkg?.media?.thumbnailIdeas) ? rawPkg.media.thumbnailIdeas : baseline.media.thumbnailIdeas,
+      videoTimeline: Array.isArray(rawPkg?.media?.videoTimeline || rawPkg?.media?.videoEditingTimeline) ? (rawPkg.media.videoTimeline || rawPkg.media.videoEditingTimeline) : baseline.media.videoTimeline,
       altText: Array.isArray(rawPkg?.media?.altText) ? rawPkg.media.altText : baseline.media.altText,
       assetChecklist: Array.isArray(rawPkg?.media?.assetChecklist) ? rawPkg.media.assetChecklist : baseline.media.assetChecklist,
-      shotList: Array.isArray(rawPkg?.media?.shotList) ? rawPkg.media.shotList : baseline.media.shotList,
-      videoEditingTimeline: Array.isArray(rawPkg?.media?.videoEditingTimeline) ? rawPkg.media.videoEditingTimeline : baseline.media.videoEditingTimeline,
-      thumbnailPrompt: rawPkg?.media?.thumbnailPrompt || baseline.media.thumbnailPrompt
+      videoPrompt: rawPkg?.media?.videoPrompt || null
     },
     publishing: {
       platformChecklist: Array.isArray(rawPkg?.publishing?.platformChecklist) ? rawPkg.publishing.platformChecklist : baseline.publishing.platformChecklist,
@@ -68,6 +71,11 @@ export function normalizePackage(rawPkg, inputs) {
       warnings: Array.isArray(rawPkg?.publishing?.warnings) ? rawPkg.publishing.warnings : baseline.publishing.warnings
     }
   };
+
+  // Compile prompt for video plan
+  if (!normalized.media.videoPrompt) {
+    normalized.media.videoPrompt = buildVideoPrompt(normalized);
+  }
 
   return normalized;
 }

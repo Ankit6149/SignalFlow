@@ -2,7 +2,6 @@ import { requireOwnerAccess } from "../_auth";
 import { validateGenerationInputs } from "../../../lib/package/validatePackage";
 import { ingestGitHubRepo } from "../../../lib/context/github";
 import { fetchUrlContent } from "../../../lib/context/linkFetcher";
-import { captureAppScreenshot } from "../../../lib/capture/appCapture";
 import { generateStudioPackage } from "../../../lib/ai/generateStudioPackage";
 
 export async function POST(request) {
@@ -78,23 +77,9 @@ export async function POST(request) {
       }
     }
 
-    // 4. Perform App Screenshot Capture if explicitly enabled
-    if (appUrl && enableAutoCapture) {
-      try {
-        const captureResult = await captureAppScreenshot(appUrl);
-        if (captureResult.success) {
-          mediaItems.push({
-            type: "screenshot",
-            name: captureResult.name,
-            url: captureResult.url
-          });
-        }
-        if (captureResult.warnings?.length) {
-          warnings.push(...captureResult.warnings);
-        }
-      } catch (err) {
-        warnings.push(`App screenshot failed: ${err.message}.`);
-      }
+    // 4. In V1, automated screenshot capture is disabled in the main flow.
+    if (appUrl) {
+      warnings.push("Automatic app capture is disabled in main flow. Upload screenshots or record manually.");
     }
 
     // 5. Build context & generate package (supports AI routes & templates fallbacks)

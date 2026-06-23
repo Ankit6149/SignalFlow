@@ -169,9 +169,33 @@ export function buildMarkdown({ projectName, package: pkg, prompt = "" }) {
     md += `\n`;
   }
 
+  if (Array.isArray(media.screenshotPlan) && media.screenshotPlan.length) {
+    md += `### Screenshot Plan\n`;
+    media.screenshotPlan.forEach(sp => { md += `- [ ] ${sp}\n`; });
+    md += `\n`;
+  }
+
   if (Array.isArray(media.videoScript) && media.videoScript.length) {
-    md += `### Video Demo Script\n`;
+    md += `### Reels/Shorts Script Plan\n`;
     media.videoScript.forEach(vs => { md += `- ${vs}\n`; });
+    md += `\n`;
+  }
+
+  if (Array.isArray(media.voiceoverScript) && media.voiceoverScript.length) {
+    md += `### Voiceover Script Plan\n`;
+    media.voiceoverScript.forEach(vo => { md += `- ${vo}\n`; });
+    md += `\n`;
+  }
+
+  if (Array.isArray(media.shotList) && media.shotList.length) {
+    md += `### Scene-by-Scene Shot List\n`;
+    media.shotList.forEach(sl => { md += `- ${sl}\n`; });
+    md += `\n`;
+  }
+
+  if (Array.isArray(media.recordingGuide) && media.recordingGuide.length) {
+    md += `### Screen Recording Guide\n`;
+    media.recordingGuide.forEach(rg => { md += `- ${rg}\n`; });
     md += `\n`;
   }
 
@@ -181,15 +205,15 @@ export function buildMarkdown({ projectName, package: pkg, prompt = "" }) {
     md += `\n`;
   }
 
-  if (Array.isArray(media.shotList) && media.shotList.length) {
-    md += `### Shot List Plan\n`;
-    media.shotList.forEach(sl => { md += `- ${sl}\n`; });
+  if (Array.isArray(media.thumbnailIdeas) && media.thumbnailIdeas.length) {
+    md += `### Thumbnail Ideas\n`;
+    media.thumbnailIdeas.forEach(ti => { md += `- ${ti}\n`; });
     md += `\n`;
   }
 
-  if (Array.isArray(media.videoEditingTimeline) && media.videoEditingTimeline.length) {
+  if (Array.isArray(media.videoTimeline) && media.videoTimeline.length) {
     md += `### Video Editing Timeline\n`;
-    media.videoEditingTimeline.forEach(vet => { md += `- ${vet}\n`; });
+    media.videoTimeline.forEach(vt => { md += `- ${vt}\n`; });
     md += `\n`;
   }
 

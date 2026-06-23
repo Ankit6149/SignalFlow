@@ -23,7 +23,8 @@ export async function generateStudioPackage(inputs) {
     selectedOutputs = [],
     generator = "prompt", // Selected provider ID
     model_name = "",       // Optional model name override
-    model_endpoint = ""    // Optional custom endpoint override
+    model_endpoint = "",    // Optional custom endpoint override
+    appUrl = ""
   } = inputs;
 
   const warnings = [];
@@ -38,7 +39,8 @@ export async function generateStudioPackage(inputs) {
     fileNames,
     mediaItems,
     selectedChannels,
-    selectedOutputs
+    selectedOutputs,
+    appUrl
   });
 
   if (context.warnings?.length) {

@@ -1,6 +1,7 @@
 import JSZip from "jszip";
 import { buildMarkdown } from "./markdown";
 import { buildJSONExport } from "./json";
+import { preparePostingPackage } from "../post/preparePostingPackage";
 
 /**
  * Builds a ZIP buffer containing separate drafts for all selected channels.
@@ -86,16 +87,22 @@ export async function buildZipExport(pkg, metadata = {}) {
     }
     zip.file("media-plan.md", mediaMd);
 
+    if (pkg.media.screenshotPlan?.length) {
+      let screenshotPlanMd = `# Screenshot Plan for ${name}\n\n`;
+      pkg.media.screenshotPlan.forEach(p => { screenshotPlanMd += `- [ ] ${p}\n`; });
+      zip.file("screenshot-plan.md", screenshotPlanMd);
+    }
+
     if (pkg.media.videoScript?.length) {
-      let videoMd = `# Video Script Plan for ${name}\n\n`;
+      let videoMd = `# Video Reels/Shorts Script Plan for ${name}\n\n`;
       pkg.media.videoScript.forEach(p => { videoMd += `${p}\n`; });
       zip.file("video-script.md", videoMd);
     }
 
-    if (pkg.media.carouselPlan?.length) {
-      let carouselMd = `# Carousel Layout Plan for ${name}\n\n`;
-      pkg.media.carouselPlan.forEach(p => { carouselMd += `- ${p}\n`; });
-      zip.file("carousel-plan.md", carouselMd);
+    if (pkg.media.voiceoverScript?.length) {
+      let voMd = `# Voiceover Script Plan for ${name}\n\n`;
+      pkg.media.voiceoverScript.forEach(p => { voMd += `${p}\n`; });
+      zip.file("voiceover-script.md", voMd);
     }
 
     if (pkg.media.shotList?.length) {
@@ -104,14 +111,32 @@ export async function buildZipExport(pkg, metadata = {}) {
       zip.file("shot-list.md", shotListMd);
     }
 
-    if (pkg.media.videoEditingTimeline?.length) {
-      let timelineMd = `# Video Editing Timeline for ${name}\n\n`;
-      pkg.media.videoEditingTimeline.forEach(p => { timelineMd += `- ${p}\n`; });
-      zip.file("video-editing-timeline.md", timelineMd);
+    if (pkg.media.recordingGuide?.length) {
+      let guideMd = `# Screen Recording Guide for ${name}\n\n`;
+      pkg.media.recordingGuide.forEach(p => { guideMd += `- ${p}\n`; });
+      zip.file("recording-guide.md", guideMd);
     }
 
-    if (pkg.media.thumbnailPrompt) {
-      zip.file("thumbnail-prompt.txt", pkg.media.thumbnailPrompt);
+    if (pkg.media.carouselPlan?.length) {
+      let carouselMd = `# Carousel Layout Plan for ${name}\n\n`;
+      pkg.media.carouselPlan.forEach(p => { carouselMd += `- ${p}\n`; });
+      zip.file("carousel-plan.md", carouselMd);
+    }
+
+    if (pkg.media.thumbnailIdeas?.length) {
+      let thumbMd = `# Thumbnail Ideas for ${name}\n\n`;
+      pkg.media.thumbnailIdeas.forEach(p => { thumbMd += `- ${p}\n`; });
+      zip.file("thumbnail-ideas.md", thumbMd);
+    }
+
+    if (pkg.media.videoTimeline?.length) {
+      let timelineMd = `# Video Editing Timeline for ${name}\n\n`;
+      pkg.media.videoTimeline.forEach(p => { timelineMd += `- ${p}\n`; });
+      zip.file("video-timeline.md", timelineMd);
+    }
+
+    if (pkg.media.videoPrompt) {
+      zip.file("video-prompt.json", JSON.stringify(pkg.media.videoPrompt, null, 2));
     }
   }
 
@@ -129,6 +154,37 @@ export async function buildZipExport(pkg, metadata = {}) {
     }
     zip.file("publishing-checklist.md", pubMd);
   }
+
+  // 5. Generate manual posting package document
+  let postingPackageMd = `# Manual Posting Package for ${name}\n\n`;
+  postingPackageMd += `> Status: READY_FOR_MANUAL_POSTING\n`;
+  postingPackageMd += `> Prepared at: ${new Date().toISOString()}\n\n`;
+  
+  channels.forEach(ch => {
+    const postContent = posts[ch];
+    if (postContent) {
+      const body = postContent.body || postContent.caption || postContent.draft || (typeof postContent === "string" ? postContent : "");
+      if (body) {
+        const prep = preparePostingPackage(ch, body, pkg);
+        postingPackageMd += `## Platform: ${ch.toUpperCase()}\n\n`;
+        postingPackageMd += `### Draft Content\n\`\`\`text\n${prep.finalContent}\n\`\`\`\n\n`;
+        if (prep.hashtags?.length) {
+          postingPackageMd += `**Hashtags**: ${prep.hashtags.map(h => `#${h}`).join(" ")}\n\n`;
+        }
+        postingPackageMd += `### Visual Assets Needed\n`;
+        prep.assetsNeeded.forEach(a => { postingPackageMd += `- ${a}\n`; });
+        postingPackageMd += `\n`;
+        postingPackageMd += `### Manual Checklist\n`;
+        prep.manualChecklist.forEach(c => { postingPackageMd += `- [ ] ${c}\n`; });
+        postingPackageMd += `\n`;
+        if (prep.warning) {
+          postingPackageMd += `> **Warning**: ${prep.warning}\n\n`;
+        }
+        postingPackageMd += `***\n\n`;
+      }
+    }
+  });
+  zip.file("manual-posting-package.md", postingPackageMd);
 
   return await zip.generateAsync({ type: "nodebuffer" });
 }

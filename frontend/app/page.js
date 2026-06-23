@@ -91,6 +91,8 @@ export default function Home() {
   const [mediaItems, setMediaItems] = useState([]);
   const [enableAutoCapture, setEnableAutoCapture] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [preparedPackage, setPreparedPackage] = useState(null);
+  const [isLoadingPrepare, setIsLoadingPrepare] = useState(false);
   
   const [selectedChannels, setSelectedChannels] = useState(["linkedin", "x", "instagram", "newsletter", "release_notes"]);
   const [selectedOutputs, setSelectedOutputs] = useState(["caption", "text", "image", "video", "carousel", "doc"]);
@@ -167,6 +169,36 @@ export default function Home() {
     checkHealth();
     fetchProviderStatus();
   }, []);
+
+  async function fetchPreparedPackage(platform, content, pkg) {
+    if (!platform || !content) return;
+    setIsLoadingPrepare(true);
+    try {
+      const resp = await fetch("/api/post/prepare", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeaders() },
+        body: JSON.stringify({
+          platform,
+          content,
+          package: pkg
+        })
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        setPreparedPackage(data);
+      }
+    } catch (e) {
+      console.error("Failed to prepare posting package", e);
+    } finally {
+      setIsLoadingPrepare(false);
+    }
+  }
+
+  useEffect(() => {
+    if (hasGenerated && result?.posts?.[publishPlatform]) {
+      fetchPreparedPackage(publishPlatform, result.posts[publishPlatform], result.package || result.json);
+    }
+  }, [publishPlatform, result, hasGenerated]);
 
   const visibleChannels = useMemo(() => {
     const available = Object.keys(result?.posts || {});
@@ -880,6 +912,10 @@ export default function Home() {
                 />
               </label>
 
+              <div style={{ background: "#ede7db", border: "1px solid rgba(18,22,18,0.1)", padding: "12px 18px", borderRadius: 8, color: "#59635c", fontSize: "0.95rem", fontWeight: "bold", margin: "20px 0" }}>
+                💡 <strong>Notice</strong>: For now, upload screenshots or record your screen manually. Automatic app capture and AI video generation are future modules.
+              </div>
+
               <div className={styles.mediaGrid}>
                 <label className={styles.uploadTile}>
                   <input multiple onChange={handleFiles} type="file" />
@@ -1210,11 +1246,21 @@ export default function Home() {
                     
                     <article>
                       <span>Reel Script</span>
-                      <strong>Video Script Plan</strong>
+                      <strong>Reels/Shorts Script</strong>
                       <ol style={{ paddingLeft: 18, margin: 0, color: "#59635c", fontSize: "0.85rem" }}>
                         {result?.package?.media?.videoScript?.map((item, idx) => (
                           <li key={idx}>{item}</li>
                         )) || <li>No script compiled</li>}
+                      </ol>
+                    </article>
+
+                    <article>
+                      <span>Voiceover Script</span>
+                      <strong>Speech Voiceover</strong>
+                      <ol style={{ paddingLeft: 18, margin: 0, color: "#59635c", fontSize: "0.85rem" }}>
+                        {result?.package?.media?.voiceoverScript?.map((item, idx) => (
+                          <li key={idx}>{item}</li>
+                        )) || <li>No voiceover script compiled</li>}
                       </ol>
                     </article>
 
@@ -1225,6 +1271,16 @@ export default function Home() {
                         {result?.package?.media?.shotList?.map((item, idx) => (
                           <li key={idx}>{item}</li>
                         )) || <li>No shot list compiled</li>}
+                      </ul>
+                    </article>
+
+                    <article>
+                      <span>Recording Guide</span>
+                      <strong>Demo Screen guide</strong>
+                      <ul style={{ paddingLeft: 18, margin: 0, color: "#59635c", fontSize: "0.9rem" }}>
+                        {result?.package?.media?.recordingGuide?.map((item, idx) => (
+                          <li key={idx}>{item}</li>
+                        )) || <li>No screen guide compiled</li>}
                       </ul>
                     </article>
 
@@ -1249,21 +1305,23 @@ export default function Home() {
                     </article>
 
                     <article>
-                      <span>Editing Timeline</span>
-                      <strong>Video Editing Steps</strong>
+                      <span>Thumbnail Ideas</span>
+                      <strong>Visual layouts</strong>
                       <ul style={{ paddingLeft: 18, margin: 0, color: "#59635c", fontSize: "0.9rem" }}>
-                        {result?.package?.media?.videoEditingTimeline?.map((item, idx) => (
+                        {result?.package?.media?.thumbnailIdeas?.map((item, idx) => (
                           <li key={idx}>{item}</li>
-                        )) || <li>No timeline compiled</li>}
+                        )) || <li>No thumbnail ideas compiled</li>}
                       </ul>
                     </article>
 
-                    <article style={{ gridColumn: "span 2" }}>
-                      <span>Thumbnail Generation</span>
-                      <strong>Thumbnail Prompt</strong>
-                      <p style={{ color: "#59635c", fontSize: "0.9rem", margin: 0, whiteSpace: "pre-wrap", fontStyle: "italic" }}>
-                        {result?.package?.media?.thumbnailPrompt || "No thumbnail prompt compiled"}
-                      </p>
+                    <article>
+                      <span>Video Timeline</span>
+                      <strong>Video Editing Timeline</strong>
+                      <ul style={{ paddingLeft: 18, margin: 0, color: "#59635c", fontSize: "0.9rem" }}>
+                        {result?.package?.media?.videoTimeline?.map((item, idx) => (
+                          <li key={idx}>{item}</li>
+                        )) || <li>No timeline compiled</li>}
+                      </ul>
                     </article>
 
                     <article>
@@ -1272,8 +1330,24 @@ export default function Home() {
                       <ul style={{ paddingLeft: 18, margin: 0, color: "#59635c", fontSize: "0.9rem" }}>
                         {result?.package?.publishing?.platformChecklist?.map((item, idx) => (
                           <li key={idx}>{item}</li>
-                        )) || <li>No checklist compiled</li>}
+                        )) || <li>No platform checklist compiled</li>}
                       </ul>
+                    </article>
+
+                    <article style={{ gridColumn: "span 2" }}>
+                      <span>Thumbnail Prompt</span>
+                      <strong>Generation prompt</strong>
+                      <p style={{ color: "#59635c", fontSize: "0.9rem", margin: 0, whiteSpace: "pre-wrap", fontStyle: "italic" }}>
+                        {result?.package?.media?.thumbnailPrompt || "No thumbnail prompt compiled"}
+                      </p>
+                    </article>
+
+                    <article style={{ gridColumn: "span 3" }}>
+                      <span>Future Video Generation Config</span>
+                      <strong>Video Prompt JSON</strong>
+                      <pre style={{ margin: "5px 0 0", maxHeight: "250px", overflow: "auto", background: "#171b18", color: "#f4f7f2", padding: 12, borderRadius: 6, fontSize: "0.85rem", fontFamily: "monospace" }}>
+                        {result?.package?.media?.videoPrompt ? JSON.stringify(result.package.media.videoPrompt, null, 2) : "No video prompt configuration compiled."}
+                      </pre>
                     </article>
                   </div>
 
@@ -1363,15 +1437,37 @@ export default function Home() {
                       </div>
                     )}
 
-                    <div style={{ background: "#fff", border: "1px solid rgba(18,22,18,0.1)", padding: 15, borderRadius: 8 }}>
-                      <strong style={{ display: "block", marginBottom: 8 }}>Platform Posting Checklist:</strong>
-                      <ul style={{ margin: 0, paddingLeft: 20, color: "#59635c", fontSize: "0.9rem" }}>
-                        <li>Review the final drafted copy in the block above for syntax, tags, and structure.</li>
-                        <li>Confirm that the Alt description tags for screens match details in the media brief.</li>
-                        <li>Attach the SVG visual asset card or local WebM recordings during composition.</li>
-                        <li>Ensure no passwords or secrets are contained in any posts.</li>
-                      </ul>
-                    </div>
+                    {preparedPackage && (
+                      <div style={{ background: "#fff", border: "1px solid rgba(18,22,18,0.1)", padding: 22, borderRadius: 8, display: "grid", gap: 15 }}>
+                        <strong style={{ fontSize: "1.1rem", display: "block", color: "#24715d" }}>
+                          📋 Prepared Posting Handoff Package ({publishPlatform.toUpperCase()})
+                        </strong>
+                        
+                        <div>
+                          <strong>Status</strong>: <span style={{ color: "#24715d", fontWeight: "bold" }}>{preparedPackage.status?.toUpperCase() || "READY_FOR_MANUAL_POSTING"}</span>
+                        </div>
+
+                        {preparedPackage.warning && (
+                          <div style={{ background: "rgba(234, 107, 77, 0.08)", border: "1px solid #ea6b4d", padding: 12, borderRadius: 6, color: "#ea6b4d", fontSize: "0.95rem", fontWeight: "bold" }}>
+                            ⚠️ {preparedPackage.warning}
+                          </div>
+                        )}
+
+                        <div>
+                          <strong>Visual Assets Needed for Upload</strong>:
+                          <ul style={{ margin: "5px 0 0", paddingLeft: 20, color: "#59635c", fontSize: "0.9rem" }}>
+                            {preparedPackage.assetsNeeded?.map((asset, i) => <li key={i}>{asset}</li>) || <li>None</li>}
+                          </ul>
+                        </div>
+
+                        <div>
+                          <strong>Manual Copy & Paste Handoff Checklist</strong>:
+                          <ul style={{ margin: "5px 0 0", paddingLeft: 20, color: "#59635c", fontSize: "0.9rem" }}>
+                            {preparedPackage.manualChecklist?.map((step, i) => <li key={i}>{step}</li>) || <li>None</li>}
+                          </ul>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </>
               )}

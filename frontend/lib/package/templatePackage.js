@@ -207,6 +207,22 @@ export function generateLocalTemplatePackage({
         `[0:08-0:15] Click generate and watch the multi-channel drafts appear instantly.`,
         `[0:15-0:20] Click "Download ZIP" and show the formatted files.`
       ],
+      voiceoverScript: [
+        `Tired of manually writing posting copy for updates? Check out ${name}.`,
+        `Just paste your repository, links, or notes, select outputs and channels.`,
+        `In seconds, SignalFlow generates LinkedIn posts, X threads, newsletters and media plans.`,
+        `Download the complete launch kit in Markdown, JSON, or ZIP format today!`
+      ],
+      shotList: [
+        `Shot 1: Close-up of developer clicking 'Generate Package'`,
+        `Shot 2: Over-the-shoulder of reviewing drafts`,
+        `Shot 3: Screencast of downloading ZIP and extracting files`
+      ],
+      recordingGuide: [
+        `Screencast of developer clicking 'Generate Package' on dashboard.`,
+        `Close-up on generated drafts in step 4 review interface.`,
+        `Screencast downloading and extracting the complete handoff ZIP file.`
+      ],
       carouselPlan: [
         `Slide 1: The Developer Content Problem (Manual writing is slow)`,
         `Slide 2: Meet ${name} (Automated post packages)`,
@@ -218,6 +234,12 @@ export function generateLocalTemplatePackage({
         `Glow gradient background with the text "${name}" and a large ZIP file icon.`,
         `Split image: Code on the left, social cards on the right.`
       ],
+      videoTimeline: [
+        `0:00 - 0:02: Hook showing the manual content problem.`,
+        `0:02 - 0:08: Steps to paste GitHub URL and brief description.`,
+        `0:08 - 0:15: Interactive generation and output drafts display.`,
+        `0:15 - 0:20: Download exports and manual posting checklist.`
+      ],
       altText: [
         `Screenshot of the ${name} Model setup screen.`,
         `Visual schematic of the SignalFlow content pipeline.`
@@ -226,17 +248,6 @@ export function generateLocalTemplatePackage({
         `1x Generated SVG Card (built-in)`,
         `3x Product screenshots`,
         `1x Short screen recording demo (WebM)`
-      ],
-      shotList: [
-        `Shot 1: Close-up of developer clicking 'Generate Package'`,
-        `Shot 2: Over-the-shoulder of reviewing drafts`,
-        `Shot 3: Screencast of downloading ZIP and extracting files`
-      ],
-      videoEditingTimeline: [
-        `0:00 - 0:02: Fast intro hook with problem statement`,
-        `0:02 - 0:10: Screencast of inputs and GitHub URL loading`,
-        `0:10 - 0:15: Visual showing generated platform posts`,
-        `0:15 - 0:20: Call-to-action showing downloads and exports`
       ],
       thumbnailPrompt: `Professional tech aesthetic screenshot mockup of the ${name} workspace showing a clean dark theme, glowing neon accents, and a large export ZIP file icon on a high-contrast background.`
     },
