@@ -52,3 +52,6 @@ test-temp-local/
 *.png
 *.mp4
 *.pdf
+
+# Allow frontend/lib
+!frontend/lib/
