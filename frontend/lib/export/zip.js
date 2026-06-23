@@ -84,16 +84,19 @@ export async function buildZipExport(pkg, metadata = {}) {
       pkg.media.screenshotPlan.forEach(p => { mediaMd += `- [ ] ${p}\n`; });
       mediaMd += `\n`;
     }
-    if (pkg.media.videoScript?.length) {
-      mediaMd += `### Video script\n`;
-      pkg.media.videoScript.forEach(p => { mediaMd += `- ${p}\n`; });
-      mediaMd += `\n`;
-    }
-    if (pkg.media.carouselPlan?.length) {
-      mediaMd += `### Carousel Plan\n`;
-      pkg.media.carouselPlan.forEach(p => { mediaMd += `- ${p}\n`; });
-    }
     zip.file("media-plan.md", mediaMd);
+
+    if (pkg.media.videoScript?.length) {
+      let videoMd = `# Video Script Plan for ${name}\n\n`;
+      pkg.media.videoScript.forEach(p => { videoMd += `${p}\n`; });
+      zip.file("video-script.md", videoMd);
+    }
+
+    if (pkg.media.carouselPlan?.length) {
+      let carouselMd = `# Carousel Layout Plan for ${name}\n\n`;
+      pkg.media.carouselPlan.forEach(p => { carouselMd += `- ${p}\n`; });
+      zip.file("carousel-plan.md", carouselMd);
+    }
   }
 
   // 4. Checklist schedules

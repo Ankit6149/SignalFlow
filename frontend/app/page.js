@@ -105,6 +105,61 @@ export default function Home() {
   const [captureStatus, setCaptureStatus] = useState("Ready");
   const [hasGenerated, setHasGenerated] = useState(false);
 
+  const [publishPlatform, setPublishPlatform] = useState("linkedin");
+  const [isPublishingToApi, setIsPublishingToApi] = useState(false);
+  const [publishStatusMsg, setPublishStatusMsg] = useState("");
+
+  const isPublishConfigured = useMemo(() => {
+    const config = result?.integration_config?.platforms?.[publishPlatform] || {};
+    return Boolean(config.configured);
+  }, [result, publishPlatform]);
+
+  async function handlePublishAction() {
+    setPublishStatusMsg("");
+    const contentText = result?.posts?.[publishPlatform] || "";
+    if (!contentText) {
+      setPublishStatusMsg("Error: No draft content compiled for this platform.");
+      return;
+    }
+
+    if (!isPublishConfigured) {
+      setPublishStatusMsg(`API credentials not configured for ${publishPlatform}. Please use the manual flow (Copy to Clipboard, Download ZIP) or configure your environment variables.`);
+      return;
+    }
+
+    const platformLabel = publishPlatform.toUpperCase();
+    const confirmed = window.confirm(`Are you sure you want to officially publish the draft to ${platformLabel}?\n\nContent:\n${contentText.substring(0, 150)}...`);
+    if (!confirmed) {
+      return;
+    }
+
+    setIsPublishingToApi(true);
+    setPublishStatusMsg("Submitting post payload to server API...");
+
+    try {
+      const resp = await fetch("/api/publish", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeaders() },
+        body: JSON.stringify({
+          platform: publishPlatform,
+          content: contentText,
+          projectName
+        })
+      });
+
+      const data = await resp.json();
+      if (!resp.ok || data.ok === false) {
+        throw new Error(data.error || "Official API posting failed.");
+      }
+
+      setPublishStatusMsg(`Successfully published! Post ID: ${data.postId || "N/A"}. Message: ${data.message || ""}`);
+    } catch (err) {
+      setPublishStatusMsg(`Error publishing to API: ${err.message}`);
+    } finally {
+      setIsPublishingToApi(false);
+    }
+  }
+
   useEffect(() => {
     setAccessToken(window.localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY) || "");
     checkHealth();
@@ -1059,6 +1114,83 @@ export default function Home() {
                           Download ZIP
                         </button>
                       </div>
+                    </div>
+                  </div>
+
+                  <h3 style={{ marginTop: 40, marginBottom: 15 }}>Post & Publish Content</h3>
+                  
+                  <div style={{ background: "#fffaf0", border: "1px solid rgba(18,22,18,0.1)", padding: 22, borderRadius: 8, boxDizing: "border-box", display: "grid", gap: 20 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 15 }}>
+                      <div>
+                        <strong>Select publishing channel:</strong>
+                        <select 
+                          value={publishPlatform} 
+                          onChange={(e) => {
+                            setPublishPlatform(e.target.value);
+                            setPublishStatusMsg("");
+                          }}
+                          style={{ marginLeft: 10, padding: "8px 14px", borderRadius: 8, border: "1px solid rgba(18,22,18,0.15)", background: "#fff" }}
+                        >
+                          {visibleChannels.map(([key, label]) => (
+                            <option key={key} value={key}>{label}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <span style={{ fontSize: "0.85rem", padding: "4px 8px", borderRadius: 4, background: isPublishConfigured ? "#24715d" : "#ede7db", color: isPublishConfigured ? "#fff" : "#667069", fontWeight: "bold" }}>
+                          {isPublishConfigured ? "✓ API Integration Configured" : "⚠ Manual Handoff Only"}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div style={{ background: "#171b18", padding: 15, borderRadius: 8, color: "#f4f7f2", fontSize: "0.9rem" }}>
+                      <strong style={{ display: "block", color: "#38bdf8", marginBottom: 8 }}>Final Publication Content:</strong>
+                      <pre style={{ margin: 0, whiteSpace: "pre-wrap", fontFamily: "monospace" }}>{result?.posts?.[publishPlatform] || "No content compiled."}</pre>
+                    </div>
+
+                    <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                      <button 
+                        className={styles.secondaryButton} 
+                        onClick={() => copyText("publish", result?.posts?.[publishPlatform])}
+                        type="button"
+                      >
+                        {copiedLabel === "publish" ? "Copied!" : "1. Copy to Clipboard"}
+                      </button>
+                      
+                      <button 
+                        className={styles.secondaryButton} 
+                        onClick={() => triggerExport("/api/export/markdown", "md")}
+                        type="button"
+                      >
+                        2. Download Posting Brief
+                      </button>
+
+                      <button 
+                        className={styles.primaryButton}
+                        onClick={handlePublishAction}
+                        disabled={isPublishingToApi}
+                        type="button"
+                        style={{ background: isPublishConfigured ? "#24715d" : "#ede7db", color: isPublishConfigured ? "#fff" : "#121612", fontWeight: "bold" }}
+                      >
+                        {isPublishingToApi ? "Publishing via API..." : "Publish via API"}
+                      </button>
+                    </div>
+
+                    {publishStatusMsg && (
+                      <div style={{ padding: 15, borderRadius: 8, background: publishStatusMsg.includes("Error") || publishStatusMsg.includes("not configured") ? "rgba(169, 52, 38, 0.08)" : "rgba(36, 113, 93, 0.08)", border: "1px solid", borderColor: publishStatusMsg.includes("Error") || publishStatusMsg.includes("not configured") ? "#a93426" : "#24715d" }}>
+                        <strong>Publishing Status:</strong>
+                        <p style={{ margin: "5px 0 0", color: "#121612" }}>{publishStatusMsg}</p>
+                      </div>
+                    )}
+
+                    <div style={{ background: "#fff", border: "1px solid rgba(18,22,18,0.1)", padding: 15, borderRadius: 8 }}>
+                      <strong style={{ display: "block", marginBottom: 8 }}>Platform Posting Checklist:</strong>
+                      <ul style={{ margin: 0, paddingLeft: 20, color: "#59635c", fontSize: "0.9rem" }}>
+                        <li>Review the final drafted copy in the block above for syntax, tags, and structure.</li>
+                        <li>Confirm that the Alt description tags for screens match details in the media brief.</li>
+                        <li>Attach the SVG visual asset card or local WebM recordings during composition.</li>
+                        <li>Ensure no passwords or secrets are contained in any posts.</li>
+                      </ul>
                     </div>
                   </div>
                 </>

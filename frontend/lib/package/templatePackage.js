@@ -299,9 +299,21 @@ export function generateLocalTemplatePackage({
       webhookReady: true,
       officialApisOnly: true,
       platforms: {
-        linkedin: { supported: "manual_or_official_api", notes: [] },
-        instagram: { supported: "official_meta_api_only", notes: [] },
-        x: { supported: "official_api_only", notes: [] }
+        linkedin: { 
+          supported: "manual_or_official_api", 
+          configured: Boolean(process.env.LINKEDIN_ACCESS_TOKEN && process.env.LINKEDIN_ORGANIZATION_ID),
+          notes: [] 
+        },
+        instagram: { 
+          supported: "official_meta_api_only", 
+          configured: Boolean(process.env.META_ACCESS_TOKEN && process.env.META_IG_USER_ID),
+          notes: [] 
+        },
+        x: { 
+          supported: "official_api_only", 
+          configured: Boolean(process.env.X_ACCESS_TOKEN && process.env.X_API_KEY && process.env.X_API_SECRET),
+          notes: [] 
+        }
       }
     }
   };
