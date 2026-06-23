@@ -3,13 +3,38 @@ import { PROVIDERS } from "../types";
 /**
  * Calls Google Gemini REST API.
  */
-export async function generateGemini(prompt, modelOverride = null) {
-  const apiKey = process.env.GEMINI_API_KEY;
+export async function generateGemini(prompt, modelOverride = null, config = {}) {
+  const apiKey = config.apiKey || process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    throw new Error("Gemini API key is not configured in server environment variables.");
+    throw new Error("Gemini API key is not configured (missing GEMINI_API_KEY).");
   }
 
-  const model = modelOverride || PROVIDERS.gemini.defaultModel || "gemini-1.5-flash";
+  const model = modelOverride || config.modelName || PROVIDERS.gemini.defaultModel || "gemini-2.0-flash";
+
+  // Attempt generating JSON response first
+  try {
+    return await makeGeminiRequest(prompt, model, apiKey, true);
+  } catch (jsonErr) {
+    const errorMsg = jsonErr.message || "";
+    // If the error message suggests responseMimeType is not supported, or it is a 400 parameter error, retry in text mode
+    if (
+      errorMsg.includes("response_mime_type") || 
+      errorMsg.includes("mime") || 
+      errorMsg.includes("MIME") || 
+      errorMsg.includes("JSON") || 
+      errorMsg.includes("400")
+    ) {
+      try {
+        return await makeGeminiRequest(prompt, model, apiKey, false);
+      } catch (textErr) {
+        throw new Error(`Gemini request failed: ${textErr.message}`);
+      }
+    }
+    throw jsonErr;
+  }
+}
+
+async function makeGeminiRequest(prompt, model, apiKey, useJsonMode) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
   const body = {
@@ -23,27 +48,44 @@ export async function generateGemini(prompt, modelOverride = null) {
       }
     ],
     generationConfig: {
-      responseMimeType: "application/json",
       temperature: 0.2
     }
   };
 
+  if (useJsonMode) {
+    body.generationConfig.responseMimeType = "application/json";
+  }
+
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 35000); // 35s timeout
 
-  const resp = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(body),
-    signal: controller.signal
-  });
-
-  clearTimeout(timeoutId);
+  let resp;
+  try {
+    resp = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(body),
+      signal: controller.signal
+    });
+  } catch (err) {
+    if (err.name === "AbortError") {
+      throw new Error("Request to Gemini API timed out after 35 seconds.");
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   if (!resp.ok) {
-    const errorDetails = await resp.text();
+    let errorDetails = "";
+    try {
+      const errorJson = await resp.json();
+      errorDetails = errorJson?.error?.message || JSON.stringify(errorJson);
+    } catch {
+      errorDetails = await resp.text();
+    }
     throw new Error(`Gemini API response failed (HTTP ${resp.status}): ${errorDetails}`);
   }
 

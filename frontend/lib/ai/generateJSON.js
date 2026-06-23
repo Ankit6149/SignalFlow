@@ -3,8 +3,8 @@ import { generateText } from "./generateText";
 /**
  * Executes a prompt, requests JSON, and performs robust string-to-JSON repairs.
  */
-export async function generateJSON({ provider, prompt, modelOverride = null }) {
-  const rawText = await generateText({ provider, prompt, modelOverride });
+export async function generateJSON({ provider, prompt, modelOverride = null, config = {} }) {
+  const rawText = await generateText({ provider, prompt, modelOverride, config });
   
   if (!rawText || typeof rawText !== "string") {
     throw new Error("Model returned empty or non-string response.");

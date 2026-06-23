@@ -15,7 +15,10 @@ export function getProviderConfigurationStatus() {
       isLocal: provider.isLocal,
       isFree: provider.isFree,
       configured: provider.isConfigured(),
-      defaultModel: provider.defaultModel
+      defaultModel: provider.defaultModel,
+      requiredEnv: provider.requiredEnv || [],
+      canTest: provider.canTest || false,
+      supportsTemporaryKey: provider.supportsTemporaryKey || false
     };
   });
 

@@ -8,22 +8,22 @@ import { generateCustomOpenAI } from "./providers/customOpenAI";
 /**
  * Route a raw text request to the selected provider.
  */
-export async function generateText({ provider, prompt, modelOverride = null }) {
+export async function generateText({ provider, prompt, modelOverride = null, config = {} }) {
   const p = (provider || "prompt").trim().toLowerCase();
 
   switch (p) {
     case "gemini":
-      return await generateGemini(prompt, modelOverride);
+      return await generateGemini(prompt, modelOverride, config);
     case "groq":
-      return await generateGroq(prompt, modelOverride);
+      return await generateGroq(prompt, modelOverride, config);
     case "openrouter":
-      return await generateOpenRouter(prompt, modelOverride);
+      return await generateOpenRouter(prompt, modelOverride, config);
     case "ollama":
-      return await generateOllama(prompt, modelOverride);
+      return await generateOllama(prompt, modelOverride, config);
     case "lmstudio":
-      return await generateLMStudio(prompt, modelOverride);
+      return await generateLMStudio(prompt, modelOverride, config);
     case "custom":
-      return await generateCustomOpenAI(prompt, modelOverride);
+      return await generateCustomOpenAI(prompt, modelOverride, config);
     default:
       throw new Error(`Text generation not supported for provider mode: "${provider}"`);
   }

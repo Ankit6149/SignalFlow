@@ -24,7 +24,8 @@ export async function generateStudioPackage(inputs) {
     generator = "prompt", // Selected provider ID
     model_name = "",       // Optional model name override
     model_endpoint = "",    // Optional custom endpoint override
-    appUrl = ""
+    appUrl = "",
+    config = {}
   } = inputs;
 
   const warnings = [];
@@ -175,7 +176,8 @@ export async function generateStudioPackage(inputs) {
     const rawJsonPkg = await generateJSON({
       provider: generator,
       prompt: studioPrompt,
-      modelOverride
+      modelOverride,
+      config
     });
 
     // Normalize response JSON to fit V1 package schema perfectly

@@ -3,11 +3,11 @@ import { PROVIDERS } from "../types";
 /**
  * Calls local Ollama chat completions endpoint.
  */
-export async function generateOllama(prompt, modelOverride = null) {
-  const baseUrl = process.env.OLLAMA_BASE_URL || "http://localhost:11434/v1";
+export async function generateOllama(prompt, modelOverride = null, config = {}) {
+  const baseUrl = config.baseUrl || process.env.OLLAMA_BASE_URL || "http://localhost:11434/v1";
   const url = `${baseUrl.replace(/\/$/, "")}/chat/completions`;
 
-  const model = modelOverride || PROVIDERS.ollama.defaultModel || "llama3";
+  const model = modelOverride || config.modelName || PROVIDERS.ollama.defaultModel || "llama3";
 
   const body = {
     model,

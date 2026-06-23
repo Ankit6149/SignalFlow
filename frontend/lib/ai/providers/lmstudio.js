@@ -3,12 +3,12 @@ import { PROVIDERS } from "../types";
 /**
  * Calls local LM Studio chat completions endpoint.
  */
-export async function generateLMStudio(prompt, modelOverride = null) {
-  const baseUrl = process.env.LMSTUDIO_BASE_URL || "http://localhost:1234/v1";
+export async function generateLMStudio(prompt, modelOverride = null, config = {}) {
+  const baseUrl = config.baseUrl || process.env.LMSTUDIO_BASE_URL || "http://localhost:1234/v1";
   const url = `${baseUrl.replace(/\/$/, "")}/chat/completions`;
 
   // LM Studio doesn't strictly validate model name, but uses loaded model by default
-  const model = modelOverride || PROVIDERS.lmstudio.defaultModel || "any";
+  const model = modelOverride || config.modelName || PROVIDERS.lmstudio.defaultModel || "any";
 
   const body = {
     model,

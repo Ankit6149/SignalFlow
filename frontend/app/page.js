@@ -92,6 +92,11 @@ export default function Home() {
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [preparedPackage, setPreparedPackage] = useState(null);
   const [isLoadingPrepare, setIsLoadingPrepare] = useState(false);
+  const [tempApiKey, setTempApiKey] = useState("");
+  const [useTempKeyForGen, setUseTempKeyForGen] = useState(false);
+  const [isTestingConnection, setIsTestingConnection] = useState(false);
+  const [testResult, setTestResult] = useState(null);
+  const [setupInstructionProvider, setSetupInstructionProvider] = useState(null);
   
   const [selectedChannels, setSelectedChannels] = useState(["linkedin", "x", "instagram", "newsletter", "release_notes"]);
   const [selectedOutputs, setSelectedOutputs] = useState(["caption", "text", "image", "video", "carousel", "doc"]);
@@ -107,15 +112,64 @@ export default function Home() {
   const [copiedLabel, setCopiedLabel] = useState("");
   const [captureStatus, setCaptureStatus] = useState("Ready");
   const [hasGenerated, setHasGenerated] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const [publishPlatform, setPublishPlatform] = useState("linkedin");
   const [isPublishingToApi, setIsPublishingToApi] = useState(false);
   const [publishStatusMsg, setPublishStatusMsg] = useState("");
 
-  const isPublishConfigured = useMemo(() => {
-    const config = result?.integration_config?.platforms?.[publishPlatform] || {};
-    return Boolean(config.configured);
-  }, [result, publishPlatform]);
+  // Social media account connection state
+  const [socialAccounts, setSocialAccounts] = useState({});
+  const [oauthMessage, setOauthMessage] = useState(null);
+  const [socialSetupExpanded, setSocialSetupExpanded] = useState(null);
+  const [redditSubreddit, setRedditSubreddit] = useState("");
+  const [redditTitle, setRedditTitle] = useState("");
+
+  const isSocialConnected = useMemo(() => {
+    const account = socialAccounts[publishPlatform];
+    return Boolean(account?.connected && !account?.expired);
+  }, [socialAccounts, publishPlatform]);
+
+  async function fetchSocialStatus() {
+    try {
+      const resp = await fetch(`${API_BASE}/social/status`, {
+        headers: authHeaders()
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        setSocialAccounts(data.platforms || {});
+      }
+    } catch (e) {
+      console.error("Failed to fetch social status", e);
+    }
+  }
+
+  function handleSocialConnect(platformId) {
+    // Open OAuth flow in same window — will redirect back after auth
+    const url = `${API_BASE}/social/connect?platform=${platformId}`;
+    window.location.href = url;
+  }
+
+  async function handleSocialDisconnect(platformId) {
+    try {
+      const resp = await fetch(`${API_BASE}/social/disconnect`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeaders() },
+        body: JSON.stringify({ platform: platformId })
+      });
+      if (resp.ok) {
+        setSocialAccounts(prev => {
+          const updated = { ...prev };
+          if (updated[platformId]) {
+            updated[platformId] = { ...updated[platformId], connected: false, profile: null };
+          }
+          return updated;
+        });
+      }
+    } catch (e) {
+      console.error("Failed to disconnect", e);
+    }
+  }
 
   async function handlePublishAction() {
     setPublishStatusMsg("");
@@ -125,19 +179,17 @@ export default function Home() {
       return;
     }
 
-    if (!isPublishConfigured) {
-      setPublishStatusMsg(`API credentials not configured for ${publishPlatform}. Please use the manual flow (Copy to Clipboard, Download ZIP) or configure your environment variables.`);
+    if (!isSocialConnected) {
+      setPublishStatusMsg(`Your ${publishPlatform} account is not connected. Connect it from the Connected Accounts panel above, or use Copy & Paste.`);
       return;
     }
 
-    const platformLabel = publishPlatform.toUpperCase();
-    const confirmed = window.confirm(`Are you sure you want to officially publish the draft to ${platformLabel}?\n\nContent:\n${contentText.substring(0, 150)}...`);
-    if (!confirmed) {
-      return;
-    }
+    const platformLabel = (socialAccounts[publishPlatform]?.label || publishPlatform).toUpperCase();
+    const confirmed = window.confirm(`Publish to ${platformLabel}?\n\nContent preview:\n${contentText.substring(0, 200)}...`);
+    if (!confirmed) return;
 
     setIsPublishingToApi(true);
-    setPublishStatusMsg("Submitting post payload to server API...");
+    setPublishStatusMsg("Publishing...");
 
     try {
       const resp = await fetch("/api/publish", {
@@ -146,18 +198,28 @@ export default function Home() {
         body: JSON.stringify({
           platform: publishPlatform,
           content: contentText,
-          projectName
+          projectName,
+          options: {
+            subreddit: redditSubreddit || "test",
+            title: redditTitle || projectName,
+            projectName
+          }
         })
       });
 
       const data = await resp.json();
       if (!resp.ok || data.ok === false) {
-        throw new Error(data.error || "Official API posting failed.");
+        throw new Error(data.error || "Publishing failed.");
       }
 
-      setPublishStatusMsg(`Successfully published! Post ID: ${data.postId || "N/A"}. Message: ${data.message || ""}`);
+      setPublishStatusMsg(JSON.stringify({
+        type: "success",
+        message: data.message || "Published!",
+        postUrl: data.postUrl || "",
+        postId: data.postId || ""
+      }));
     } catch (err) {
-      setPublishStatusMsg(`Error publishing to API: ${err.message}`);
+      setPublishStatusMsg(`Error: ${err.message}`);
     } finally {
       setIsPublishingToApi(false);
     }
@@ -167,6 +229,22 @@ export default function Home() {
     setAccessToken(window.localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY) || "");
     checkHealth();
     fetchProviderStatus();
+    fetchSocialStatus();
+
+    // Handle OAuth callback params in URL
+    const params = new URLSearchParams(window.location.search);
+    const socialStatus = params.get("social_status");
+    const socialMessage = params.get("social_message");
+    if (socialStatus && socialMessage) {
+      setOauthMessage({ type: socialStatus, message: socialMessage });
+      setStep(3); // Go to Package step to see the connected accounts panel
+      // Clean URL without reloading
+      window.history.replaceState({}, "", window.location.pathname);
+      // Refresh social status
+      setTimeout(() => fetchSocialStatus(), 500);
+      // Auto-dismiss after 8 seconds
+      setTimeout(() => setOauthMessage(null), 8000);
+    }
   }, []);
 
   async function fetchPreparedPackage(platform, content, pkg) {
@@ -225,10 +303,56 @@ export default function Home() {
       const resp = await fetch(`${API_BASE}/provider_status`);
       if (resp.ok) {
         const data = await resp.json();
-        setProviderConfigs(data);
+        const providers = data.providers || data;
+        setProviderConfigs(providers);
+
+        // Auto select default provider
+        let defaultKey = data.defaultProvider || "";
+        if (defaultKey && providers[defaultKey]) {
+          setModelRoute(defaultKey);
+        } else {
+          // Fall back to prioritizations
+          if (providers.gemini?.configured) {
+            setModelRoute("gemini");
+          } else if (providers.groq?.configured) {
+            setModelRoute("groq");
+          } else if (providers.openrouter?.configured) {
+            setModelRoute("openrouter");
+          } else {
+            setModelRoute("template");
+          }
+        }
       }
     } catch (e) {
       console.error("Failed to query provider configurations", e);
+    }
+  }
+
+  async function triggerTestConnection(providerKey) {
+    setIsTestingConnection(true);
+    setTestResult(null);
+    try {
+      const resp = await fetch(`${API_BASE}/provider_test`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeaders() },
+        body: JSON.stringify({
+          provider: providerKey,
+          modelName: modelName || providerConfigs[providerKey]?.defaultModel || "",
+          baseUrl: modelEndpoint || "",
+          temporaryApiKey: tempApiKey || ""
+        })
+      });
+      
+      const data = await resp.json();
+      setTestResult(data);
+    } catch (e) {
+      setTestResult({
+        ok: false,
+        error: e.message,
+        setupHint: "Make sure you can access the server endpoint."
+      });
+    } finally {
+      setIsTestingConnection(false);
     }
   }
 
@@ -494,6 +618,9 @@ export default function Home() {
           generator: modelRoute,
           model_endpoint: modelEndpoint,
           model_name: modelName,
+          providerApiKey: useTempKeyForGen ? tempApiKey : undefined,
+          providerBaseUrl: modelEndpoint || undefined,
+          providerModelName: modelName || undefined
         }),
       });
       
@@ -740,20 +867,21 @@ export default function Home() {
             <section className={styles.panel}>
               <div className={styles.panelIntro}>
                 <p className={styles.eyebrow}>Step 1</p>
-                <h2>Choose a model route.</h2>
-                <p>Pick a free copy-paste prompt generator, deterministic templates, cloud APIs, or a private local SLM endpoint.</p>
+                <h2>Connect your model.</h2>
+                <p>Choose a provider, paste your API key, and test the connection. No keys are permanently stored in the browser.</p>
               </div>
 
               <div className={styles.modelGrid}>
                 {MODEL_ROUTES_META.map((provider) => {
                   const status = providerConfigs[provider.key] || {};
                   const isConfig = provider.key === "prompt" || provider.key === "template" || status.configured;
+                  const isBYOK = provider.price === "BYOK";
                   
                   return (
                     <button
                       className={modelRoute === provider.key ? styles.selectedCard : ""}
                       key={provider.key}
-                      onClick={() => setModelRoute(provider.key)}
+                      onClick={() => { setModelRoute(provider.key); setTestResult(null); setShowAdvanced(false); }}
                       type="button"
                     >
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
@@ -764,42 +892,200 @@ export default function Home() {
                           </span>
                         </div>
                       </div>
-                      <p style={{ margin: "4px 0" }}>{provider.desc}</p>
-                      <span style={{ fontSize: "0.8rem", color: isConfig ? "#24715d" : "#a93426", fontWeight: "bold" }}>
-                        {isConfig ? "✓ Configured" : "⚠ Not configured (will use template fallback)"}
-                      </span>
-                      <p style={{ fontSize: "0.75rem", color: "#667069", marginTop: 4 }}>
-                        Best: {provider.use} ({provider.price})
-                      </p>
+                      <p style={{ margin: "4px 0", fontSize: "0.88rem" }}>{provider.desc}</p>
+                      <div style={{ display: "flex", alignItems: "center", fontSize: "0.8rem", fontWeight: "bold" }}>
+                        <span className={`${styles.statusDot} ${isConfig ? styles.statusConfigured : isBYOK ? styles.statusNotConfigured : styles.statusLocal}`} />
+                        {isConfig ? "Ready" : isBYOK ? "Key needed" : "Local server"}
+                      </div>
                     </button>
                   );
                 })}
               </div>
 
-              {modelRoute !== "prompt" && modelRoute !== "template" && (
-                <div className={styles.softBox}>
-                  <label className={styles.field}>
-                    Model endpoint base URL (Optional override)
-                    <input
-                      onChange={(event) => setModelEndpoint(event.target.value)}
-                      placeholder={
-                        modelRoute === "ollama" ? "http://localhost:11434/v1" :
-                        modelRoute === "lmstudio" ? "http://localhost:1234/v1" :
-                        "https://api.example.com/v1"
-                      }
-                      value={modelEndpoint}
-                    />
-                  </label>
-                  <label className={styles.field}>
-                    Model name identifier (Optional override)
-                    <input
-                      onChange={(event) => setModelName(event.target.value)}
-                      placeholder="llama3, gpt-4o-mini, etc."
-                      value={modelName}
-                    />
-                  </label>
-                </div>
-              )}
+              {/* ── Selected Provider Detail Panel ── */}
+              {(() => {
+                const selectedMeta = MODEL_ROUTES_META.find(m => m.key === modelRoute);
+                if (!selectedMeta) return null;
+                const status = providerConfigs[modelRoute] || {};
+                const isLocal = selectedMeta.badge === "Local";
+                const isBYOK = selectedMeta.price === "BYOK";
+                const needsKey = isBYOK && !isLocal && modelRoute !== "prompt" && modelRoute !== "template";
+                const needsEndpoint = modelRoute === "ollama" || modelRoute === "lmstudio" || modelRoute === "custom";
+                const isPromptOrTemplate = modelRoute === "prompt" || modelRoute === "template";
+
+                if (isPromptOrTemplate) {
+                  return (
+                    <div className={styles.providerDetail}>
+                      <h3>{selectedMeta.title}</h3>
+                      <p>{selectedMeta.desc}</p>
+                      <div className={styles.setupHint}>
+                        <strong>✓ No configuration needed</strong>
+                        {modelRoute === "prompt" 
+                          ? "This mode generates a structured prompt you can copy and paste into any free chatbot (ChatGPT, Gemini, Claude). No API keys required."
+                          : "This mode uses built-in deterministic templates for offline generation. No API keys or network calls needed."
+                        }
+                      </div>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className={styles.providerDetail}>
+                    <h3>{selectedMeta.title}</h3>
+                    <p>{selectedMeta.desc}</p>
+
+                    <div className={styles.connectionBox}>
+                      {/* API Key field — shown for cloud BYOK providers */}
+                      {needsKey && (
+                        <label>
+                          API Key {status.configured && <span style={{ color: "#24715d", fontSize: "0.82rem", fontWeight: 700 }}>(server key detected)</span>}
+                          <input
+                            className={styles.keyInput}
+                            type="password"
+                            placeholder={
+                              modelRoute === "gemini" ? "Paste your Google AI Studio API key" :
+                              modelRoute === "groq" ? "Paste your Groq Cloud API key" :
+                              modelRoute === "openrouter" ? "Paste your OpenRouter API key" :
+                              "Paste your API key"
+                            }
+                            value={tempApiKey}
+                            onChange={(e) => setTempApiKey(e.target.value)}
+                            autoComplete="off"
+                          />
+                          <span style={{ fontSize: "0.82rem", color: "#667069", marginTop: 2 }}>
+                            {status.configured 
+                              ? "A server-side key is already set. Paste a key here to override it for this session only."
+                              : <>Set <code style={{ background: "rgba(18,22,18,0.06)", padding: "1px 5px", borderRadius: 3, fontFamily: "monospace", fontSize: "0.82rem" }}>{(status.requiredEnv || [])[0] || "API_KEY"}</code> in your <code style={{ background: "rgba(18,22,18,0.06)", padding: "1px 5px", borderRadius: 3, fontFamily: "monospace", fontSize: "0.82rem" }}>.env.local</code> for permanent use, or paste a key above for this session.</>
+                            }
+                          </span>
+                        </label>
+                      )}
+
+                      {/* Endpoint field — shown by default for Ollama, LM Studio, Custom */}
+                      {needsEndpoint && (
+                        <label>
+                          Endpoint URL
+                          <input
+                            className={styles.keyInput}
+                            type="text"
+                            placeholder={
+                              modelRoute === "ollama" ? "http://localhost:11434/v1" :
+                              modelRoute === "lmstudio" ? "http://localhost:1234/v1" :
+                              "https://your-gateway.example.com/v1"
+                            }
+                            value={modelEndpoint}
+                            onChange={(e) => setModelEndpoint(e.target.value)}
+                          />
+                        </label>
+                      )}
+
+                      {/* Use this key for generation checkbox */}
+                      {needsKey && tempApiKey && (
+                        <label className={styles.checkLabel}>
+                          <input
+                            type="checkbox"
+                            checked={useTempKeyForGen}
+                            onChange={(e) => setUseTempKeyForGen(e.target.checked)}
+                          />
+                          Use this key for generation (session only — not stored)
+                        </label>
+                      )}
+
+                      {/* Test Connection + Result */}
+                      <div className={styles.connectionActions}>
+                        {status.canTest !== false && (
+                          <button
+                            className={styles.testButton}
+                            type="button"
+                            disabled={isTestingConnection}
+                            onClick={() => triggerTestConnection(modelRoute)}
+                          >
+                            {isTestingConnection ? "Testing..." : "⚡ Test Connection"}
+                          </button>
+                        )}
+
+                        {testResult && (
+                          <div className={`${styles.testResult} ${testResult.ok ? styles.testSuccess : styles.testFail}`}>
+                            {testResult.ok ? "✓ Connected successfully" : `✗ ${testResult.error || "Connection failed"}`}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Setup hint on failure */}
+                      {testResult && !testResult.ok && testResult.setupHint && (
+                        <div className={styles.setupHint}>
+                          <strong>Setup help</strong>
+                          {testResult.setupHint}
+                        </div>
+                      )}
+
+                      {/* Advanced Settings Toggle */}
+                      {!needsEndpoint && (
+                        <>
+                          <button
+                            className={styles.advancedToggle}
+                            type="button"
+                            onClick={() => setShowAdvanced(!showAdvanced)}
+                          >
+                            {showAdvanced ? "▾" : "▸"} Advanced settings (endpoint & model override)
+                          </button>
+                          {showAdvanced && (
+                            <div className={styles.advancedPanel}>
+                              <label>
+                                Endpoint override
+                                <input
+                                  className={styles.keyInput}
+                                  type="text"
+                                  placeholder="Leave empty to use the default provider endpoint"
+                                  value={modelEndpoint}
+                                  onChange={(e) => setModelEndpoint(e.target.value)}
+                                />
+                              </label>
+                              <label>
+                                Model name override
+                                <input
+                                  className={styles.keyInput}
+                                  type="text"
+                                  placeholder={status.defaultModel || "Leave empty for provider default"}
+                                  value={modelName}
+                                  onChange={(e) => setModelName(e.target.value)}
+                                />
+                              </label>
+                            </div>
+                          )}
+                        </>
+                      )}
+
+                      {/* Model name field for endpoint-based providers */}
+                      {needsEndpoint && (
+                        <label>
+                          Model name
+                          <input
+                            className={styles.keyInput}
+                            type="text"
+                            placeholder={status.defaultModel || "llama3, mistral, etc."}
+                            value={modelName}
+                            onChange={(e) => setModelName(e.target.value)}
+                          />
+                        </label>
+                      )}
+                    </div>
+
+                    {/* Env variable reference */}
+                    {status.requiredEnv && status.requiredEnv.length > 0 && (
+                      <div className={styles.setupHint} style={{ marginTop: 14 }}>
+                        <strong>Environment variables for permanent setup</strong>
+                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                          {status.requiredEnv.map(envVar => (
+                            <span className={styles.envBadge} key={envVar}>{envVar}</span>
+                          ))}
+                        </div>
+                        <span>Set these in <code>.env.local</code> (local dev) or Vercel Environment Variables (hosted deployment).</span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
 
               <div className={styles.actions}>
                 <button className={styles.primaryButton} onClick={() => setStep(1)} type="button">
@@ -1364,14 +1650,101 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <h3 style={{ marginTop: 40, marginBottom: 15 }}>Prepare Manual Posting Package</h3>
-                  
-                  <div style={{ background: "#fffaf0", border: "1px solid rgba(18,22,18,0.1)", padding: 22, borderRadius: 8, boxSizing: "border-box", display: "grid", gap: 20 }}>
+                  {/* ── Connected Accounts ── */}
+                  <div className={styles.socialSection}>
+                    <h3>Connected Accounts</h3>
+                    <p>Connect your social media accounts to publish directly from SignalFlow Studio.</p>
+
+                    {oauthMessage && (
+                      <div className={`${styles.oauthMessage} ${oauthMessage.type === "success" ? styles.oauthSuccess : styles.oauthError}`}>
+                        {oauthMessage.type === "success" ? "✓" : "✗"} {oauthMessage.message}
+                        <button
+                          type="button"
+                          onClick={() => setOauthMessage(null)}
+                          style={{ marginLeft: "auto", background: "none", border: "none", cursor: "pointer", fontSize: "1rem", opacity: 0.6 }}
+                        >×</button>
+                      </div>
+                    )}
+
+                    <div className={styles.socialGrid}>
+                      {Object.entries(socialAccounts).map(([key, account]) => (
+                        <div className={styles.socialCard} key={key}>
+                          <div className={styles.socialCardHeader}>
+                            <span className={styles.socialIcon} style={{ background: account.color || "#333" }}>
+                              {account.icon || key.charAt(0).toUpperCase()}
+                            </span>
+                            <strong>{account.label || key}</strong>
+                          </div>
+
+                          {account.manualOnly ? (
+                            <>
+                              <div className={`${styles.socialCardStatus} ${styles.socialCardStatusManual}`}>
+                                <span className={`${styles.statusDot} ${styles.statusLocal}`} />
+                                Manual only
+                              </div>
+                              <p className={styles.socialManualNote}>{account.reason}</p>
+                            </>
+                          ) : account.connected ? (
+                            <>
+                              <div className={`${styles.socialCardStatus} ${styles.socialCardStatusConnected}`}>
+                                <span className={`${styles.statusDot} ${styles.statusConfigured}`} />
+                                Connected{account.expired ? " (expired)" : ""}
+                              </div>
+                              {account.profile && (
+                                <div className={styles.socialCardProfile}>
+                                  {account.profile.name || account.profile.username || ""}
+                                </div>
+                              )}
+                              <div className={styles.socialCardActions}>
+                                <button
+                                  type="button"
+                                  className={styles.socialDisconnectBtn}
+                                  onClick={() => handleSocialDisconnect(key)}
+                                >Disconnect</button>
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <div className={`${styles.socialCardStatus} ${styles.socialCardStatusDisconnected}`}>
+                                <span className={`${styles.statusDot} ${styles.statusNotConfigured}`} />
+                                {account.configured ? "Not connected" : "OAuth not configured"}
+                              </div>
+                              <div className={styles.socialCardActions}>
+                                {account.configured ? (
+                                  <button
+                                    type="button"
+                                    className={styles.socialConnectBtn}
+                                    onClick={() => handleSocialConnect(key)}
+                                  >🔗 Connect {account.label}</button>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    className={styles.socialConnectBtn}
+                                    onClick={() => setSocialSetupExpanded(socialSetupExpanded === key ? null : key)}
+                                  >📋 Setup Instructions</button>
+                                )}
+                              </div>
+                              {socialSetupExpanded === key && account.setupSteps && (
+                                <ol className={styles.socialSetupSteps}>
+                                  {account.setupSteps.map((s, i) => <li key={i}>{s}</li>)}
+                                </ol>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* ── Publish / Post Section ── */}
+                  <h3 style={{ marginTop: 40, marginBottom: 15 }}>Publish or Export</h3>
+
+                  <div className={styles.publishPanel}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 15 }}>
                       <div>
                         <strong>Select publishing channel:</strong>
-                        <select 
-                          value={publishPlatform} 
+                        <select
+                          value={publishPlatform}
                           onChange={(e) => {
                             setPublishPlatform(e.target.value);
                             setPublishStatusMsg("");
@@ -1383,71 +1756,128 @@ export default function Home() {
                           ))}
                         </select>
                       </div>
-                      <div>
-                        <span style={{ fontSize: "0.85rem", padding: "4px 8px", borderRadius: 4, background: "#ede7db", color: "#667069", fontWeight: "bold" }}>
-                          ⚠ Manual posting flow active
-                        </span>
+                      <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                        {isSocialConnected ? (
+                          <span style={{ fontSize: "0.85rem", padding: "4px 10px", borderRadius: 4, background: "rgba(36,113,93,0.08)", color: "#24715d", fontWeight: "bold" }}>
+                            ✓ {socialAccounts[publishPlatform]?.label} connected
+                          </span>
+                        ) : (
+                          <span style={{ fontSize: "0.85rem", padding: "4px 10px", borderRadius: 4, background: "#ede7db", color: "#667069", fontWeight: "bold" }}>
+                            Manual mode — copy & paste
+                          </span>
+                        )}
                       </div>
                     </div>
+
+                    {/* Reddit-specific fields */}
+                    {publishPlatform === "reddit" && isSocialConnected && (
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                        <label className={styles.field}>
+                          Subreddit
+                          <input
+                            type="text"
+                            placeholder="e.g. SideProject, webdev, programming"
+                            value={redditSubreddit}
+                            onChange={(e) => setRedditSubreddit(e.target.value)}
+                          />
+                        </label>
+                        <label className={styles.field}>
+                          Post Title
+                          <input
+                            type="text"
+                            placeholder={projectName || "Post title"}
+                            value={redditTitle}
+                            onChange={(e) => setRedditTitle(e.target.value)}
+                          />
+                        </label>
+                      </div>
+                    )}
 
                     <div style={{ background: "#171b18", padding: 15, borderRadius: 8, color: "#f4f7f2", fontSize: "0.9rem" }}>
                       <strong style={{ display: "block", color: "#38bdf8", marginBottom: 8 }}>Final Content (Copy-ready):</strong>
                       <pre style={{ margin: 0, whiteSpace: "pre-wrap", fontFamily: "monospace" }}>{result?.posts?.[publishPlatform] || "No content compiled."}</pre>
                     </div>
 
-                    <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                      <button 
-                        className={styles.primaryButton} 
+                    <div className={styles.publishActions}>
+                      {isSocialConnected && (
+                        <button
+                          className={styles.publishBtn}
+                          type="button"
+                          disabled={isPublishingToApi}
+                          onClick={handlePublishAction}
+                        >
+                          {isPublishingToApi ? "Publishing..." : `🚀 Publish to ${socialAccounts[publishPlatform]?.label || publishPlatform}`}
+                        </button>
+                      )}
+
+                      <button
+                        className={styles.primaryButton}
                         onClick={() => copyText("publish", result?.posts?.[publishPlatform])}
                         type="button"
                       >
-                        {copiedLabel === "publish" ? "✓ Copied!" : "Copy Post Text"}
+                        {copiedLabel === "publish" ? "✓ Copied!" : "📋 Copy Post Text"}
                       </button>
-                      
-                      <button 
-                        className={styles.secondaryButton} 
+
+                      <button
+                        className={styles.secondaryButton}
                         onClick={() => triggerExport("/api/export/zip", "zip")}
                         type="button"
                       >
-                        Download ZIP Package
+                        Download ZIP
                       </button>
                     </div>
 
-                    {preparedPackage && (
-                      <div style={{ background: "#fff", border: "1px solid rgba(18,22,18,0.1)", padding: 22, borderRadius: 8, display: "grid", gap: 15 }}>
-                        <strong style={{ fontSize: "1.1rem", display: "block", color: "#24715d" }}>
-                          📋 Prepared Posting Handoff Package ({publishPlatform.toUpperCase()})
-                        </strong>
-                        
-                        <div>
-                          <strong>Status</strong>: <span style={{ color: "#24715d", fontWeight: "bold" }}>{preparedPackage.status?.toUpperCase() || "READY_FOR_MANUAL_POSTING"}</span>
-                        </div>
-
-                        {preparedPackage.warning && (
-                          <div style={{ background: "rgba(234, 107, 77, 0.08)", border: "1px solid #ea6b4d", padding: 12, borderRadius: 6, color: "#ea6b4d", fontSize: "0.95rem", fontWeight: "bold" }}>
-                            ⚠️ {preparedPackage.warning}
+                    {/* Publish result */}
+                    {publishStatusMsg && (() => {
+                      try {
+                        const parsed = JSON.parse(publishStatusMsg);
+                        return (
+                          <div className={`${styles.publishResult} ${styles.publishSuccess}`}>
+                            ✓ {parsed.message}
+                            {parsed.postUrl && (
+                              <> — <a href={parsed.postUrl} target="_blank" rel="noopener noreferrer">View post ↗</a></>
+                            )}
                           </div>
-                        )}
+                        );
+                      } catch {
+                        return (
+                          <div className={`${styles.publishResult} ${publishStatusMsg.startsWith("Error") ? styles.publishError : styles.publishSuccess}`}>
+                            {publishStatusMsg}
+                          </div>
+                        );
+                      }
+                    })()}
+
+                    {/* Prepared package info */}
+                    {preparedPackage && (
+                      <div style={{ background: "#fff", border: "1px solid rgba(18,22,18,0.1)", padding: 18, borderRadius: 8, display: "grid", gap: 12 }}>
+                        <strong style={{ color: "#24715d" }}>
+                          📋 Posting Checklist ({(socialAccounts[publishPlatform]?.label || publishPlatform).toUpperCase()})
+                        </strong>
 
                         {preparedPackage.hashtags && preparedPackage.hashtags.length > 0 && (
-                          <div>
-                            <strong>Hashtags</strong>: {preparedPackage.hashtags.map(h => `#${h}`).join(" ")}
+                          <div style={{ fontSize: "0.9rem" }}>
+                            <strong>Hashtags:</strong> {preparedPackage.hashtags.map(h => `#${h}`).join(" ")}
                           </div>
                         )}
 
-                        <div>
-                          <strong>Visual Assets Needed for Upload</strong>:
-                          <ul style={{ margin: "5px 0 0", paddingLeft: 20, color: "#59635c", fontSize: "0.9rem" }}>
-                            {preparedPackage.assetsNeeded?.map((asset, i) => <li key={i}>{asset}</li>) || <li>None</li>}
-                          </ul>
-                        </div>
+                        {preparedPackage.assetsNeeded && preparedPackage.assetsNeeded.length > 0 && (
+                          <div>
+                            <strong style={{ fontSize: "0.9rem" }}>Assets to attach:</strong>
+                            <ul style={{ margin: "4px 0 0", paddingLeft: 18, color: "#59635c", fontSize: "0.85rem" }}>
+                              {preparedPackage.assetsNeeded.map((a, i) => <li key={i}>{a}</li>)}
+                            </ul>
+                          </div>
+                        )}
 
-                        <div>
-                          <strong>Manual Copy & Paste Handoff Checklist</strong>:
-                          <ul style={{ margin: "5px 0 0", paddingLeft: 20, color: "#59635c", fontSize: "0.9rem" }}>
-                            {preparedPackage.manualChecklist?.map((step, i) => <li key={i}>{step}</li>) || <li>None</li>}
-                          </ul>
-                        </div>
+                        {preparedPackage.manualChecklist && preparedPackage.manualChecklist.length > 0 && (
+                          <div>
+                            <strong style={{ fontSize: "0.9rem" }}>Checklist:</strong>
+                            <ul style={{ margin: "4px 0 0", paddingLeft: 18, color: "#59635c", fontSize: "0.85rem" }}>
+                              {preparedPackage.manualChecklist.map((s, i) => <li key={i}>{s}</li>)}
+                            </ul>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

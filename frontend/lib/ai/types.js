@@ -19,12 +19,15 @@ export const PROVIDERS = {
   },
   gemini: {
     id: "gemini",
-    label: "Google Gemini",
-    description: "Google's Gemini models via official BYOK API.",
+    label: "Google Gemini / Gemma via AI Studio",
+    description: "Use your Google AI Studio API key. Put it in GEMINI_API_KEY. Supports Gemini models and Google AI Studio routes. For Gemma/open models, use the model name if available through your Google/provider account, or use OpenRouter/custom gateway if your key is for another provider.",
     isLocal: false,
     isFree: false,
     isConfigured: () => Boolean(process.env.GEMINI_API_KEY),
-    defaultModel: process.env.DEFAULT_MODEL_NAME || "gemini-1.5-flash"
+    defaultModel: process.env.DEFAULT_MODEL_NAME || "gemini-2.0-flash",
+    requiredEnv: ["GEMINI_API_KEY"],
+    canTest: true,
+    supportsTemporaryKey: true
   },
   groq: {
     id: "groq",
@@ -33,7 +36,10 @@ export const PROVIDERS = {
     isLocal: false,
     isFree: false,
     isConfigured: () => Boolean(process.env.GROQ_API_KEY),
-    defaultModel: process.env.DEFAULT_MODEL_NAME || "llama3-8b-8192"
+    defaultModel: process.env.DEFAULT_MODEL_NAME || "llama-3.1-8b-instant",
+    requiredEnv: ["GROQ_API_KEY"],
+    canTest: true,
+    supportsTemporaryKey: true
   },
   openrouter: {
     id: "openrouter",
@@ -42,25 +48,34 @@ export const PROVIDERS = {
     isLocal: false,
     isFree: false,
     isConfigured: () => Boolean(process.env.OPENROUTER_API_KEY),
-    defaultModel: process.env.DEFAULT_MODEL_NAME || "meta-llama/llama-3-8b-instruct:free"
+    defaultModel: process.env.DEFAULT_MODEL_NAME || "google/gemma-3-27b-it:free",
+    requiredEnv: ["OPENROUTER_API_KEY"],
+    canTest: true,
+    supportsTemporaryKey: true
   },
   ollama: {
     id: "ollama",
     label: "Ollama",
-    description: "Local model running via Ollama Desktop.",
+    description: "Local model running via Ollama Desktop. Requires local server running.",
     isLocal: true,
     isFree: true,
     isConfigured: () => true, // Ollama doesn't require a key
-    defaultModel: process.env.DEFAULT_MODEL_NAME || "llama3"
+    defaultModel: process.env.DEFAULT_MODEL_NAME || "llama3",
+    requiredEnv: ["OLLAMA_BASE_URL"],
+    canTest: true,
+    supportsTemporaryKey: false
   },
   lmstudio: {
     id: "lmstudio",
     label: "LM Studio",
-    description: "Local model running via LM Studio client.",
+    description: "Local model running via LM Studio client. Requires local server running.",
     isLocal: true,
     isFree: true,
     isConfigured: () => true, // LM Studio doesn't require a key
-    defaultModel: process.env.DEFAULT_MODEL_NAME || "any"
+    defaultModel: process.env.DEFAULT_MODEL_NAME || "any",
+    requiredEnv: ["LMSTUDIO_BASE_URL"],
+    canTest: true,
+    supportsTemporaryKey: false
   },
   custom: {
     id: "custom",
@@ -69,6 +84,9 @@ export const PROVIDERS = {
     isLocal: false,
     isFree: false,
     isConfigured: () => Boolean(process.env.CUSTOM_OPENAI_BASE_URL),
-    defaultModel: process.env.DEFAULT_MODEL_NAME || "custom-model"
+    defaultModel: process.env.DEFAULT_MODEL_NAME || "custom-model",
+    requiredEnv: ["CUSTOM_OPENAI_BASE_URL", "CUSTOM_OPENAI_API_KEY"],
+    canTest: true,
+    supportsTemporaryKey: true
   }
 };

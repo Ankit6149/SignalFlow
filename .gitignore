@@ -43,6 +43,14 @@ Thumbs.db
 frontend/.next/
 frontend/node_modules/
 
+# Local env files
+frontend/.env.local
+.env.local
+
+# Encrypted token storage (social media OAuth)
+frontend/.signalflow/
+.signalflow/
+
 # Local generated artifacts
 .pytest_cache/
 .test-tmp/

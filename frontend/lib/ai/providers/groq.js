@@ -3,13 +3,13 @@ import { PROVIDERS } from "../types";
 /**
  * Calls Groq Cloud chat completion endpoint.
  */
-export async function generateGroq(prompt, modelOverride = null) {
-  const apiKey = process.env.GROQ_API_KEY;
+export async function generateGroq(prompt, modelOverride = null, config = {}) {
+  const apiKey = config.apiKey || process.env.GROQ_API_KEY;
   if (!apiKey) {
-    throw new Error("Groq API key is not configured in server environment variables.");
+    throw new Error("Groq API key is not configured (missing GROQ_API_KEY).");
   }
 
-  const model = modelOverride || PROVIDERS.groq.defaultModel || "llama3-8b-8192";
+  const model = modelOverride || config.modelName || PROVIDERS.groq.defaultModel || "llama-3.1-8b-instant";
   const url = "https://api.groq.com/openai/v1/chat/completions";
 
   const body = {
@@ -29,20 +29,34 @@ export async function generateGroq(prompt, modelOverride = null) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 35000); // 35s timeout
 
-  const resp = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`
-    },
-    body: JSON.stringify(body),
-    signal: controller.signal
-  });
-
-  clearTimeout(timeoutId);
+  let resp;
+  try {
+    resp = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`
+      },
+      body: JSON.stringify(body),
+      signal: controller.signal
+    });
+  } catch (err) {
+    if (err.name === "AbortError") {
+      throw new Error("Request to Groq API timed out after 35 seconds.");
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   if (!resp.ok) {
-    const errorDetails = await resp.text();
+    let errorDetails = "";
+    try {
+      const errorJson = await resp.json();
+      errorDetails = errorJson?.error?.message || JSON.stringify(errorJson);
+    } catch {
+      errorDetails = await resp.text();
+    }
     throw new Error(`Groq API response failed (HTTP ${resp.status}): ${errorDetails}`);
   }
 

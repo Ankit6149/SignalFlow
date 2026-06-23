@@ -94,9 +94,14 @@ export async function POST(request) {
       selectedChannels,
       selectedOutputs,
       generator,
-      model_name: modelName,
-      model_endpoint: modelEndpoint,
-      appUrl
+      model_name: body.providerModelName || modelName,
+      model_endpoint: body.providerBaseUrl || modelEndpoint,
+      appUrl,
+      config: {
+        apiKey: body.providerApiKey || "",
+        baseUrl: body.providerBaseUrl || "",
+        modelName: body.providerModelName || ""
+      }
     });
 
     // Merge API warnings with generation warnings
