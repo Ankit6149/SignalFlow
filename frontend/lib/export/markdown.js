@@ -181,6 +181,23 @@ export function buildMarkdown({ projectName, package: pkg, prompt = "" }) {
     md += `\n`;
   }
 
+  if (Array.isArray(media.shotList) && media.shotList.length) {
+    md += `### Shot List Plan\n`;
+    media.shotList.forEach(sl => { md += `- ${sl}\n`; });
+    md += `\n`;
+  }
+
+  if (Array.isArray(media.videoEditingTimeline) && media.videoEditingTimeline.length) {
+    md += `### Video Editing Timeline\n`;
+    media.videoEditingTimeline.forEach(vet => { md += `- ${vet}\n`; });
+    md += `\n`;
+  }
+
+  if (media.thumbnailPrompt) {
+    md += `### Thumbnail Generation Prompt\n`;
+    md += `\`\`\`text\n${media.thumbnailPrompt}\n\`\`\`\n\n`;
+  }
+
   if (Array.isArray(media.assetChecklist) && media.assetChecklist.length) {
     md += `### Required Media Asset Checklist\n`;
     media.assetChecklist.forEach(ac => { md += `- [ ] ${ac}\n`; });

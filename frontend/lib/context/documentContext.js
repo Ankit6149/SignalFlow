@@ -11,7 +11,8 @@ export function compileWorkspaceContext({
   fileNames = [],
   mediaItems = [],
   selectedChannels = [],
-  selectedOutputs = []
+  selectedOutputs = [],
+  appUrl = ""
 }) {
   const warnings = [];
 
@@ -51,6 +52,9 @@ export function compileWorkspaceContext({
   if (audience) {
     confirmedFacts.push(`Target audience is confirmed as "${audience}".`);
   }
+  if (appUrl) {
+    confirmedFacts.push(`Live App URL is located at: ${appUrl}.`);
+  }
   if (repoContext?.repo) {
     confirmedFacts.push(`GitHub repository exists at github.com/${repoContext.owner}/${repoContext.repo} on branch ${repoContext.defaultBranch}.`);
     if (techStack.length) {
@@ -60,6 +64,20 @@ export function compileWorkspaceContext({
 
   if (notes) {
     confirmedFacts.push(`User description provided: "${notes.trim().substring(0, 150)}..."`);
+  }
+
+  if (Array.isArray(mediaItems) && mediaItems.length) {
+    const logos = mediaItems.filter(m => (m.type || m.category) === "logo");
+    const recordings = mediaItems.filter(m => (m.type || m.category) === "screen recording");
+    const screenshots = mediaItems.filter(m => (m.type || m.category) === "screenshot");
+    const productImages = mediaItems.filter(m => (m.type || m.category) === "product image");
+    const docs = mediaItems.filter(m => (m.type || m.category) === "document" || (m.type || m.category) === "doc");
+
+    if (logos.length) confirmedFacts.push(`User uploaded ${logos.length} brand logo asset(s).`);
+    if (recordings.length) confirmedFacts.push(`User provided ${recordings.length} product screen recording demo(s).`);
+    if (screenshots.length) confirmedFacts.push(`User uploaded ${screenshots.length} application screenshot(s).`);
+    if (productImages.length) confirmedFacts.push(`User uploaded ${productImages.length} product image asset(s).`);
+    if (docs.length) confirmedFacts.push(`User provided ${docs.length} reference document(s).`);
   }
 
   // Infer features based on descriptions/repo
@@ -74,11 +92,14 @@ export function compileWorkspaceContext({
   }
 
   // Compile media insights
-  const mediaNames = mediaItems.map(item => `${item.name} (${item.type})`);
+  const mediaNames = mediaItems.map(item => `${item.name} (${item.type || item.category || "media"})`);
   
   // Format summary content string
   let summary = `Product Name: ${projectName}\n`;
   summary += `Audience: ${audience}\n`;
+  if (appUrl) {
+    summary += `App URL: ${appUrl}\n`;
+  }
   if (notes) {
     summary += `Brief:\n${notes}\n`;
   }
@@ -100,6 +121,7 @@ export function compileWorkspaceContext({
     techStack,
     features,
     warnings,
-    summary
+    summary,
+    appUrl
   };
 }

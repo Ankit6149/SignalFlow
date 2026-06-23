@@ -12,7 +12,8 @@ export function buildUnifiedContext({
   fileNames = [],
   mediaItems = [],
   selectedChannels = [],
-  selectedOutputs = []
+  selectedOutputs = [],
+  appUrl = ""
 }) {
   return compileWorkspaceContext({
     projectName,
@@ -23,6 +24,7 @@ export function buildUnifiedContext({
     fileNames,
     mediaItems,
     selectedChannels,
-    selectedOutputs
+    selectedOutputs,
+    appUrl
   });
 }

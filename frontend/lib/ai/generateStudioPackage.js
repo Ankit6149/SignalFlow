@@ -60,7 +60,8 @@ export async function generateStudioPackage(inputs) {
       fileNames,
       mediaItems,
       selectedChannels,
-      selectedOutputs
+      selectedOutputs,
+      appUrl
     });
 
     return {
@@ -86,7 +87,8 @@ export async function generateStudioPackage(inputs) {
       fileNames,
       mediaItems,
       selectedChannels,
-      selectedOutputs
+      selectedOutputs,
+      appUrl
     });
 
     return {
@@ -114,7 +116,8 @@ export async function generateStudioPackage(inputs) {
       fileNames,
       mediaItems,
       selectedChannels,
-      selectedOutputs
+      selectedOutputs,
+      appUrl
     });
     return {
       ...localPkgResult,
@@ -136,7 +139,8 @@ export async function generateStudioPackage(inputs) {
       fileNames,
       mediaItems,
       selectedChannels,
-      selectedOutputs
+      selectedOutputs,
+      appUrl
     });
 
     return {
@@ -182,7 +186,8 @@ export async function generateStudioPackage(inputs) {
       fileNames,
       mediaItems,
       selectedChannels,
-      selectedOutputs
+      selectedOutputs,
+      appUrl
     });
 
     // Generate output assets format
@@ -297,7 +302,8 @@ export async function generateStudioPackage(inputs) {
       fileNames,
       mediaItems,
       selectedChannels,
-      selectedOutputs
+      selectedOutputs,
+      appUrl
     });
 
     return {

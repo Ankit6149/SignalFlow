@@ -56,7 +56,10 @@ export function normalizePackage(rawPkg, inputs) {
       carouselPlan: Array.isArray(rawPkg?.media?.carouselPlan) ? rawPkg.media.carouselPlan : baseline.media.carouselPlan,
       thumbnailIdeas: Array.isArray(rawPkg?.media?.thumbnailIdeas) ? rawPkg.media.thumbnailIdeas : baseline.media.thumbnailIdeas,
       altText: Array.isArray(rawPkg?.media?.altText) ? rawPkg.media.altText : baseline.media.altText,
-      assetChecklist: Array.isArray(rawPkg?.media?.assetChecklist) ? rawPkg.media.assetChecklist : baseline.media.assetChecklist
+      assetChecklist: Array.isArray(rawPkg?.media?.assetChecklist) ? rawPkg.media.assetChecklist : baseline.media.assetChecklist,
+      shotList: Array.isArray(rawPkg?.media?.shotList) ? rawPkg.media.shotList : baseline.media.shotList,
+      videoEditingTimeline: Array.isArray(rawPkg?.media?.videoEditingTimeline) ? rawPkg.media.videoEditingTimeline : baseline.media.videoEditingTimeline,
+      thumbnailPrompt: rawPkg?.media?.thumbnailPrompt || baseline.media.thumbnailPrompt
     },
     publishing: {
       platformChecklist: Array.isArray(rawPkg?.publishing?.platformChecklist) ? rawPkg.publishing.platformChecklist : baseline.publishing.platformChecklist,

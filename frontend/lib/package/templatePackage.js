@@ -14,7 +14,8 @@ export function generateLocalTemplatePackage({
   fileNames = [],
   mediaItems = [],
   selectedChannels = [],
-  selectedOutputs = []
+  selectedOutputs = [],
+  appUrl = ""
 }) {
   const name = (projectName || (repoContext?.repo) || "SignalFlow Studio Project").trim();
   const desc = (notes || (repoContext?.readme ? repoContext.readme.substring(0, 300) : "") || "A local-first product built to streamline development and content automation workflow.").trim();
@@ -27,6 +28,9 @@ export function generateLocalTemplatePackage({
 
   confirmedFacts.push(`Product is named: ${name}.`);
   confirmedFacts.push(`Target audience is: ${targetAudience}.`);
+  if (appUrl) {
+    confirmedFacts.push(`Live App URL is located at: ${appUrl}.`);
+  }
   if (repoUrl) {
     confirmedFacts.push(`Source repository is configured at: ${repoUrl}.`);
   }
@@ -222,7 +226,19 @@ export function generateLocalTemplatePackage({
         `1x Generated SVG Card (built-in)`,
         `3x Product screenshots`,
         `1x Short screen recording demo (WebM)`
-      ]
+      ],
+      shotList: [
+        `Shot 1: Close-up of developer clicking 'Generate Package'`,
+        `Shot 2: Over-the-shoulder of reviewing drafts`,
+        `Shot 3: Screencast of downloading ZIP and extracting files`
+      ],
+      videoEditingTimeline: [
+        `0:00 - 0:02: Fast intro hook with problem statement`,
+        `0:02 - 0:10: Screencast of inputs and GitHub URL loading`,
+        `0:10 - 0:15: Visual showing generated platform posts`,
+        `0:15 - 0:20: Call-to-action showing downloads and exports`
+      ],
+      thumbnailPrompt: `Professional tech aesthetic screenshot mockup of the ${name} workspace showing a clean dark theme, glowing neon accents, and a large export ZIP file icon on a high-contrast background.`
     },
     publishing: {
       platformChecklist: [

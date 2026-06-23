@@ -33,6 +33,7 @@ export async function POST(request) {
     const repoUrl = (body.repo || "").trim();
     const docsUrl = (body.docs_url || body.research_url || "").trim();
     const appUrl = (body.app_url || body.appUrl || "").trim();
+    const enableAutoCapture = Boolean(body.enable_auto_capture || body.enableAutoCapture);
     
     const selectedChannels = Array.isArray(body.channels) ? body.channels : [];
     const selectedOutputs = Array.isArray(body.output_types) ? body.output_types : [];
@@ -77,8 +78,8 @@ export async function POST(request) {
       }
     }
 
-    // 4. Perform App Screenshot Capture if Playwright is available and App URL is configured
-    if (appUrl) {
+    // 4. Perform App Screenshot Capture if explicitly enabled
+    if (appUrl && enableAutoCapture) {
       try {
         const captureResult = await captureAppScreenshot(appUrl);
         if (captureResult.success) {
@@ -109,7 +110,8 @@ export async function POST(request) {
       selectedOutputs,
       generator,
       model_name: modelName,
-      model_endpoint: modelEndpoint
+      model_endpoint: modelEndpoint,
+      appUrl
     });
 
     // Merge API warnings with generation warnings

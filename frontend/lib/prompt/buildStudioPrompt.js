@@ -14,7 +14,10 @@ export function buildStudioPrompt(context) {
     inferredFacts,
     missingContext,
     techStack,
-    features
+    features,
+    appUrl,
+    mediaItems,
+    fileNames
   } = context;
 
   // Render lists into text blocks
@@ -23,7 +26,28 @@ export function buildStudioPrompt(context) {
   const missingStr = missingContext.map(f => `- ${f}`).join("\n") || "None provided.";
   const stackStr = techStack.join(", ") || "Unknown / Not specified.";
   const featuresStr = features.map(f => `- ${f}`).join("\n") || "None detected.";
-  const mediaStr = mediaNames.join(", ") || "No screenshots/recordings provided.";
+
+  // Format detailed manual and recorded media descriptions
+  let mediaStr = "";
+  if (Array.isArray(mediaItems) && mediaItems.length) {
+    mediaStr = mediaItems.map((item, idx) => {
+      const type = item.type || item.category || "asset";
+      const desc = item.description ? ` - Description: ${item.description}` : "";
+      return `${idx + 1}. [${type.toUpperCase()}] ${item.name}${desc}`;
+    }).join("\n");
+  } else {
+    mediaStr = "No screenshots, logos, product images, or recordings provided.";
+  }
+
+  // Format pasted or uploaded text files contents
+  let docsTextStr = "";
+  if (Array.isArray(fileNames) && fileNames.length) {
+    docsTextStr = fileNames.map((text, idx) => {
+      return `Document ${idx + 1} Content:\n---\n${text}\n---`;
+    }).join("\n\n");
+  } else {
+    docsTextStr = "No reference text documents or pasted content provided.";
+  }
 
   // Scraped links info
   let scrapedStr = "";
@@ -49,8 +73,15 @@ Your task is to analyze the following product context and generate a complete, s
 === PRODUCT INPUTS ===
 Product Name: ${projectName}
 Target Audience: ${audience}
+App URL: ${appUrl || "None configured."}
 User Description Notes:
 ${notes || "No description provided."}
+
+=== UPLOADED DOCUMENTS & PASTED TEXT ===
+${docsTextStr}
+
+=== SELECTED MEDIA ASSETS ===
+${mediaStr}
 
 === CONFIRMED FACTS ===
 ${factsStr}
@@ -174,7 +205,10 @@ INSTRUCTIONS & RULES:
     "carouselPlan": [],
     "thumbnailIdeas": [],
     "altText": [],
-    "assetChecklist": []
+    "assetChecklist": [],
+    "shotList": [],
+    "videoEditingTimeline": [],
+    "thumbnailPrompt": ""
   },
   "publishing": {
     "platformChecklist": [],

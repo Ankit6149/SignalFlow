@@ -89,6 +89,8 @@ export default function Home() {
   const [documentText, setDocumentText] = useState("");
   const [fileNames, setFileNames] = useState([]);
   const [mediaItems, setMediaItems] = useState([]);
+  const [enableAutoCapture, setEnableAutoCapture] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState([]);
   
   const [selectedChannels, setSelectedChannels] = useState(["linkedin", "x", "instagram", "newsletter", "release_notes"]);
   const [selectedOutputs, setSelectedOutputs] = useState(["caption", "text", "image", "video", "carousel", "doc"]);
@@ -245,11 +247,37 @@ export default function Home() {
 
   function handleFiles(event) {
     const files = Array.from(event.target.files || []);
-    setFileNames(files.map((file) => file.name));
-  }
+    files.forEach(file => {
+      const ext = file.name.split(".").pop().toLowerCase();
+      let category = "doc";
+      if (["png", "jpg", "jpeg", "webp", "gif"].includes(ext)) {
+        category = file.name.toLowerCase().includes("logo") ? "logo" : "screenshot";
+      } else if (["mp4", "mov", "webm", "avi"].includes(ext)) {
+        category = "screen recording";
+      }
 
-  function addMediaItem(item) {
-    setMediaItems((current) => [item, ...current].slice(0, 8));
+      const url = URL.createObjectURL(file);
+      const newFileObj = {
+        id: `upload-${new Date().getTime()}-${Math.random().toString(36).substr(2, 9)}`,
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        category: category,
+        description: "",
+        url: url
+      };
+
+      if (category === "doc" && ["txt", "md", "json", "js", "ts", "html", "css"].includes(ext)) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          newFileObj.content = e.target.result;
+          setUploadedFiles(current => [...current, newFileObj]);
+        };
+        reader.readAsText(file);
+      } else {
+        setUploadedFiles(current => [...current, newFileObj]);
+      }
+    });
   }
 
   async function startScreenCapture() {
@@ -279,11 +307,18 @@ export default function Home() {
           return;
         }
         const blob = new Blob(chunksRef.current, { type: "video/webm" });
-        addMediaItem({
-          type: "screen recording",
-          name: `recording-${new Date().getTime()}.webm`,
-          url: URL.createObjectURL(blob),
-        });
+        const name = `recording-${new Date().getTime()}.webm`;
+        const url = URL.createObjectURL(blob);
+        const newFileObj = {
+          id: `record-${new Date().getTime()}`,
+          name: name,
+          size: blob.size,
+          type: blob.type,
+          category: "screen recording",
+          description: "Captured screen demo",
+          url: url
+        };
+        setUploadedFiles(current => [newFileObj, ...current]);
         setCaptureStatus("Recording saved");
       };
       stream.getVideoTracks()[0]?.addEventListener("ended", () => stopScreenCapture());
@@ -323,11 +358,18 @@ export default function Home() {
         setError("Could not capture frame image.");
         return;
       }
-      addMediaItem({
-        type: "screenshot",
-        name: `screenshot-${new Date().getTime()}.png`,
-        url: URL.createObjectURL(blob),
-      });
+      const name = `screenshot-${new Date().getTime()}.png`;
+      const url = URL.createObjectURL(blob);
+      const newFileObj = {
+        id: `screenshot-${new Date().getTime()}`,
+        name: name,
+        size: blob.size,
+        type: blob.type,
+        category: "screenshot",
+        description: "Captured screen frame screenshot",
+        url: url
+      };
+      setUploadedFiles(current => [newFileObj, ...current]);
       setCaptureStatus("Screenshot saved");
     }, "image/png");
   }
@@ -338,9 +380,10 @@ export default function Home() {
     const desc = brief.trim();
     const repo = repoUrl.trim();
     const textDoc = documentText.trim();
+    const hasUploads = uploadedFiles.length > 0;
 
-    if (!desc && !repo && !textDoc) {
-      setError("Please provide at least one source context: a description brief, a GitHub repo URL, or pasted document text.");
+    if (!desc && !repo && !textDoc && !hasUploads) {
+      setError("Please provide at least one source context: a description brief, a GitHub repo URL, pasted document text, or uploaded reference files.");
       return false;
     }
 
@@ -392,6 +435,15 @@ export default function Home() {
     }, 1800);
 
     try {
+      // Compile media items and document text from files
+      const reqMedia = uploadedFiles.filter(f => f.category !== "doc").map(f => ({
+        type: f.category,
+        name: f.name,
+        description: f.description || ""
+      }));
+      const docsTextParts = uploadedFiles.filter(f => f.category === "doc" && f.content).map(f => `--- Document: ${f.name} ---\n${f.content}`);
+      const combinedDocText = [documentText, ...docsTextParts].filter(Boolean).join("\n\n");
+
       const resp = await fetch(`${API_BASE}/launch_kit`, {
         method: "POST",
         headers: { "Content-Type": "application/json", ...authHeaders() },
@@ -402,8 +454,9 @@ export default function Home() {
           repo: repoUrl,
           docs_url: docsUrl,
           app_url: appUrl,
-          document_text: documentText || fileNames.join(", "),
-          media_items: mediaItems.map((item) => ({ type: item.type, name: item.name })),
+          enable_auto_capture: enableAutoCapture,
+          document_text: combinedDocText,
+          media_items: reqMedia,
           channels: selectedChannels,
           output_types: selectedOutputs,
           audience,
@@ -786,15 +839,26 @@ export default function Home() {
               </div>
 
               <div className={styles.twoCols}>
-                <label className={styles.field}>
-                  Live App URL (Automated captures)
-                  <input
-                    onChange={(event) => setAppUrl(event.target.value)}
-                    placeholder="e.g. http://localhost:3000 or https://example.com"
-                    type="text"
-                    value={appUrl}
-                  />
-                </label>
+                <div style={{ display: "grid", gap: 10 }}>
+                  <label className={styles.field}>
+                    Live App URL (Used for context)
+                    <input
+                      onChange={(event) => setAppUrl(event.target.value)}
+                      placeholder="e.g. http://localhost:3000 or https://example.com"
+                      type="text"
+                      value={appUrl}
+                    />
+                  </label>
+                  <label className={styles.checkRow} style={{ marginTop: 4 }}>
+                    <input
+                      type="checkbox"
+                      checked={enableAutoCapture}
+                      onChange={(e) => setEnableAutoCapture(e.target.checked)}
+                      style={{ width: "auto", cursor: "pointer" }}
+                    />
+                    Enable automated screenshots (Experimental, requires server Playwright)
+                  </label>
+                </div>
                 <label className={styles.field}>
                   Research links / Additional URLs (Space-separated)
                   <textarea
@@ -819,8 +883,8 @@ export default function Home() {
               <div className={styles.mediaGrid}>
                 <label className={styles.uploadTile}>
                   <input multiple onChange={handleFiles} type="file" />
-                  <strong>Attach docs or assets</strong>
-                  <span>{fileNames.length ? fileNames.join(", ") : "Click to select local PDF, TXT, or PNG images"}</span>
+                  <strong>Upload Local Assets</strong>
+                  <span>Select screenshots, screen recordings, logos, product images, or docs</span>
                 </label>
                 <div className={styles.captureTile}>
                   <strong>Record Screen Demonstration</strong>
@@ -840,15 +904,83 @@ export default function Home() {
                 </div>
               </div>
 
-              {mediaItems.length > 0 && (
-                <div style={{ marginTop: 15 }}>
-                  <strong>Selected Media Assets ({mediaItems.length}):</strong>
-                  <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 8 }}>
-                    {mediaItems.map((item, index) => (
-                      <div key={index} style={{ background: "#fffaf0", border: "1px solid rgba(18,22,18,0.1)", padding: "6px 12px", borderRadius: 6, display: "flex", alignItems: "center", gap: 8 }}>
-                        <span style={{ fontSize: "0.8rem", textTransform: "capitalize", background: "#ede7db", padding: "2px 6px", borderRadius: 4 }}>{item.type}</span>
-                        <span style={{ fontSize: "0.85rem" }}>{item.name}</span>
-                        <button type="button" onClick={() => setMediaItems(current => current.filter((_, i) => i !== index))} style={{ border: 0, background: "transparent", color: "#a93426", cursor: "pointer", fontWeight: "bold" }}>×</button>
+              {uploadedFiles.length > 0 && (
+                <div style={{ marginTop: 24 }}>
+                  <h3 style={{ margin: "0 0 12px", fontSize: "1.1rem", color: "#101410" }}>Uploaded & Captured Assets ({uploadedFiles.length})</h3>
+                  <div style={{ display: "grid", gap: 14 }}>
+                    {uploadedFiles.map((file) => (
+                      <div 
+                        key={file.id} 
+                        style={{ 
+                          background: "#fffaf0", 
+                          border: "1px solid rgba(18,22,18,0.1)", 
+                          padding: 16, 
+                          borderRadius: 8, 
+                          display: "grid", 
+                          gridTemplateColumns: "1fr auto", 
+                          gap: 16 
+                        }}
+                      >
+                        <div style={{ display: "grid", gap: 10 }}>
+                          <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                            <strong style={{ fontSize: "0.95rem" }}>{file.name}</strong>
+                            <span style={{ fontSize: "0.8rem", color: "#667069" }}>({(file.size / 1024).toFixed(1)} KB)</span>
+                            <select
+                              value={file.category}
+                              onChange={(e) => {
+                                const cat = e.target.value;
+                                setUploadedFiles(current => current.map(f => f.id === file.id ? { ...f, category: cat } : f));
+                              }}
+                              style={{ 
+                                padding: "4px 8px", 
+                                borderRadius: 6, 
+                                border: "1px solid rgba(18,22,18,0.15)", 
+                                background: "#fff", 
+                                fontSize: "0.85rem", 
+                                fontWeight: "bold" 
+                              }}
+                            >
+                              <option value="screenshot">Screenshot</option>
+                              <option value="screen recording">Screen Recording</option>
+                              <option value="logo">Logo</option>
+                              <option value="product image">Product Image</option>
+                              <option value="doc">Document</option>
+                            </select>
+                          </div>
+                          <input
+                            type="text"
+                            placeholder="Add brief description/context for this asset (e.g. 'Main application login screen')"
+                            value={file.description || ""}
+                            onChange={(e) => {
+                              const desc = e.target.value;
+                              setUploadedFiles(current => current.map(f => f.id === file.id ? { ...f, description: desc } : f));
+                            }}
+                            style={{ 
+                              width: "100%", 
+                              padding: 8, 
+                              borderRadius: 6, 
+                              border: "1px solid rgba(18,22,18,0.1)", 
+                              background: "#fff", 
+                              fontSize: "0.85rem" 
+                            }}
+                          />
+                        </div>
+                        <button 
+                          type="button" 
+                          onClick={() => setUploadedFiles(current => current.filter(f => f.id !== file.id))}
+                          style={{ 
+                            border: "1px solid rgba(169, 52, 38, 0.2)", 
+                            background: "rgba(169, 52, 38, 0.05)", 
+                            color: "#a93426", 
+                            padding: "8px 12px", 
+                            borderRadius: 6, 
+                            cursor: "pointer", 
+                            fontWeight: "bold",
+                            alignSelf: "center"
+                          }}
+                        >
+                          Delete
+                        </button>
                       </div>
                     ))}
                   </div>
@@ -1067,8 +1199,8 @@ export default function Home() {
                   
                   <div className={styles.assetGrid} style={{ marginTop: 0 }}>
                     <article>
-                      <span>Media checklist</span>
-                      <strong>Visual media requirements</strong>
+                      <span>Media Checklist</span>
+                      <strong>Visual requirements</strong>
                       <ul style={{ paddingLeft: 18, margin: 0, color: "#59635c", fontSize: "0.9rem" }}>
                         {result?.package?.media?.assetChecklist?.map((item, idx) => (
                           <li key={idx}>{item}</li>
@@ -1077,13 +1209,61 @@ export default function Home() {
                     </article>
                     
                     <article>
-                      <span>Video brief</span>
+                      <span>Reel Script</span>
                       <strong>Video Script Plan</strong>
                       <ol style={{ paddingLeft: 18, margin: 0, color: "#59635c", fontSize: "0.85rem" }}>
                         {result?.package?.media?.videoScript?.map((item, idx) => (
                           <li key={idx}>{item}</li>
                         )) || <li>No script compiled</li>}
                       </ol>
+                    </article>
+
+                    <article>
+                      <span>Shot List</span>
+                      <strong>Video Shot Plan</strong>
+                      <ul style={{ paddingLeft: 18, margin: 0, color: "#59635c", fontSize: "0.9rem" }}>
+                        {result?.package?.media?.shotList?.map((item, idx) => (
+                          <li key={idx}>{item}</li>
+                        )) || <li>No shot list compiled</li>}
+                      </ul>
+                    </article>
+
+                    <article>
+                      <span>Screenshot Plan</span>
+                      <strong>Visual Capture Tasks</strong>
+                      <ul style={{ paddingLeft: 18, margin: 0, color: "#59635c", fontSize: "0.9rem" }}>
+                        {result?.package?.media?.screenshotPlan?.map((item, idx) => (
+                          <li key={idx}>{item}</li>
+                        )) || <li>No screenshot plan compiled</li>}
+                      </ul>
+                    </article>
+
+                    <article>
+                      <span>Carousel Plan</span>
+                      <strong>Slide Deck Layout</strong>
+                      <ol style={{ paddingLeft: 18, margin: 0, color: "#59635c", fontSize: "0.85rem" }}>
+                        {result?.package?.media?.carouselPlan?.map((item, idx) => (
+                          <li key={idx}>{item}</li>
+                        )) || <li>No carousel plan compiled</li>}
+                      </ol>
+                    </article>
+
+                    <article>
+                      <span>Editing Timeline</span>
+                      <strong>Video Editing Steps</strong>
+                      <ul style={{ paddingLeft: 18, margin: 0, color: "#59635c", fontSize: "0.9rem" }}>
+                        {result?.package?.media?.videoEditingTimeline?.map((item, idx) => (
+                          <li key={idx}>{item}</li>
+                        )) || <li>No timeline compiled</li>}
+                      </ul>
+                    </article>
+
+                    <article style={{ gridColumn: "span 2" }}>
+                      <span>Thumbnail Generation</span>
+                      <strong>Thumbnail Prompt</strong>
+                      <p style={{ color: "#59635c", fontSize: "0.9rem", margin: 0, whiteSpace: "pre-wrap", fontStyle: "italic" }}>
+                        {result?.package?.media?.thumbnailPrompt || "No thumbnail prompt compiled"}
+                      </p>
                     </article>
 
                     <article>
