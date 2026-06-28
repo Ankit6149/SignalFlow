@@ -113,6 +113,8 @@ export default function Home() {
   const [captureStatus, setCaptureStatus] = useState("Ready");
   const [hasGenerated, setHasGenerated] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [rightPanelTab, setRightPanelTab] = useState("svg"); // "svg" or "preview"
+  const [isCapturingScreenshot, setIsCapturingScreenshot] = useState(false);
 
   const [publishPlatform, setPublishPlatform] = useState("linkedin");
   const [isPublishingToApi, setIsPublishingToApi] = useState(false);
@@ -276,6 +278,37 @@ export default function Home() {
       fetchPreparedPackage(publishPlatform, result.posts[publishPlatform], result.package || result.json);
     }
   }, [publishPlatform, result, hasGenerated]);
+
+  useEffect(() => {
+    const handlePaste = (event) => {
+      if (step !== 1) return;
+      const items = event.clipboardData?.items;
+      if (!items) return;
+      for (const item of items) {
+        if (item.type.indexOf("image") !== -1 || item.type.indexOf("video") !== -1) {
+          const file = item.getAsFile();
+          if (file) {
+            const isVideo = file.type.startsWith("video/");
+            const typeLabel = isVideo ? "recording" : "screenshot";
+            const name = `pasted-${typeLabel}-${new Date().getTime()}.${isVideo ? "mp4" : "png"}`;
+            const url = URL.createObjectURL(file);
+            const newFileObj = {
+              id: `paste-${new Date().getTime()}`,
+              name: name,
+              size: file.size,
+              type: file.type,
+              category: isVideo ? "screen recording" : "screenshot",
+              description: `Pasted ${typeLabel} from clipboard`,
+              url: url
+            };
+            setUploadedFiles(current => [newFileObj, ...current]);
+          }
+        }
+      }
+    };
+    window.addEventListener("paste", handlePaste);
+    return () => window.removeEventListener("paste", handlePaste);
+  }, [step]);
 
   const visibleChannels = useMemo(() => {
     const available = Object.keys(result?.posts || {});
@@ -527,6 +560,45 @@ export default function Home() {
       setUploadedFiles(current => [newFileObj, ...current]);
       setCaptureStatus("Screenshot saved");
     }, "image/png");
+  }
+
+  async function autoCaptureScreenshot() {
+    if (!appUrl) {
+      setError("Please specify a Live App URL first.");
+      return;
+    }
+    setIsCapturingScreenshot(true);
+    setError("");
+    try {
+      const resp = await fetch(`${API_BASE}/capture/app`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeaders() },
+        body: JSON.stringify({ appUrl })
+      });
+      const data = await resp.json();
+      if (!resp.ok) {
+        throw new Error(data.error || "Failed to capture screenshot.");
+      }
+      if (!data.success) {
+        throw new Error(data.warnings?.join(", ") || "Auto screenshot failed.");
+      }
+      
+      const newFileObj = {
+        id: `auto-${new Date().getTime()}`,
+        name: data.name || `capture-${new Date().getTime()}.png`,
+        size: 150 * 1024,
+        type: "image/png",
+        category: "screenshot",
+        description: `Automated screenshot of ${appUrl}`,
+        url: data.url
+      };
+      setUploadedFiles(current => [newFileObj, ...current]);
+      setCaptureStatus("Server screenshot saved");
+    } catch (err) {
+      setError(`Auto screenshot failed: ${err.message}`);
+    } finally {
+      setIsCapturingScreenshot(false);
+    }
   }
 
   // Frontend Input Validations
@@ -1159,14 +1231,26 @@ export default function Home() {
                 <div style={{ display: "grid", gap: 10 }}>
                   <label className={styles.field}>
                     Live App URL (context only)
-                    <input
-                      onChange={(event) => setAppUrl(event.target.value)}
-                      placeholder="e.g. http://localhost:3000 or https://example.com"
-                      type="text"
-                      value={appUrl}
-                    />
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <input
+                        onChange={(event) => setAppUrl(event.target.value)}
+                        placeholder="e.g. http://localhost:3000 or https://example.com"
+                        type="text"
+                        value={appUrl}
+                        style={{ flex: 1 }}
+                      />
+                      <button
+                        type="button"
+                        onClick={autoCaptureScreenshot}
+                        disabled={isCapturingScreenshot}
+                        className={styles.secondaryButton}
+                        style={{ minHeight: 42, padding: "0 16px", whiteSpace: "nowrap" }}
+                      >
+                        {isCapturingScreenshot ? "Capturing..." : "📷 Auto Capture"}
+                      </button>
+                    </div>
                     <span style={{ fontSize: "0.8rem", color: "#667069", marginTop: 4 }}>
-                      For now, SignalFlow does not auto-capture this app URL. Upload screenshots or record your screen manually.
+                      Use the backend Playwright module to capture a screenshot automatically, or copy-paste it from your clipboard.
                     </span>
                   </label>
                 </div>
@@ -1180,6 +1264,24 @@ export default function Home() {
                   />
                 </label>
               </div>
+
+              {appUrl && (
+                <div style={{ marginTop: 15, marginBottom: 20 }}>
+                  <span style={{ display: "block", fontSize: "0.95rem", fontWeight: "bold", marginBottom: 6, color: "#101410" }}>
+                    Interactive Web Preview (No Playwright required)
+                  </span>
+                  <div style={{ position: "relative", width: "100%", height: "400px", border: "1px solid rgba(18,22,18,0.15)", borderRadius: 8, overflow: "hidden", background: "#fff" }}>
+                    <iframe
+                      src={appUrl}
+                      style={{ width: "100%", height: "100%", border: "none" }}
+                      sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
+                    />
+                  </div>
+                  <span style={{ fontSize: "0.8rem", color: "#667069", display: "block", marginTop: 4 }}>
+                    You can interact with your application above. To record a demo or grab a screenshot, start the "Record Screen Demonstration" below and select this window.
+                  </span>
+                </div>
+              )}
 
               <label className={styles.field} style={{ marginTop: 20 }}>
                 Pasted document content
@@ -1498,14 +1600,54 @@ export default function Home() {
                     </article>
 
                     <article className={styles.outputCard}>
-                      <div className={styles.cardTitle}>
-                        <h3>Visual SVG Card Asset</h3>
-                        <span>{result?.assets?.code_image || "post-card.svg"}</span>
+                      <div className={styles.cardTitle} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+                        <h3 style={{ margin: 0 }}>Visual Asset & Previews</h3>
+                        <div style={{ display: "flex", background: "rgba(18,22,18,0.05)", padding: 3, borderRadius: 6 }}>
+                          <button
+                            type="button"
+                            onClick={() => setRightPanelTab("svg")}
+                            style={{
+                              padding: "4px 10px",
+                              fontSize: "0.8rem",
+                              border: "none",
+                              borderRadius: 4,
+                              cursor: "pointer",
+                              background: rightPanelTab === "svg" ? "#ffffff" : "transparent",
+                              color: rightPanelTab === "svg" ? "#101410" : "#59635c",
+                              fontWeight: "bold",
+                              boxShadow: rightPanelTab === "svg" ? "0 1px 3px rgba(0,0,0,0.1)" : "none"
+                            }}
+                          >
+                            SVG Card
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setRightPanelTab("preview")}
+                            style={{
+                              padding: "4px 10px",
+                              fontSize: "0.8rem",
+                              border: "none",
+                              borderRadius: 4,
+                              cursor: "pointer",
+                              background: rightPanelTab === "preview" ? "#ffffff" : "transparent",
+                              color: rightPanelTab === "preview" ? "#101410" : "#59635c",
+                              fontWeight: "bold",
+                              boxShadow: rightPanelTab === "preview" ? "0 1px 3px rgba(0,0,0,0.1)" : "none"
+                            }}
+                          >
+                            Feed Preview
+                          </button>
+                        </div>
                       </div>
-                      {imageSrc ? (
-                        <img className={styles.visualAsset} src={imageSrc} alt="Generated visual card mockup" />
+
+                      {rightPanelTab === "svg" ? (
+                        imageSrc ? (
+                          <img className={styles.visualAsset} src={imageSrc} alt="Generated visual card mockup" />
+                        ) : (
+                          <div className={styles.emptyAsset}>No visual asset preview available.</div>
+                        )
                       ) : (
-                        <div className={styles.emptyAsset}>No visual asset preview available.</div>
+                        renderSocialPreview(activeChannel, currentPost, result?.package || result?.json, imageSrc)
                       )}
                     </article>
                   </div>
@@ -1894,5 +2036,113 @@ export default function Home() {
         </form>
       </section>
     </main>
+  );
+}
+
+function renderSocialPreview(channel, content, packageData, imgBase64) {
+  if (channel === "linkedin") {
+    return (
+      <div style={{ background: "#ffffff", border: "1px solid #e0e0e0", borderRadius: "8px", padding: "16px", color: "#191919", fontFamily: "-apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif", fontSize: "14px", lineHeight: "1.4", textAlign: "left" }}>
+        <div style={{ display: "flex", gap: "10px", alignItems: "center", marginBottom: "12px" }}>
+          <div style={{ width: "48px", height: "48px", borderRadius: "50%", background: "#0077b5", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", fontSize: "18px" }}>
+            {packageData?.project?.name?.substring(0, 2).toUpperCase() || "SF"}
+          </div>
+          <div>
+            <div style={{ fontWeight: "bold", color: "#000" }}>{packageData?.project?.name || "SignalFlow Studio"}</div>
+            <div style={{ fontSize: "12px", color: "#666" }}>Product launch update • 1st</div>
+          </div>
+        </div>
+        <div style={{ whiteSpace: "pre-wrap", marginBottom: "12px", maxHeight: "250px", overflowY: "auto" }}>{content}</div>
+        {imgBase64 && (
+          <div style={{ border: "1px solid #e0e0e0", borderRadius: "4px", overflow: "hidden", background: "#f3f6f8" }}>
+            <img src={imgBase64} style={{ width: "100%", height: "auto", display: "block" }} />
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (channel === "x") {
+    const tweets = content.split(/\n\n+/).filter(Boolean);
+    return (
+      <div style={{ background: "#000000", border: "1px solid #2f3336", borderRadius: "16px", padding: "16px", color: "#e7e9ea", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif", textAlign: "left", maxHeight: "400px", overflowY: "auto" }}>
+        {tweets.map((tweet, i) => (
+          <div key={i} style={{ display: "flex", gap: "12px", position: "relative", marginBottom: i < tweets.length - 1 ? "24px" : "0" }}>
+            {i < tweets.length - 1 && (
+              <div style={{ position: "absolute", left: "19px", top: "40px", bottom: "-24px", width: "2px", background: "#2f3336" }} />
+            )}
+            <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: "#2f3336", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", flexShrink: 0 }}>
+              {packageData?.project?.name?.substring(0, 1).toUpperCase() || "S"}
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ display: "flex", gap: "5px", alignItems: "center", marginBottom: "4px" }}>
+                <span style={{ fontWeight: "bold", color: "#e7e9ea" }}>{packageData?.project?.name || "SignalFlow Studio"}</span>
+                <span style={{ color: "#71767b", fontSize: "14px" }}>@{packageData?.project?.name?.toLowerCase().replace(/\s+/g, "") || "signalflow"} · {i + 1}</span>
+              </div>
+              <div style={{ whiteSpace: "pre-wrap", fontSize: "15px", lineHeight: "1.5" }}>{tweet}</div>
+              {i === 0 && imgBase64 && (
+                <div style={{ border: "1px solid #2f3336", borderRadius: "16px", overflow: "hidden", marginTop: "12px" }}>
+                  <img src={imgBase64} style={{ width: "100%", height: "auto", display: "block" }} />
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (channel === "instagram") {
+    return (
+      <div style={{ background: "#ffffff", border: "1px solid #dbdbdb", borderRadius: "3px", color: "#262626", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif", textAlign: "left" }}>
+        <div style={{ display: "flex", alignItems: "center", padding: "14px" }}>
+          <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: "linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", padding: "2px", boxSizing: "border-box" }}>
+            <div style={{ width: "100%", height: "100%", borderRadius: "50%", background: "#fff", color: "#000", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: "bold" }}>
+              {packageData?.project?.name?.substring(0, 1).toUpperCase() || "S"}
+            </div>
+          </div>
+          <strong style={{ marginLeft: "10px", fontSize: "14px", color: "#000" }}>{packageData?.project?.name?.toLowerCase().replace(/\s+/g, "_") || "signalflow_studio"}</strong>
+        </div>
+        {imgBase64 ? (
+          <div style={{ background: "#fafafa", borderTop: "1px solid #efefef", borderBottom: "1px solid #efefef" }}>
+            <img src={imgBase64} style={{ width: "100%", aspectRatio: "1", objectFit: "contain", display: "block" }} />
+          </div>
+        ) : (
+          <div style={{ width: "100%", aspectRatio: "1", background: "#efefef", display: "flex", alignItems: "center", justifyContent: "center", color: "#8e8e8e" }}>
+            No image card attached
+          </div>
+        )}
+        <div style={{ padding: "14px", fontSize: "14px", lineHeight: "1.4", maxHeight: "150px", overflowY: "auto" }}>
+          <div style={{ marginBottom: "8px" }}>
+            <strong style={{ color: "#000" }}>{packageData?.project?.name?.toLowerCase().replace(/\s+/g, "_") || "signalflow_studio"}</strong>{" "}
+            <span style={{ whiteSpace: "pre-wrap", color: "#262626" }}>{content}</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (channel === "reddit") {
+    return (
+      <div style={{ background: "#ffffff", border: "1px solid #ccc", borderRadius: "4px", padding: "16px", color: "#1a1a1b", fontFamily: "IBMPlexSans, Arial, sans-serif", textAlign: "left" }}>
+        <div style={{ fontSize: "12px", color: "#787c7e", marginBottom: "8px" }}>
+          Posted by u/{packageData?.project?.name?.toLowerCase().replace(/\s+/g, "_") || "creator"} in r/sideproject 5 hours ago
+        </div>
+        <h3 style={{ fontSize: "18px", fontWeight: "600", margin: "0 0 10px 0", color: "#222" }}>
+          {packageData?.posts?.reddit?.title || "Check out " + (packageData?.project?.name || "my project")}
+        </h3>
+        <div style={{ whiteSpace: "pre-wrap", fontSize: "14px", lineHeight: "1.5", maxHeight: "250px", overflowY: "auto" }}>{content}</div>
+      </div>
+    );
+  }
+
+  // Default simple card fallback for blog, release notes, newsletter, etc.
+  return (
+    <div style={{ background: "#fafaf9", border: "1px solid rgba(18,22,18,0.1)", borderRadius: "8px", padding: "20px", color: "#1c1917", textAlign: "left", maxHeight: "400px", overflowY: "auto" }}>
+      <h4 style={{ margin: "0 0 10px 0", color: "#111", fontSize: "1rem", fontWeight: "bold" }}>
+        {channel.toUpperCase().replace("_", " ")} Document Format Preview
+      </h4>
+      <div style={{ whiteSpace: "pre-wrap", fontFamily: "inherit", fontSize: "0.95rem", lineHeight: "1.6" }}>{content}</div>
+    </div>
   );
 }
