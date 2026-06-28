@@ -62,7 +62,8 @@ export function normalizePackage(rawPkg, inputs) {
       videoTimeline: Array.isArray(rawPkg?.media?.videoTimeline || rawPkg?.media?.videoEditingTimeline) ? (rawPkg.media.videoTimeline || rawPkg.media.videoEditingTimeline) : baseline.media.videoTimeline,
       altText: Array.isArray(rawPkg?.media?.altText) ? rawPkg.media.altText : baseline.media.altText,
       assetChecklist: Array.isArray(rawPkg?.media?.assetChecklist) ? rawPkg.media.assetChecklist : baseline.media.assetChecklist,
-      videoPrompt: rawPkg?.media?.videoPrompt || null
+      videoPrompt: rawPkg?.media?.videoPrompt || null,
+      thumbnailPrompt: rawPkg?.media?.thumbnailPrompt || baseline.media.thumbnailPrompt || ""
     },
     publishing: {
       platformChecklist: Array.isArray(rawPkg?.publishing?.platformChecklist) ? rawPkg.publishing.platformChecklist : baseline.publishing.platformChecklist,

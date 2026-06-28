@@ -130,8 +130,25 @@ export async function generateStudioPackage(inputs) {
     };
   }
 
-  // Verify key is configured (for cloud services)
-  if (!providerMeta.isConfigured()) {
+  // Determine if the provider is usable:
+  // - Local providers (ollama, lmstudio) never need an API key
+  // - Cloud providers need either an env key OR a temporary key from config
+  // - Custom gateway needs either env base URL OR a temporary baseUrl from config
+  const hasTemporaryKey = Boolean(config?.apiKey);
+  const hasTemporaryBaseUrl = Boolean(config?.baseUrl);
+  const isLocalProvider = providerMeta.isLocal; // ollama, lmstudio
+  const isEnvConfigured = providerMeta.isConfigured();
+
+  let isEffectivelyConfigured = false;
+  if (isLocalProvider) {
+    isEffectivelyConfigured = true;
+  } else if (generator === "custom") {
+    isEffectivelyConfigured = Boolean(process.env.CUSTOM_OPENAI_BASE_URL) || hasTemporaryBaseUrl;
+  } else {
+    isEffectivelyConfigured = isEnvConfigured || hasTemporaryKey;
+  }
+
+  if (!isEffectivelyConfigured) {
     // Fall back to template, notify user
     const localPkgResult = generateLocalTemplatePackage({
       projectName,
@@ -146,28 +163,24 @@ export async function generateStudioPackage(inputs) {
       appUrl
     });
 
+    const missingHint = generator === "custom"
+      ? "missing API key/base URL"
+      : `missing ${(providerMeta.requiredEnv || []).join(" or ")} environment variable`;
+
     return {
       ...localPkgResult,
       providerUsed: generator,
       fallbackUsed: true,
       chatbot_prompt: studioPrompt,
       warnings: [
-        `Provider "${providerMeta.label}" is not configured (missing environment API key). Fell back to deterministic template generation.`,
+        `Provider "${providerMeta.label}" is not configured (${missingHint}). To use this provider, set the environment variable or paste a temporary API key in the UI. Fell back to deterministic template generation.`,
         ...warnings
       ]
     };
   }
 
-  // Configure environment overrides if using Ollama / LM Studio / Custom OpenAI gateways
-  if (generator === "ollama" && model_endpoint) {
-    process.env.OLLAMA_BASE_URL = model_endpoint;
-  }
-  if (generator === "lmstudio" && model_endpoint) {
-    process.env.LMSTUDIO_BASE_URL = model_endpoint;
-  }
-  if (generator === "custom" && model_endpoint) {
-    process.env.CUSTOM_OPENAI_BASE_URL = model_endpoint;
-  }
+  // Note: baseUrl overrides for ollama/lmstudio/custom are passed via config.baseUrl
+  // directly to provider adapters — no process.env mutation needed.
 
   const modelOverride = model_name || providerMeta.defaultModel;
 

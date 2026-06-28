@@ -29,8 +29,7 @@ export async function captureAppScreenshot(appUrl) {
     // Dynamic import of playwright
     let playwrightModule;
     try {
-      const moduleName = "playwright";
-      playwrightModule = await import(moduleName);
+      playwrightModule = await import(/* webpackIgnore: true */ "playwright");
     } catch (err) {
       // Playwright not available in environment
       return {

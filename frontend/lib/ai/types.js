@@ -24,7 +24,7 @@ export const PROVIDERS = {
     isLocal: false,
     isFree: false,
     isConfigured: () => Boolean(process.env.GEMINI_API_KEY),
-    defaultModel: process.env.DEFAULT_MODEL_NAME || "gemini-2.0-flash",
+    defaultModel: process.env.DEFAULT_MODEL_NAME || "gemini-2.5-flash",
     requiredEnv: ["GEMINI_API_KEY"],
     canTest: true,
     supportsTemporaryKey: true
