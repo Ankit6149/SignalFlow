@@ -118,6 +118,18 @@ export default function Home() {
   const [isPrivateRepo, setIsPrivateRepo] = useState(false);
   const [githubToken, setGithubToken] = useState("");
 
+  const [videoMode, setVideoMode] = useState("manual"); // "manual" or "auto"
+  const [videoDuration, setVideoDuration] = useState(30); // in seconds
+  const [videoLogo, setVideoLogo] = useState(""); // file ID
+  const [shotsMode, setShotsMode] = useState("auto"); // "auto" or "custom"
+  const [customShots, setCustomShots] = useState([
+    { id: 1, duration: 5, visual: "Intro Card with brand logo", audio: "Tired of manual product copywriting?", imageId: "" },
+    { id: 2, duration: 10, visual: "Showing the main workspace interface", audio: "Just paste your repo and notes to get started", imageId: "" },
+    { id: 3, duration: 10, visual: "Generating drafts instantly", audio: "It builds platform-ready post templates automatically", imageId: "" },
+    { id: 4, duration: 5, visual: "Outro with Call to Action", audio: "Try it out locally today!", imageId: "" }
+  ]);
+  const [generatedVideoMockup, setGeneratedVideoMockup] = useState(null);
+
   const [publishPlatform, setPublishPlatform] = useState("linkedin");
   const [isPublishingToApi, setIsPublishingToApi] = useState(false);
   const [publishStatusMsg, setPublishStatusMsg] = useState("");
@@ -711,6 +723,79 @@ export default function Home() {
       }
 
       setResult(data);
+
+      if (videoMode === "auto") {
+        let logoFile = uploadedFiles.find(f => f.id === videoLogo);
+        let logoUrl = logoFile ? logoFile.url : "";
+        let logoName = logoFile ? logoFile.name : "";
+
+        let compiledShots = [];
+        if (shotsMode === "auto") {
+          const pkg = data.package || data.json || {};
+          const hooks = pkg.strategy?.hooks || [];
+          const features = pkg.context?.features || [];
+          const cta = pkg.posts?.linkedin?.cta || "Check out our live demo!";
+          const screenshots = uploadedFiles.filter(f => f.category === "screenshot" || f.category === "product image");
+
+          // Shot 1: Intro
+          compiledShots.push({
+            id: 1,
+            duration: Math.max(4, Math.floor(videoDuration * 0.15)),
+            visual: `Brand Title slide for ${projectName || pkg.project?.name || "Product"}`,
+            audio: hooks[0] || `Announcing ${projectName || pkg.project?.name || "our new application"}!`,
+            imageUrl: ""
+          });
+
+          // Shot 2: Core features
+          compiledShots.push({
+            id: 2,
+            duration: Math.floor(videoDuration * 0.4),
+            visual: `Core features display: ${features.slice(0, 3).join(", ")}`,
+            audio: `Key features include: ${features.slice(0, 3).join(". ")}`,
+            imageUrl: screenshots[0] ? screenshots[0].url : ""
+          });
+
+          // Shot 3: Workflow
+          compiledShots.push({
+            id: 3,
+            duration: Math.floor(videoDuration * 0.3),
+            visual: "Workflow presentation of the application",
+            audio: pkg.project?.oneLine || "A simple, local-first workflow built for builders.",
+            imageUrl: screenshots[1] ? screenshots[1].url : (screenshots[0] ? screenshots[0].url : "")
+          });
+
+          // Shot 4: Outro
+          compiledShots.push({
+            id: 4,
+            duration: Math.max(4, videoDuration - (Math.max(4, Math.floor(videoDuration * 0.15)) + Math.floor(videoDuration * 0.4) + Math.floor(videoDuration * 0.3))),
+            visual: `Outro frame: ${cta}`,
+            audio: `Try ${projectName || pkg.project?.name || "us"} out today. Let us know your feedback!`,
+            imageUrl: ""
+          });
+        } else {
+          compiledShots = customShots.map(shot => {
+            const imgFile = uploadedFiles.find(f => f.id === shot.imageId);
+            return {
+              id: shot.id,
+              duration: shot.duration,
+              visual: shot.visual,
+              audio: shot.audio,
+              imageUrl: imgFile ? imgFile.url : ""
+            };
+          });
+        }
+
+        setGeneratedVideoMockup({
+          duration: videoDuration,
+          logoUrl,
+          logoName,
+          projectName: projectName || data.package?.project?.name || "SignalFlow Studio",
+          shots: compiledShots
+        });
+      } else {
+        setGeneratedVideoMockup(null);
+      }
+
       setActiveChannel(Object.keys(data?.posts || {})[0] || "linkedin");
       setHasGenerated(true);
       setStep(3);
@@ -1317,8 +1402,163 @@ export default function Home() {
                 />
               </label>
 
-              <div style={{ background: "#ede7db", border: "1px solid rgba(18,22,18,0.1)", padding: "12px 18px", borderRadius: 8, color: "#59635c", fontSize: "0.95rem", fontWeight: "bold", margin: "20px 0" }}>
-                💡 <strong>Notice</strong>: For now, upload screenshots or record your screen manually. Automatic app capture and AI video generation are future modules.
+              <div style={{ background: "#f8f6f0", border: "1px solid rgba(18,22,18,0.15)", padding: "20px", borderRadius: 8, margin: "20px 0" }}>
+                <h3 style={{ margin: "0 0 12px 0", fontSize: "1.05rem", color: "#101410" }}>Video & Media Creation Mode</h3>
+                <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
+                  <button
+                    type="button"
+                    onClick={() => setVideoMode("manual")}
+                    style={{
+                      flex: 1,
+                      padding: "10px 16px",
+                      borderRadius: 6,
+                      border: "1px solid " + (videoMode === "manual" ? "#101410" : "rgba(18,22,18,0.15)"),
+                      background: videoMode === "manual" ? "#101410" : "#fff",
+                      color: videoMode === "manual" ? "#fff" : "#59635c",
+                      fontWeight: "bold",
+                      cursor: "pointer"
+                    }}
+                  >
+                    Self Screen Recording / Manual Uploads
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setVideoMode("auto")}
+                    style={{
+                      flex: 1,
+                      padding: "10px 16px",
+                      borderRadius: 6,
+                      border: "1px solid " + (videoMode === "auto" ? "#101410" : "rgba(18,22,18,0.15)"),
+                      background: videoMode === "auto" ? "#101410" : "#fff",
+                      color: videoMode === "auto" ? "#fff" : "#59635c",
+                      fontWeight: "bold",
+                      cursor: "pointer"
+                    }}
+                  >
+                    🎬 Automated AI Video Mockup Generator
+                  </button>
+                </div>
+
+                {videoMode === "manual" ? (
+                  <p style={{ margin: 0, fontSize: "0.88rem", color: "#59635c" }}>
+                    Record your web browser manually using the built-in screen capture widget below, or upload existing video assets from your disk.
+                  </p>
+                ) : (
+                  <div style={{ display: "grid", gap: 14 }}>
+                    <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+                      <label className={styles.field} style={{ flex: 1, minWidth: 150, margin: 0 }}>
+                        Target Video Duration
+                        <select
+                          value={videoDuration}
+                          onChange={(e) => setVideoDuration(Number(e.target.value))}
+                          style={{ padding: "8px 12px", borderRadius: 6, width: "100%", background: "#fff", border: "1px solid rgba(18,22,18,0.15)", marginTop: 6 }}
+                        >
+                          <option value={15}>Short Teaser (15 seconds)</option>
+                          <option value={30}>Promo Video (30 seconds)</option>
+                          <option value={60}>Product Deep-Dive (60 seconds)</option>
+                          <option value={90}>Full Pitch (90 seconds)</option>
+                        </select>
+                      </label>
+
+                      <label className={styles.field} style={{ flex: 1, minWidth: 150, margin: 0 }}>
+                        Brand Logo
+                        <select
+                          value={videoLogo}
+                          onChange={(e) => setVideoLogo(e.target.value)}
+                          style={{ padding: "8px 12px", borderRadius: 6, width: "100%", background: "#fff", border: "1px solid rgba(18,22,18,0.15)", marginTop: 6 }}
+                        >
+                          <option value="">-- No Logo (Text Overlay Only) --</option>
+                          {uploadedFiles.filter(f => f.category === "logo").map(file => (
+                            <option key={file.id} value={file.id}>{file.name}</option>
+                          ))}
+                        </select>
+                      </label>
+
+                      <label className={styles.field} style={{ flex: 1, minWidth: 150, margin: 0 }}>
+                        Shots Configuration
+                        <select
+                          value={shotsMode}
+                          onChange={(e) => setShotsMode(e.target.value)}
+                          style={{ padding: "8px 12px", borderRadius: 6, width: "100%", background: "#fff", border: "1px solid rgba(18,22,18,0.15)", marginTop: 6 }}
+                        >
+                          <option value="auto">Auto-Compile Shots from Product Details</option>
+                          <option value="custom">Define Custom Storyboard Shot List</option>
+                        </select>
+                      </label>
+                    </div>
+
+                    {shotsMode === "custom" && (
+                      <div style={{ background: "#fff", border: "1px solid rgba(18,22,18,0.1)", borderRadius: 6, padding: 14 }}>
+                        <h4 style={{ margin: "0 0 10px 0", fontSize: "0.95rem", color: "#101410" }}>Define Storyboard Shots</h4>
+                        <div style={{ display: "grid", gap: 10 }}>
+                          {customShots.map((shot, idx) => (
+                            <div key={shot.id} style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                              <span style={{ fontWeight: "bold", fontSize: "0.85rem", width: 60 }}>Shot #{idx + 1}</span>
+                              <input
+                                type="number"
+                                placeholder="Secs"
+                                value={shot.duration}
+                                onChange={(e) => {
+                                  const dur = Number(e.target.value);
+                                  setCustomShots(current => current.map(s => s.id === shot.id ? { ...s, duration: dur } : s));
+                                }}
+                                style={{ width: 60, padding: 6, fontSize: "0.85rem", textAlign: "center", border: "1px solid rgba(18,22,18,0.15)", borderRadius: 4 }}
+                              />
+                              <input
+                                type="text"
+                                placeholder="Visual (e.g. Show Dashboard screenshot)"
+                                value={shot.visual}
+                                onChange={(e) => {
+                                  const vis = e.target.value;
+                                  setCustomShots(current => current.map(s => s.id === shot.id ? { ...s, visual: vis } : s));
+                                }}
+                                style={{ flex: 2, padding: 6, fontSize: "0.85rem", border: "1px solid rgba(18,22,18,0.15)", borderRadius: 4 }}
+                              />
+                              <input
+                                type="text"
+                                placeholder="Audio Voiceover Script"
+                                value={shot.audio}
+                                onChange={(e) => {
+                                  const aud = e.target.value;
+                                  setCustomShots(current => current.map(s => s.id === shot.id ? { ...s, audio: aud } : s));
+                                }}
+                                style={{ flex: 3, padding: 6, fontSize: "0.85rem", border: "1px solid rgba(18,22,18,0.15)", borderRadius: 4 }}
+                              />
+                              <select
+                                value={shot.imageId}
+                                onChange={(e) => {
+                                  const imgId = e.target.value;
+                                  setCustomShots(current => current.map(s => s.id === shot.id ? { ...s, imageId: imgId } : s));
+                                }}
+                                style={{ flex: 2, padding: 6, fontSize: "0.85rem", border: "1px solid rgba(18,22,18,0.15)", borderRadius: 4, background: "#fff" }}
+                              >
+                                <option value="">-- No Image --</option>
+                                {uploadedFiles.filter(f => f.category === "screenshot" || f.category === "product image").map(file => (
+                                  <option key={file.id} value={file.id}>{file.name}</option>
+                                ))}
+                              </select>
+                              <button
+                                type="button"
+                                onClick={() => setCustomShots(current => current.filter(s => s.id !== shot.id))}
+                                style={{ padding: "4px 8px", background: "#f8d7da", color: "#721c24", border: "none", borderRadius: 4, cursor: "pointer", fontWeight: "bold" }}
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          ))}
+                          <button
+                            type="button"
+                            onClick={() => setCustomShots(current => [...current, { id: new Date().getTime(), duration: 5, visual: "", audio: "", imageId: "" }])}
+                            className={styles.secondaryButton}
+                            style={{ padding: "6px 12px", fontSize: "0.85rem", alignSelf: "flex-start", marginTop: 6 }}
+                          >
+                            + Add Storyboard Shot
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div className={styles.mediaGrid}>
@@ -1661,6 +1901,25 @@ export default function Home() {
                           >
                             Feed Preview
                           </button>
+                          {generatedVideoMockup && (
+                            <button
+                              type="button"
+                              onClick={() => setRightPanelTab("video")}
+                              style={{
+                                padding: "4px 10px",
+                                fontSize: "0.8rem",
+                                border: "none",
+                                borderRadius: 4,
+                                cursor: "pointer",
+                                background: rightPanelTab === "video" ? "#ffffff" : "transparent",
+                                color: rightPanelTab === "video" ? "#101410" : "#59635c",
+                                fontWeight: "bold",
+                                boxShadow: rightPanelTab === "video" ? "0 1px 3px rgba(0,0,0,0.1)" : "none"
+                              }}
+                            >
+                              🎬 Video Mockup
+                            </button>
+                          )}
                         </div>
                       </div>
 
@@ -1670,8 +1929,10 @@ export default function Home() {
                         ) : (
                           <div className={styles.emptyAsset}>No visual asset preview available.</div>
                         )
-                      ) : (
+                      ) : rightPanelTab === "preview" ? (
                         renderSocialPreview(activeChannel, currentPost, result?.package || result?.json, imageSrc)
+                      ) : (
+                        generatedVideoMockup && <VideoPlayer mockup={generatedVideoMockup} />
                       )}
                     </article>
                   </div>
@@ -2167,6 +2428,230 @@ function renderSocialPreview(channel, content, packageData, imgBase64) {
         {channel.toUpperCase().replace("_", " ")} Document Format Preview
       </h4>
       <div style={{ whiteSpace: "pre-wrap", fontFamily: "inherit", fontSize: "0.95rem", lineHeight: "1.6" }}>{content}</div>
+    </div>
+  );
+}
+
+function VideoPlayer({ mockup }) {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const totalDuration = mockup.duration || mockup.shots.reduce((acc, s) => acc + s.duration, 0);
+
+  // Calculate which shot is currently active based on currentTime
+  let activeShotIndex = 0;
+  let accumulatedTime = 0;
+  for (let i = 0; i < mockup.shots.length; i++) {
+    const shot = mockup.shots[i];
+    if (currentTime >= accumulatedTime && currentTime < accumulatedTime + shot.duration) {
+      activeShotIndex = i;
+      break;
+    }
+    accumulatedTime += shot.duration;
+    if (i === mockup.shots.length - 1) {
+      activeShotIndex = i; // fallback for end edge
+    }
+  }
+
+  const activeShot = mockup.shots[activeShotIndex] || {};
+
+  useEffect(() => {
+    let intervalId;
+    if (isPlaying) {
+      const startTime = Date.now() - (currentTime * 1000);
+      intervalId = setInterval(() => {
+        const elapsed = (Date.now() - startTime) / 1000;
+        if (elapsed >= totalDuration) {
+          setCurrentTime(totalDuration);
+          setIsPlaying(false);
+        } else {
+          setCurrentTime(elapsed);
+        }
+      }, 50);
+    }
+    return () => clearInterval(intervalId);
+  }, [isPlaying]);
+
+  const handlePlayPause = () => {
+    if (currentTime >= totalDuration) {
+      setCurrentTime(0);
+    }
+    setIsPlaying(!isPlaying);
+  };
+
+  const handleProgressClick = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const percentage = clickX / rect.width;
+    setCurrentTime(percentage * totalDuration);
+  };
+
+  const progressPercent = (currentTime / totalDuration) * 100;
+
+  return (
+    <div style={{ background: "#0b0f17", borderRadius: 12, border: "1px solid rgba(255, 255, 255, 0.1)", padding: 16, color: "#fff", display: "grid", gap: 16, fontFamily: "system-ui, sans-serif" }}>
+      {/* 16:9 Video Canvas viewport */}
+      <div style={{
+        position: "relative",
+        width: "100%",
+        aspectRatio: "16/9",
+        background: "#000",
+        borderRadius: 8,
+        overflow: "hidden",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        boxShadow: "inset 0 0 40px rgba(0,0,0,0.8)"
+      }}>
+        {/* Brand Logo overlay */}
+        {mockup.logoUrl ? (
+          <img 
+            src={mockup.logoUrl} 
+            alt="Logo" 
+            style={{ position: "absolute", top: 12, right: 12, height: 32, objectFit: "contain", zIndex: 10, background: "rgba(255,255,255,0.85)", padding: "4px 8px", borderRadius: 4 }} 
+          />
+        ) : (
+          <div style={{ position: "absolute", top: 12, right: 12, zIndex: 10, fontSize: "0.85rem", fontWeight: "bold", background: "rgba(255,255,255,0.15)", padding: "4px 8px", borderRadius: 4, backdropFilter: "blur(4px)" }}>
+            {mockup.projectName}
+          </div>
+        )}
+
+        {/* Video active shot image or title fallback */}
+        {activeShot.imageUrl ? (
+          <div style={{ width: "100%", height: "100%", overflow: "hidden", position: "relative" }}>
+            <img 
+              src={activeShot.imageUrl} 
+              alt="Shot layout" 
+              style={{ 
+                width: "100%", 
+                height: "100%", 
+                objectFit: "contain",
+                transform: isPlaying ? "scale(1.05)" : "scale(1.0)",
+                transition: isPlaying ? "transform 10s linear" : "none"
+              }} 
+            />
+          </div>
+        ) : (
+          <div style={{ 
+            display: "flex", 
+            flexDirection: "column", 
+            alignItems: "center", 
+            justifyContent: "center", 
+            textAlign: "center", 
+            width: "80%", 
+            height: "100%", 
+            background: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)",
+            color: "#f8fafc"
+          }}>
+            <h2 style={{ fontSize: "1.8rem", fontWeight: "bold", margin: "0 0 10px 0" }}>{mockup.projectName}</h2>
+            <p style={{ fontSize: "1rem", color: "#94a3b8", maxWidth: "80%" }}>{activeShot.visual}</p>
+          </div>
+        )}
+
+        {/* Subtitle bar at the bottom */}
+        <div style={{ 
+          position: "absolute", 
+          bottom: 16, 
+          left: "5%", 
+          width: "90%", 
+          textAlign: "center", 
+          zIndex: 10,
+          background: "rgba(0, 0, 0, 0.75)",
+          padding: "8px 12px",
+          borderRadius: 6,
+          fontSize: "0.95rem",
+          fontWeight: "500",
+          color: "#fff",
+          lineHeight: "1.4",
+          backdropFilter: "blur(4px)",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.5)"
+        }}>
+          🔊 {activeShot.audio || "[Silence]"}
+        </div>
+      </div>
+
+      {/* Control bar */}
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <button 
+          type="button" 
+          onClick={handlePlayPause}
+          style={{
+            background: "#fff",
+            color: "#000",
+            border: "none",
+            borderRadius: "50%",
+            width: 38,
+            height: 38,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            fontWeight: "bold",
+            fontSize: "1.2rem",
+            boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+            flexShrink: 0
+          }}
+        >
+          {isPlaying ? "⏸" : "▶"}
+        </button>
+
+        {/* Timeline track */}
+        <div 
+          onClick={handleProgressClick}
+          style={{ 
+            flex: 1, 
+            height: 6, 
+            background: "rgba(255,255,255,0.15)", 
+            borderRadius: 3, 
+            cursor: "pointer", 
+            position: "relative" 
+          }}
+        >
+          <div style={{ width: `${progressPercent}%`, height: "100%", background: "#f43f5e", borderRadius: 3 }} />
+        </div>
+
+        <span style={{ fontSize: "0.85rem", color: "#94a3b8", fontVariantNumeric: "tabular-nums" }}>
+          {currentTime.toFixed(1)}s / {totalDuration.toFixed(1)}s
+        </span>
+      </div>
+
+      {/* Shot timeline outline */}
+      <div style={{ background: "rgba(255,255,255,0.02)", borderRadius: 8, padding: 12, maxHeight: 150, overflowY: "auto" }}>
+        <h4 style={{ margin: "0 0 8px 0", fontSize: "0.85rem", color: "#94a3b8" }}>Storyboard Shot Timeline</h4>
+        <div style={{ display: "grid", gap: 6 }}>
+          {(() => {
+            let tempAccum = 0;
+            return mockup.shots.map((shot, idx) => {
+              const start = tempAccum;
+              tempAccum += shot.duration;
+              const isActive = activeShotIndex === idx;
+              return (
+                <div 
+                  key={shot.id} 
+                  onClick={() => setCurrentTime(start)}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    padding: "6px 8px",
+                    borderRadius: 4,
+                    fontSize: "0.8rem",
+                    cursor: "pointer",
+                    background: isActive ? "rgba(244, 63, 94, 0.15)" : "transparent",
+                    borderLeft: "3px solid " + (isActive ? "#f43f5e" : "transparent"),
+                    color: isActive ? "#fff" : "#94a3b8"
+                  }}
+                >
+                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <span style={{ fontWeight: "bold" }}>Shot #{idx + 1} ({shot.duration}s)</span>
+                    <span style={{ textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap", maxWidth: 180 }}>{shot.visual}</span>
+                  </div>
+                  <span style={{ fontSize: "0.75rem", fontVariantNumeric: "tabular-nums" }}>{start}s</span>
+                </div>
+              );
+            });
+          })()}
+        </div>
+      </div>
     </div>
   );
 }
