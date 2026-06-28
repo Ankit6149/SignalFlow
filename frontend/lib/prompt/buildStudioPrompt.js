@@ -107,21 +107,20 @@ ${scrapedStr}
 === PARSED REPOSITORY CODE SUMMARY ===
 ${repoCodeStr}
 
-=======================================
-INSTRUCTIONS & RULES:
+INSTRUCTIONS & RULES FOR HIGHLY NATURAL, HUMAN-LIKE WRITING (HUMANIFIED TONE):
 1. You MUST respond ONLY with a single JSON object. Do not wrap it in markdown codeblocks like \`\`\`json. Your output must start with '{' and end with '}'.
 2. You MUST strictly adhere to the requested JSON schema shown below. Do not add or rename keys.
-3. Be professional, authentic, and clear. Avoid typical marketing hype, buzzwords ("revolutionary", "game-changer", "delve"), and over-exaggerated claims.
-4. Distinguish between confirmed facts (from the repo code and user settings) and user assumptions/inferences. If a claim is an assumption, mention it in the strategy.
-5. Create high-value, platform-specific content:
-   - LinkedIn: Polished, narrative, story-driven, professional, includes cta and hashtags.
-   - X: Concise, hook-driven, engaging. Output as a post thread (with multiple posts in an array).
-   - Instagram: Visual-focused caption, suggested visual direction.
-   - Reddit: Factual, helpful, useful, non-spammy, suggests subreddits.
-   - Hacker News: Simple, engineering-focused, Show HN format.
-   - Blog: Deeper analysis, draft outline, full writeup.
-   - Newsletter: Hooky subject, preview line, narrative update.
-   - Release Notes: Formatted by feature changes, additions, and configs.
+3. ABSOLUTELY NO AI BUZZWORDS OR MARKETING JARGON. Strictly avoid words like: "revolutionize", "game-changer", "delve", "seamless", "ultimate", "leverage", "transform", "unlock", "foster", "testament", "landscape", "dynamic", "empower", "elevate", "robust", "key", "master", "look no further", "in today's fast-paced world".
+4. WRITE LIKE A HUMAN DEVELOPER/BUILDER.
+   - Use direct, conversational, and humble language. Write in the first person singular ("I built this because...") or plural ("We wanted to solve...").
+   - Vary your sentence structures. Avoid writing paragraphs that have uniform sentence lengths. Use short, punchy statements mixed with explanatory sentences.
+   - Do not use exclamation marks in every sentence. Limit them to a maximum of 1 or 2 per platform post.
+   - Do not start with generic marketing hook templates (e.g., "Are you tired of X?"). Instead, state a direct observation, a technical challenge, or a simple backstory of why the app was built.
+5. PLATFORM-SPECIFIC GUIDELINES:
+   - LinkedIn: Avoid generic corporate-speak. Share a real, authentic startup or engineering story. Describe the problem, the technical implementation, and what you learned. Use only 2-3 highly relevant hashtags.
+   - X (Twitter): Write in the tone of a real tech builder on Twitter—casual, direct, minimal fluff, showing technical details or direct screenshots. Avoid cheesy thread hooks.
+   - Reddit: Must be completely factual, educational, and useful. Discuss technical decisions, trade-offs (e.g. running local fs parsers instead of API endpoints), and limitations.
+   - Hacker News: Strictly objective, simple, engineering-focused, detailing technical architecture, libraries used, and why this method is helpful.
 6. Make sure all selected platform outputs are complete and ready to copy. Do not output placeholders, TODOs, or ellipses like "...".
 
 === REQUIRED JSON OUTPUT SCHEMA ===
