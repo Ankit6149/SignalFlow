@@ -1211,10 +1211,10 @@ export default function Home() {
 
               <div className={styles.twoCols}>
                 <label className={styles.field}>
-                  GitHub public repository URL
+                  GitHub Repository URL or Local Directory Path
                   <input
                     onChange={(event) => setRepoUrl(event.target.value)}
-                    placeholder="https://github.com/username/repository"
+                    placeholder="e.g. https://github.com/user/repo OR c:\projects\my-app"
                     type="text"
                     value={repoUrl}
                   />

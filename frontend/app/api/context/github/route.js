@@ -1,5 +1,6 @@
 import { requireOwnerAccess } from "../../_auth";
 import { ingestGitHubRepo } from "../../../../lib/context/github";
+import { ingestLocalRepo } from "../../../../lib/context/localRepo";
 
 export async function POST(request) {
   const accessError = requireOwnerAccess(request);
@@ -16,7 +17,17 @@ export async function POST(request) {
       });
     }
 
-    const result = await ingestGitHubRepo(repoUrl, githubToken);
+    const isLocal = !repoUrl.includes("github.com") && 
+      (repoUrl.startsWith("/") || 
+       repoUrl.startsWith("\\") || 
+       /^[a-zA-Z]:\\/.test(repoUrl) || 
+       /^[a-zA-Z]:\//.test(repoUrl) || 
+       repoUrl.startsWith(".") ||
+       (!repoUrl.includes("http://") && !repoUrl.includes("https://")));
+
+    const result = isLocal 
+      ? await ingestLocalRepo(repoUrl) 
+      : await ingestGitHubRepo(repoUrl, githubToken);
     
     return new Response(JSON.stringify(result), {
       status: 200,

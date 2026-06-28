@@ -1,6 +1,7 @@
 import { requireOwnerAccess } from "../_auth";
 import { validateGenerationInputs } from "../../../lib/package/validatePackage";
 import { ingestGitHubRepo } from "../../../lib/context/github";
+import { ingestLocalRepo } from "../../../lib/context/localRepo";
 import { fetchUrlContent } from "../../../lib/context/linkFetcher";
 import { generateStudioPackage } from "../../../lib/ai/generateStudioPackage";
 
@@ -48,15 +49,27 @@ export async function POST(request) {
 
     const githubToken = (body.github_token || body.githubToken || "").trim();
 
-    // 2. Perform GitHub Ingestion if repo URL provided
+    // 2. Perform Repository Ingestion if repo URL or local path provided
     if (repoUrl) {
       try {
-        repoContext = await ingestGitHubRepo(repoUrl, githubToken);
+        const isLocal = !repoUrl.includes("github.com") && 
+          (repoUrl.startsWith("/") || 
+           repoUrl.startsWith("\\") || 
+           /^[a-zA-Z]:\\/.test(repoUrl) || 
+           /^[a-zA-Z]:\//.test(repoUrl) || 
+           repoUrl.startsWith(".") ||
+           (!repoUrl.includes("http://") && !repoUrl.includes("https://")));
+        
+        if (isLocal) {
+          repoContext = await ingestLocalRepo(repoUrl);
+        } else {
+          repoContext = await ingestGitHubRepo(repoUrl, githubToken);
+        }
         if (repoContext?.warnings?.length) {
           warnings.push(...repoContext.warnings);
         }
       } catch (err) {
-        warnings.push(`GitHub ingestion failed: ${err.message}. Generating with available inputs.`);
+        warnings.push(`Repository ingestion failed: ${err.message}. Generating with available inputs.`);
       }
     }
 
