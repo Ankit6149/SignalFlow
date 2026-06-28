@@ -46,10 +46,12 @@ export async function POST(request) {
     let linksContext = [];
     const mediaItems = Array.isArray(body.media_items) ? [...body.media_items] : [];
 
+    const githubToken = (body.github_token || body.githubToken || "").trim();
+
     // 2. Perform GitHub Ingestion if repo URL provided
     if (repoUrl) {
       try {
-        repoContext = await ingestGitHubRepo(repoUrl);
+        repoContext = await ingestGitHubRepo(repoUrl, githubToken);
         if (repoContext?.warnings?.length) {
           warnings.push(...repoContext.warnings);
         }

@@ -115,6 +115,8 @@ export default function Home() {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [rightPanelTab, setRightPanelTab] = useState("svg"); // "svg" or "preview"
   const [isCapturingScreenshot, setIsCapturingScreenshot] = useState(false);
+  const [isPrivateRepo, setIsPrivateRepo] = useState(false);
+  const [githubToken, setGithubToken] = useState("");
 
   const [publishPlatform, setPublishPlatform] = useState("linkedin");
   const [isPublishingToApi, setIsPublishingToApi] = useState(false);
@@ -680,6 +682,7 @@ export default function Home() {
           notes: brief,
           research_url: links,
           repo: repoUrl,
+          github_token: isPrivateRepo ? githubToken : undefined,
           docs_url: docsUrl,
           app_url: appUrl,
           document_text: combinedDocText,
@@ -1215,6 +1218,27 @@ export default function Home() {
                     type="text"
                     value={repoUrl}
                   />
+                  {repoUrl && (
+                    <div style={{ marginTop: 8, display: "grid", gap: 6 }}>
+                      <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.85rem", cursor: "pointer", color: "#59635c" }}>
+                        <input
+                          type="checkbox"
+                          checked={isPrivateRepo}
+                          onChange={(e) => setIsPrivateRepo(e.target.checked)}
+                        />
+                        🔒 Private Repository?
+                      </label>
+                      {isPrivateRepo && (
+                        <input
+                          type="password"
+                          placeholder="Paste GitHub Personal Access Token (PAT)"
+                          value={githubToken}
+                          onChange={(e) => setGithubToken(e.target.value)}
+                          style={{ fontSize: "0.85rem", padding: "6px 10px", borderRadius: 4, border: "1px solid rgba(18,22,18,0.15)" }}
+                        />
+                      )}
+                    </div>
+                  )}
                 </label>
                 <label className={styles.field}>
                   Documentation URL

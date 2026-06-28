@@ -8,7 +8,7 @@ export async function POST(request) {
   }
 
   try {
-    const { repoUrl } = await request.json();
+    const { repoUrl, githubToken } = await request.json();
     if (!repoUrl) {
       return new Response(JSON.stringify({ error: "Missing repoUrl parameter" }), {
         status: 400,
@@ -16,7 +16,7 @@ export async function POST(request) {
       });
     }
 
-    const result = await ingestGitHubRepo(repoUrl);
+    const result = await ingestGitHubRepo(repoUrl, githubToken);
     
     return new Response(JSON.stringify(result), {
       status: 200,
