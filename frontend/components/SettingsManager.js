@@ -97,8 +97,8 @@ export default function SettingsManager({
             <div style={styles.form}>
               {publicHosted && !isOwnerAuthenticated ? (
                 <div style={{
-                  background: "rgba(245, 158, 11, 0.15)",
-                  border: "1px solid rgba(245, 158, 11, 0.3)",
+                  background: "rgba(245, 158, 11, 0.06)",
+                  border: "1px solid rgba(245, 158, 11, 0.2)",
                   borderRadius: "8px",
                   padding: "12px 16px",
                   marginBottom: "20px",
@@ -108,16 +108,16 @@ export default function SettingsManager({
                 }}>
                   <span style={{ fontSize: "20px" }}>🌐</span>
                   <div>
-                    <h4 style={{ margin: 0, color: "#f59e0b", fontSize: "14px", fontWeight: "600" }}>Public demo mode</h4>
-                    <p style={{ margin: "2px 0 0 0", color: "#cbd5e1", fontSize: "12px", lineHeight: "1.4" }}>
+                    <h4 style={{ margin: 0, color: "#b45309", fontSize: "14px", fontWeight: "600" }}>Public demo mode</h4>
+                    <p style={{ margin: "2px 0 0 0", color: "#59635c", fontSize: "12px", lineHeight: "1.4" }}>
                       Use demo/template generation or self-host SignalFlow to connect your own keys and channels.
                     </p>
                   </div>
                 </div>
               ) : accessLocked && !isOwnerAuthenticated ? (
                 <div style={{
-                  background: "rgba(239, 68, 68, 0.15)",
-                  border: "1px solid rgba(239, 68, 68, 0.3)",
+                  background: "rgba(239, 68, 68, 0.06)",
+                  border: "1px solid rgba(239, 68, 68, 0.2)",
                   borderRadius: "8px",
                   padding: "12px 16px",
                   marginBottom: "20px",
@@ -127,16 +127,16 @@ export default function SettingsManager({
                 }}>
                   <span style={{ fontSize: "20px" }}>🔒</span>
                   <div>
-                    <h4 style={{ margin: 0, color: "#ef4444", fontSize: "14px", fontWeight: "600" }}>Private hosted workspace</h4>
-                    <p style={{ margin: "2px 0 0 0", color: "#cbd5e1", fontSize: "12px", lineHeight: "1.4" }}>
+                    <h4 style={{ margin: 0, color: "#b91c1c", fontSize: "14px", fontWeight: "600" }}>Private hosted workspace</h4>
+                    <p style={{ margin: "2px 0 0 0", color: "#59635c", fontSize: "12px", lineHeight: "1.4" }}>
                       Owner model and social connections are hidden. Enter the owner access key in the Advanced tab to unlock the owner session.
                     </p>
                   </div>
                 </div>
               ) : accessLocked && isOwnerAuthenticated ? (
                 <div style={{
-                  background: "rgba(79, 70, 229, 0.15)",
-                  border: "1px solid rgba(79, 70, 229, 0.3)",
+                  background: "rgba(36, 113, 93, 0.08)",
+                  border: "1px solid rgba(36, 113, 93, 0.25)",
                   borderRadius: "8px",
                   padding: "12px 16px",
                   marginBottom: "20px",
@@ -146,16 +146,16 @@ export default function SettingsManager({
                 }}>
                   <span style={{ fontSize: "20px" }}>🔑</span>
                   <div>
-                    <h4 style={{ margin: 0, color: "#818cf8", fontSize: "14px", fontWeight: "600" }}>Owner session active</h4>
-                    <p style={{ margin: "2px 0 0 0", color: "#cbd5e1", fontSize: "12px", lineHeight: "1.4" }}>
+                    <h4 style={{ margin: 0, color: "#24715d", fontSize: "14px", fontWeight: "600" }}>Owner session active</h4>
+                    <p style={{ margin: "2px 0 0 0", color: "#59635c", fontSize: "12px", lineHeight: "1.4" }}>
                       Protected generation and connected-channel status are available in this browser session.
                     </p>
                   </div>
                 </div>
               ) : (
                 <div style={{
-                  background: "rgba(16, 185, 129, 0.15)",
-                  border: "1px solid rgba(16, 185, 129, 0.3)",
+                  background: "rgba(16, 185, 129, 0.06)",
+                  border: "1px solid rgba(16, 185, 129, 0.2)",
                   borderRadius: "8px",
                   padding: "12px 16px",
                   marginBottom: "20px",
@@ -165,8 +165,8 @@ export default function SettingsManager({
                 }}>
                   <span style={{ fontSize: "20px" }}>💻</span>
                   <div>
-                    <h4 style={{ margin: 0, color: "#10b981", fontSize: "14px", fontWeight: "600" }}>Local-first mode</h4>
-                    <p style={{ margin: "2px 0 0 0", color: "#cbd5e1", fontSize: "12px", lineHeight: "1.4" }}>
+                    <h4 style={{ margin: 0, color: "#15803d", fontSize: "14px", fontWeight: "600" }}>Local-first mode</h4>
+                    <p style={{ margin: "2px 0 0 0", color: "#59635c", fontSize: "12px", lineHeight: "1.4" }}>
                       Your projects, package drafts, and cached keys stay in this browser unless you export or connect services.
                     </p>
                   </div>
@@ -175,12 +175,12 @@ export default function SettingsManager({
 
               {accessLocked && !isOwnerAuthenticated && (
                 <div style={{
-                  background: "rgba(239, 68, 68, 0.1)",
-                  border: "1px solid rgba(239, 68, 68, 0.2)",
+                  background: "rgba(239, 68, 68, 0.04)",
+                  border: "1px solid rgba(239, 68, 68, 0.12)",
                   borderRadius: "8px",
                   padding: "12px 16px",
                   marginBottom: "20px",
-                  color: "#cbd5e1",
+                  color: "#59635c",
                   fontSize: "12px",
                   lineHeight: "1.4"
                 }}>
@@ -469,16 +469,16 @@ const styles = {
   title: {
     fontSize: "24px",
     fontWeight: "800",
-    color: "#f8fafc",
+    color: "#121612",
     margin: 0
   },
   subtitle: {
     fontSize: "14px",
-    color: "#94a3b8",
+    color: "#59635c",
     margin: "4px 0 0 0"
   },
   saveBtn: {
-    background: "#6366f1",
+    background: "#24715d",
     color: "#ffffff",
     border: "none",
     padding: "10px 20px",
@@ -502,7 +502,7 @@ const styles = {
     background: "transparent",
     border: "none",
     borderRadius: "8px",
-    color: "#94a3b8",
+    color: "#59635c",
     padding: "12px 16px",
     textAlign: "left",
     fontWeight: "600",
@@ -511,14 +511,16 @@ const styles = {
     transition: "all 0.2s ease"
   },
   subTabBtnActive: {
-    background: "rgba(99, 102, 241, 0.15)",
-    color: "#818cf8"
+    background: "rgba(36, 113, 93, 0.1)",
+    color: "#24715d",
+    fontWeight: "700"
   },
   panel: {
-    background: "#151b23",
-    border: "1px solid #212c3d",
+    background: "#ffffff",
+    border: "1px solid rgba(18, 22, 18, 0.08)",
     borderRadius: "16px",
-    padding: "32px"
+    padding: "32px",
+    boxShadow: "0 10px 30px rgba(18, 22, 18, 0.02)"
   },
   form: {
     display: "flex",
@@ -532,13 +534,13 @@ const styles = {
   },
   label: {
     fontSize: "12px",
-    fontWeight: "7500",
-    color: "#cbd5e1"
+    fontWeight: "700",
+    color: "#121612"
   },
   select: {
-    background: "#0b0f14",
-    border: "1px solid #212c3d",
-    color: "#f1f5f9",
+    background: "#ffffff",
+    border: "1px solid rgba(18, 22, 18, 0.12)",
+    color: "#121612",
     padding: "10px 16px",
     borderRadius: "8px",
     outline: "none",
@@ -547,21 +549,21 @@ const styles = {
   },
   metaDesc: {
     fontSize: "12px",
-    color: "#64748b",
+    color: "#59635c",
     margin: 0,
     lineHeight: "1.4"
   },
   warningBox: {
-    background: "rgba(245, 158, 11, 0.08)",
+    background: "rgba(245, 158, 11, 0.06)",
     border: "1px solid rgba(245, 158, 11, 0.15)",
     borderRadius: "8px",
     padding: "14px",
-    color: "#fbbf24",
+    color: "#b45309",
     fontSize: "13px",
     lineHeight: "1.5"
   },
   credentialsForm: {
-    borderTop: "1px solid rgba(255, 255, 255, 0.05)",
+    borderTop: "1px solid rgba(18, 22, 18, 0.08)",
     paddingTop: "24px",
     display: "flex",
     flexDirection: "column",
@@ -570,15 +572,15 @@ const styles = {
   credentialsTitle: {
     fontSize: "14px",
     fontWeight: "700",
-    color: "#f1f5f9",
+    color: "#121612",
     margin: 0
   },
   input: {
-    background: "#0b0f14",
-    border: "1px solid #212c3d",
+    background: "#ffffff",
+    border: "1px solid rgba(18, 22, 18, 0.12)",
     borderRadius: "8px",
     padding: "10px 14px",
-    color: "#f8fafc",
+    color: "#121612",
     outline: "none",
     fontSize: "14px"
   },
@@ -589,9 +591,9 @@ const styles = {
     marginTop: "8px"
   },
   testBtn: {
-    background: "rgba(255, 255, 255, 0.05)",
-    border: "1px solid rgba(255, 255, 255, 0.1)",
-    color: "#cbd5e1",
+    background: "rgba(18, 22, 18, 0.04)",
+    border: "1px solid rgba(18, 22, 18, 0.1)",
+    color: "#121612",
     padding: "8px 16px",
     borderRadius: "8px",
     fontWeight: "600",
@@ -603,7 +605,7 @@ const styles = {
   },
   hint: {
     fontSize: "11px",
-    color: "#94a3b8",
+    color: "#59635c",
     margin: "4px 0 0 0"
   },
   checkboxLabel: {
@@ -611,33 +613,33 @@ const styles = {
     alignItems: "center",
     gap: "8px",
     fontSize: "13px",
-    color: "#cbd5e1",
+    color: "#121612",
     cursor: "pointer"
   },
   tipsWidget: {
-    background: "rgba(99, 102, 241, 0.05)",
-    border: "1px solid rgba(99, 102, 241, 0.1)",
+    background: "rgba(36, 113, 93, 0.04)",
+    border: "1px solid rgba(36, 113, 93, 0.1)",
     borderRadius: "12px",
     padding: "20px"
   },
   tipsTitle: {
     fontSize: "13px",
     fontWeight: "700",
-    color: "#818cf8",
+    color: "#24715d",
     margin: "0 0 10px 0"
   },
   tipsList: {
     margin: 0,
     paddingLeft: "16px",
     fontSize: "12px",
-    color: "#94a3b8",
+    color: "#59635c",
     lineHeight: "1.6",
     display: "flex",
     flexDirection: "column",
     gap: "6px"
   },
   adminDataSection: {
-    borderTop: "1px solid rgba(255, 255, 255, 0.05)",
+    borderTop: "1px solid rgba(18, 22, 18, 0.08)",
     paddingTop: "24px",
     display: "flex",
     flexDirection: "column",
@@ -648,9 +650,9 @@ const styles = {
     gap: "12px"
   },
   exportBtn: {
-    background: "rgba(255, 255, 255, 0.05)",
-    border: "1px solid rgba(255, 255, 255, 0.1)",
-    color: "#cbd5e1",
+    background: "rgba(18, 22, 18, 0.04)",
+    border: "1px solid rgba(18, 22, 18, 0.1)",
+    color: "#121612",
     padding: "8px 16px",
     borderRadius: "8px",
     fontWeight: "600",
@@ -658,9 +660,9 @@ const styles = {
     cursor: "pointer"
   },
   importBtn: {
-    background: "rgba(255, 255, 255, 0.05)",
-    border: "1px solid rgba(255, 255, 255, 0.1)",
-    color: "#cbd5e1",
+    background: "rgba(18, 22, 18, 0.04)",
+    border: "1px solid rgba(18, 22, 18, 0.1)",
+    color: "#121612",
     padding: "8px 16px",
     borderRadius: "8px",
     fontWeight: "600",
@@ -668,9 +670,9 @@ const styles = {
     cursor: "pointer"
   },
   clearBtn: {
-    background: "rgba(244, 63, 94, 0.1)",
-    border: "1px solid rgba(244, 63, 94, 0.2)",
-    color: "#f43f5e",
+    background: "rgba(244, 63, 94, 0.06)",
+    border: "1px solid rgba(244, 63, 94, 0.15)",
+    color: "#e11d48",
     padding: "8px 16px",
     borderRadius: "8px",
     fontWeight: "600",

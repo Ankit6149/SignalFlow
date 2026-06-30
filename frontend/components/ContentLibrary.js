@@ -292,12 +292,12 @@ const styles = {
   title: {
     fontSize: "24px",
     fontWeight: "800",
-    color: "#f8fafc",
+    color: "#121612",
     margin: 0
   },
   subtitle: {
     fontSize: "14px",
-    color: "#94a3b8",
+    color: "#59635c",
     margin: "4px 0 0 0"
   },
   filterRow: {
@@ -306,18 +306,18 @@ const styles = {
   },
   searchBar: {
     flexGrow: 1,
-    background: "#151b23",
-    border: "1px solid #212c3d",
+    background: "#ffffff",
+    border: "1px solid rgba(18, 22, 18, 0.12)",
     borderRadius: "8px",
     padding: "10px 16px",
-    color: "#f8fafc",
+    color: "#121612",
     outline: "none",
     fontSize: "14px"
   },
   select: {
-    background: "#151b23",
-    color: "#f1f5f9",
-    border: "1px solid #212c3d",
+    background: "#ffffff",
+    color: "#121612",
+    border: "1px solid rgba(18, 22, 18, 0.12)",
     padding: "10px 16px",
     borderRadius: "8px",
     outline: "none",
@@ -333,11 +333,12 @@ const styles = {
     gap: "12px"
   },
   card: {
-    background: "#151b23",
-    border: "1px solid #212c3d",
+    background: "#ffffff",
+    border: "1px solid rgba(18, 22, 18, 0.08)",
     borderRadius: "14px",
     padding: "20px",
     cursor: "pointer",
+    boxShadow: "0 10px 30px rgba(18, 22, 18, 0.02)",
     transition: "all 0.2s ease"
   },
   cardHeader: {
@@ -349,12 +350,12 @@ const styles = {
   cardTitle: {
     fontSize: "15px",
     fontWeight: "700",
-    color: "#f8fafc",
+    color: "#121612",
     margin: 0
   },
   cardProject: {
     fontSize: "11px",
-    color: "#64748b",
+    color: "#59635c",
     marginTop: "2px",
     display: "block"
   },
@@ -367,7 +368,7 @@ const styles = {
   },
   cardBodySnippet: {
     fontSize: "13px",
-    color: "#94a3b8",
+    color: "#59635c",
     lineHeight: "1.4",
     margin: "0 0 16px 0"
   },
@@ -375,7 +376,7 @@ const styles = {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    borderTop: "1px solid rgba(255, 255, 255, 0.03)",
+    borderTop: "1px solid rgba(18, 22, 18, 0.08)",
     paddingTop: "12px"
   },
   channelRow: {
@@ -386,9 +387,9 @@ const styles = {
     gap: "10px"
   },
   actionBtn: {
-    background: "rgba(255, 255, 255, 0.03)",
-    border: "1px solid rgba(255, 255, 255, 0.08)",
-    color: "#cbd5e1",
+    background: "rgba(18, 22, 18, 0.04)",
+    border: "1px solid rgba(18, 22, 18, 0.1)",
+    color: "#121612",
     padding: "6px 12px",
     borderRadius: "6px",
     fontSize: "12px",
@@ -396,9 +397,9 @@ const styles = {
     cursor: "pointer"
   },
   deleteBtn: {
-    background: "rgba(244, 63, 94, 0.08)",
+    background: "rgba(244, 63, 94, 0.06)",
     border: "1px solid rgba(244, 63, 94, 0.15)",
-    color: "#f43f5e",
+    color: "#e11d48",
     padding: "6px 12px",
     borderRadius: "6px",
     fontSize: "12px",
@@ -406,16 +407,17 @@ const styles = {
     cursor: "pointer"
   },
   emptyState: {
-    background: "#151b23",
-    border: "1px dashed #212c3d",
+    background: "#ffffff",
+    border: "1px dashed rgba(18, 22, 18, 0.15)",
     borderRadius: "16px",
     padding: "80px 20px",
     textAlign: "center",
-    color: "#64748b",
+    color: "#59635c",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    gap: "16px"
+    gap: "16px",
+    boxShadow: "0 10px 30px rgba(18, 22, 18, 0.02)"
   },
   modalOverlay: {
     position: "fixed",
@@ -423,7 +425,7 @@ const styles = {
     left: 0,
     right: 0,
     bottom: 0,
-    background: "rgba(0, 0, 0, 0.75)",
+    background: "rgba(18, 22, 18, 0.45)",
     backdropFilter: "blur(4px)",
     display: "flex",
     alignItems: "center",
@@ -432,35 +434,37 @@ const styles = {
     padding: "40px 20px"
   },
   modalContent: {
-    background: "#0b0f14",
-    border: "1px solid #212c3d",
+    background: "#ffffff",
+    border: "1px solid rgba(18, 22, 18, 0.1)",
     borderRadius: "16px",
     width: "100%",
     maxWidth: "960px",
     maxHeight: "90vh",
     overflowY: "auto",
     padding: "32px",
-    position: "relative"
+    position: "relative",
+    boxShadow: "0 24px 60px rgba(18, 22, 18, 0.1)"
   },
   modalContentSmall: {
-    background: "#0b0f14",
-    border: "1px solid #212c3d",
+    background: "#ffffff",
+    border: "1px solid rgba(18, 22, 18, 0.1)",
     borderRadius: "16px",
     width: "100%",
     maxWidth: "480px",
     padding: "32px",
     display: "flex",
     flexDirection: "column",
-    gap: "20px"
+    gap: "20px",
+    boxShadow: "0 24px 60px rgba(18, 22, 18, 0.1)"
   },
   closeModalBtn: {
     position: "absolute",
     top: "20px",
     right: "20px",
-    background: "rgba(255, 255, 255, 0.05)",
+    background: "rgba(18, 22, 18, 0.05)",
     border: "none",
     borderRadius: "8px",
-    color: "#94a3b8",
+    color: "#121612",
     padding: "8px 16px",
     fontWeight: "700",
     cursor: "pointer"
@@ -468,7 +472,7 @@ const styles = {
   modalTitle: {
     fontSize: "18px",
     fontWeight: "800",
-    color: "#f8fafc",
+    color: "#121612",
     margin: 0
   },
   formCol: {
@@ -479,14 +483,14 @@ const styles = {
   label: {
     fontSize: "12px",
     fontWeight: "600",
-    color: "#cbd5e1"
+    color: "#121612"
   },
   input: {
-    background: "#151b23",
-    border: "1px solid #212c3d",
+    background: "#ffffff",
+    border: "1px solid rgba(18, 22, 18, 0.12)",
     borderRadius: "8px",
     padding: "10px 14px",
-    color: "#f8fafc",
+    color: "#121612",
     outline: "none",
     fontSize: "14px"
   },
@@ -500,7 +504,7 @@ const styles = {
     alignItems: "center",
     gap: "8px",
     fontSize: "13px",
-    color: "#cbd5e1",
+    color: "#121612",
     cursor: "pointer"
   },
   checkbox: {
@@ -510,11 +514,11 @@ const styles = {
     display: "flex",
     gap: "12px",
     marginTop: "8px",
-    borderTop: "1px solid rgba(255, 255, 255, 0.05)",
+    borderTop: "1px solid rgba(18, 22, 18, 0.08)",
     paddingTop: "16px"
   },
   confirmBtn: {
-    background: "#6366f1",
+    background: "#24715d",
     color: "#ffffff",
     border: "none",
     padding: "10px 20px",
@@ -525,8 +529,8 @@ const styles = {
   },
   cancelBtn: {
     background: "transparent",
-    border: "1px solid rgba(255, 255, 255, 0.1)",
-    color: "#cbd5e1",
+    border: "1px solid rgba(18, 22, 18, 0.15)",
+    color: "#121612",
     padding: "10px 20px",
     borderRadius: "8px",
     fontWeight: "600",

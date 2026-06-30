@@ -48,31 +48,31 @@ export default function Dashboard({
   if (publicHosted && !isOwnerAuthenticated) {
     bannerTitle = "Public demo mode";
     bannerText = "Use demo/template generation or self-host SignalFlow to connect your own keys and channels.";
-    bannerColor = "rgba(245, 158, 11, 0.1)";
-    bannerBorder = "rgba(245, 158, 11, 0.25)";
+    bannerColor = "rgba(245, 158, 11, 0.06)";
+    bannerBorder = "rgba(245, 158, 11, 0.2)";
     bannerIcon = "🌐";
-    bannerTextColor = "#f59e0b";
+    bannerTextColor = "#b45309";
   } else if (accessLocked && !isOwnerAuthenticated) {
     bannerTitle = "Private hosted workspace";
     bannerText = "Owner model and social connections are hidden. Enter the owner access key to use protected generation and channel routes.";
-    bannerColor = "rgba(239, 68, 68, 0.1)";
-    bannerBorder = "rgba(239, 68, 68, 0.25)";
+    bannerColor = "rgba(239, 68, 68, 0.06)";
+    bannerBorder = "rgba(239, 68, 68, 0.2)";
     bannerIcon = "🔒";
-    bannerTextColor = "#ef4444";
+    bannerTextColor = "#b91c1c";
   } else if (accessLocked && isOwnerAuthenticated) {
     bannerTitle = "Owner session active";
     bannerText = "Protected generation and connected-channel status are available in this browser session.";
-    bannerColor = "rgba(79, 70, 229, 0.15)";
-    bannerBorder = "rgba(79, 70, 229, 0.3)";
+    bannerColor = "rgba(36, 113, 93, 0.08)";
+    bannerBorder = "rgba(36, 113, 93, 0.25)";
     bannerIcon = "🔑";
-    bannerTextColor = "#818cf8";
+    bannerTextColor = "#24715d";
   } else {
     bannerTitle = "Local-first mode";
     bannerText = "Your projects, package drafts, and cached keys stay in this browser unless you export or connect services.";
-    bannerColor = "rgba(16, 185, 129, 0.12)";
-    bannerBorder = "rgba(16, 185, 129, 0.25)";
+    bannerColor = "rgba(16, 185, 129, 0.06)";
+    bannerBorder = "rgba(16, 185, 129, 0.2)";
     bannerIcon = "💻";
-    bannerTextColor = "#10b981";
+    bannerTextColor = "#15803d";
   }
 
   return (
@@ -113,7 +113,7 @@ export default function Dashboard({
         <span style={{ fontSize: "24px" }}>{bannerIcon}</span>
         <div>
           <h4 style={{ margin: 0, color: bannerTextColor, fontSize: "14px", fontWeight: "700" }}>{bannerTitle}</h4>
-          <p style={{ margin: "4px 0 0 0", color: "#cbd5e1", fontSize: "13px", lineHeight: "1.5" }}>{bannerText}</p>
+          <p style={{ margin: "4px 0 0 0", color: "#59635c", fontSize: "13px", lineHeight: "1.5" }}>{bannerText}</p>
         </div>
       </div>
 
@@ -306,7 +306,7 @@ function getStatusStyle(status) {
     case "posted":
       return { background: "rgba(16, 185, 129, 0.15)", color: "#10b981" };
     case "scheduled":
-      return { background: "rgba(99, 102, 241, 0.15)", color: "#818cf8" };
+      return { background: "rgba(236, 111, 79, 0.12)", color: "#ec6f4f" };
     case "ready":
       return { background: "rgba(56, 189, 248, 0.15)", color: "#38bdf8" };
     case "failed":
@@ -334,12 +334,12 @@ const styles = {
   title: {
     fontSize: "24px",
     fontWeight: "800",
-    color: "#f8fafc",
+    color: "#121612",
     margin: 0
   },
   subtitle: {
     fontSize: "14px",
-    color: "#94a3b8",
+    color: "#59635c",
     margin: "4px 0 0 0"
   },
   projectSelector: {
@@ -349,14 +349,14 @@ const styles = {
   },
   selectorLabel: {
     fontSize: "11px",
-    color: "#64748b",
+    color: "#59635c",
     fontWeight: "700",
     letterSpacing: "0.5px"
   },
   select: {
-    background: "#1e293b",
-    color: "#f1f5f9",
-    border: "1px solid #334155",
+    background: "#ffffff",
+    color: "#121612",
+    border: "1px solid rgba(18, 22, 18, 0.12)",
     padding: "8px 16px",
     borderRadius: "8px",
     outline: "none",
@@ -370,34 +370,36 @@ const styles = {
     gap: "16px"
   },
   statCard: {
-    background: "#151b23",
-    border: "1px solid #212c3d",
+    background: "#ffffff",
+    border: "1px solid rgba(18, 22, 18, 0.08)",
     padding: "20px",
     borderRadius: "16px",
     display: "flex",
     alignItems: "center",
-    gap: "16px"
+    gap: "16px",
+    boxShadow: "0 10px 30px rgba(18, 22, 18, 0.02)"
   },
   statIcon: {
     fontSize: "28px",
     width: "48px",
     height: "48px",
     borderRadius: "12px",
-    background: "rgba(255, 255, 255, 0.03)",
+    background: "rgba(36, 113, 93, 0.06)",
+    color: "#24715d",
     display: "flex",
     alignItems: "center",
     justifyContent: "center"
   },
   statLabel: {
     fontSize: "12px",
-    color: "#94a3b8",
+    color: "#59635c",
     fontWeight: "600",
     marginBottom: "4px"
   },
   statValue: {
     fontSize: "24px",
     fontWeight: "800",
-    color: "#f8fafc"
+    color: "#121612"
   },
   dashboardBody: {
     display: "grid",
@@ -416,13 +418,14 @@ const styles = {
     gap: "24px"
   },
   card: {
-    background: "#151b23",
-    border: "1px solid #212c3d",
+    background: "#ffffff",
+    border: "1px solid rgba(18, 22, 18, 0.08)",
     borderRadius: "16px",
     padding: "24px",
     display: "flex",
     flexDirection: "column",
-    gap: "16px"
+    gap: "16px",
+    boxShadow: "0 10px 30px rgba(18, 22, 18, 0.02)"
   },
   cardHeader: {
     display: "flex",
@@ -432,13 +435,13 @@ const styles = {
   cardTitle: {
     fontSize: "16px",
     fontWeight: "700",
-    color: "#f8fafc",
+    color: "#121612",
     margin: 0
   },
   textLink: {
     background: "transparent",
     border: "none",
-    color: "#6366f1",
+    color: "#ec6f4f",
     fontWeight: "600",
     fontSize: "13px",
     cursor: "pointer",
@@ -454,8 +457,8 @@ const styles = {
     alignItems: "center",
     gap: "14px",
     padding: "16px",
-    background: "rgba(30, 41, 59, 0.2)",
-    border: "1px solid rgba(255, 255, 255, 0.03)",
+    background: "rgba(36, 113, 93, 0.04)",
+    border: "1px solid rgba(18, 22, 18, 0.05)",
     borderRadius: "12px",
     cursor: "pointer",
     textAlign: "left",
@@ -471,11 +474,11 @@ const styles = {
   actionLabel: {
     fontSize: "14px",
     fontWeight: "600",
-    color: "#f1f5f9"
+    color: "#121612"
   },
   actionDesc: {
     fontSize: "11px",
-    color: "#64748b",
+    color: "#59635c",
     marginTop: "2px"
   },
   emptyState: {
@@ -485,11 +488,11 @@ const styles = {
     justifyContent: "center",
     padding: "40px 20px",
     textAlign: "center",
-    color: "#64748b",
+    color: "#59635c",
     gap: "12px"
   },
   primaryBtn: {
-    background: "#6366f1",
+    background: "#24715d",
     color: "#ffffff",
     border: "none",
     padding: "10px 20px",
@@ -508,8 +511,8 @@ const styles = {
     justifyContent: "space-between",
     alignItems: "center",
     padding: "14px 18px",
-    background: "rgba(30, 41, 59, 0.15)",
-    border: "1px solid rgba(255, 255, 255, 0.02)",
+    background: "rgba(18, 22, 18, 0.02)",
+    border: "1px solid rgba(18, 22, 18, 0.04)",
     borderRadius: "12px",
     cursor: "pointer",
     transition: "all 0.2s ease"
@@ -519,8 +522,8 @@ const styles = {
     justifyContent: "space-between",
     alignItems: "center",
     padding: "14px 18px",
-    background: "rgba(30, 41, 59, 0.15)",
-    border: "1px solid rgba(255, 255, 255, 0.02)",
+    background: "rgba(18, 22, 18, 0.02)",
+    border: "1px solid rgba(18, 22, 18, 0.04)",
     borderRadius: "12px"
   },
   pkgInfo: {
@@ -531,11 +534,11 @@ const styles = {
   pkgTitle: {
     fontSize: "14px",
     fontWeight: "600",
-    color: "#e2e8f0"
+    color: "#121612"
   },
   pkgMeta: {
     fontSize: "11px",
-    color: "#64748b"
+    color: "#59635c"
   },
   statusBadge: {
     fontSize: "11px",
@@ -546,19 +549,19 @@ const styles = {
   },
   brandDesc: {
     fontSize: "14px",
-    color: "#94a3b8",
+    color: "#59635c",
     lineHeight: "1.5",
     margin: 0
   },
   brandMetrics: {
     display: "flex",
     gap: "24px",
-    borderTop: "1px solid rgba(255, 255, 255, 0.05)",
+    borderTop: "1px solid rgba(18, 22, 18, 0.08)",
     paddingTop: "16px"
   },
   metricLabel: {
     fontSize: "11px",
-    color: "#64748b",
+    color: "#59635c",
     display: "block",
     fontWeight: "700",
     textTransform: "uppercase",
@@ -566,7 +569,7 @@ const styles = {
   },
   metricVal: {
     fontSize: "13px",
-    color: "#cbd5e1",
+    color: "#121612",
     fontWeight: "600"
   },
   emptyQueue: {
@@ -575,7 +578,7 @@ const styles = {
     alignItems: "center",
     padding: "24px",
     textAlign: "center",
-    background: "rgba(30, 41, 59, 0.1)",
+    background: "rgba(18, 22, 18, 0.02)",
     borderRadius: "12px"
   },
   emptyQueueIcon: {
@@ -584,7 +587,7 @@ const styles = {
   },
   emptyQueueText: {
     fontSize: "13px",
-    color: "#64748b",
+    color: "#59635c",
     margin: 0
   },
   queueItemInfo: {
@@ -601,16 +604,16 @@ const styles = {
   queueChannel: {
     fontSize: "13px",
     fontWeight: "700",
-    color: "#cbd5e1"
+    color: "#121612"
   },
   queueTime: {
     fontSize: "11px",
-    color: "#818cf8",
+    color: "#ec6f4f",
     fontWeight: "600"
   },
   queueSnippet: {
     fontSize: "12px",
-    color: "#94a3b8",
+    color: "#59635c",
     margin: 0,
     whiteSpace: "nowrap",
     overflow: "hidden",
@@ -618,8 +621,8 @@ const styles = {
   },
   failedItem: {
     padding: "12px",
-    background: "rgba(244, 63, 94, 0.05)",
-    border: "1px solid rgba(244, 63, 94, 0.15)",
+    background: "rgba(244, 63, 94, 0.03)",
+    border: "1px solid rgba(244, 63, 94, 0.1)",
     borderRadius: "12px",
     display: "flex",
     flexDirection: "column",
@@ -636,7 +639,7 @@ const styles = {
   },
   failedError: {
     fontSize: "11px",
-    color: "#94a3b8",
+    color: "#59635c",
     textAlign: "right"
   },
   retryBtn: {

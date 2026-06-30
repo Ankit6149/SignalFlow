@@ -241,20 +241,20 @@ const styles = {
   title: {
     fontSize: "24px",
     fontWeight: "800",
-    color: "#f8fafc",
+    color: "#121612",
     margin: 0
   },
   subtitle: {
     fontSize: "14px",
-    color: "#94a3b8",
+    color: "#59635c",
     margin: "4px 0 0 0"
   },
   sectionTitle: {
     fontSize: "16px",
-    fontWeight: "7500",
-    color: "#cbd5e1",
+    fontWeight: "700",
+    color: "#121612",
     margin: "12px 0 0 0",
-    borderBottom: "1px solid rgba(255, 255, 255, 0.05)",
+    borderBottom: "1px solid rgba(18, 22, 18, 0.08)",
     paddingBottom: "10px"
   },
   grid: {
@@ -263,25 +263,25 @@ const styles = {
     gap: "20px"
   },
   card: {
-    background: "#151b23",
-    border: "1px solid #212c3d",
-    borderRadius: "16px",
-    padding: "20px",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "space-between",
-    gap: "16px"
-  },
-  cardManual: {
-    background: "rgba(21, 27, 35, 0.5)",
-    border: "1px solid #1e293b",
+    background: "#ffffff",
+    border: "1px solid rgba(18, 22, 18, 0.08)",
     borderRadius: "16px",
     padding: "20px",
     display: "flex",
     flexDirection: "column",
     justifyContent: "space-between",
     gap: "16px",
-    opacity: 0.85
+    boxShadow: "0 10px 30px rgba(18, 22, 18, 0.02)"
+  },
+  cardManual: {
+    background: "rgba(18, 22, 18, 0.01)",
+    border: "1px solid rgba(18, 22, 18, 0.05)",
+    borderRadius: "16px",
+    padding: "20px",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
+    gap: "16px"
   },
   cardHeader: {
     display: "flex",
@@ -306,18 +306,18 @@ const styles = {
   platformLabel: {
     fontSize: "14px",
     fontWeight: "700",
-    color: "#f8fafc",
+    color: "#121612",
     margin: 0
   },
   badgeApi: {
     fontSize: "10px",
-    color: "#818cf8",
+    color: "#ec6f4f",
     fontWeight: "600",
     textTransform: "uppercase"
   },
   badgeManual: {
     fontSize: "10px",
-    color: "#94a3b8",
+    color: "#59635c",
     fontWeight: "600",
     textTransform: "uppercase"
   },
@@ -329,7 +329,7 @@ const styles = {
   },
   cardBody: {
     fontSize: "13px",
-    color: "#94a3b8",
+    color: "#59635c",
     lineHeight: "1.5"
   },
   profileDetails: {
@@ -343,14 +343,14 @@ const styles = {
   metaText: {
     margin: 0,
     fontSize: "11px",
-    color: "#64748b"
+    color: "#808f85"
   },
   cardFooter: {
     marginTop: "auto"
   },
   connectBtn: {
     width: "100%",
-    background: "#6366f1",
+    background: "#24715d",
     color: "#ffffff",
     border: "none",
     padding: "8px 16px",
@@ -361,9 +361,9 @@ const styles = {
   },
   disconnectBtn: {
     width: "100%",
-    background: "rgba(244, 63, 94, 0.08)",
+    background: "rgba(244, 63, 94, 0.06)",
     border: "1px solid rgba(244, 63, 94, 0.15)",
-    color: "#f43f5e",
+    color: "#e11d48",
     padding: "8px 16px",
     borderRadius: "8px",
     fontWeight: "600",
@@ -372,32 +372,32 @@ const styles = {
   },
   manualActionText: {
     fontSize: "12px",
-    color: "#64748b",
+    color: "#808f85",
     fontWeight: "600"
   },
   emptyLogs: {
-    background: "#151b23",
-    border: "1px dashed #212c3d",
+    background: "#ffffff",
+    border: "1px dashed rgba(18, 22, 18, 0.15)",
     borderRadius: "16px",
     padding: "40px 20px",
     textAlign: "center",
-    color: "#64748b",
+    color: "#59635c",
     fontSize: "14px"
   },
   logsTable: {
-    background: "#151b23",
-    border: "1px solid #212c3d",
+    background: "#ffffff",
+    border: "1px solid rgba(18, 22, 18, 0.08)",
     borderRadius: "14px",
     overflow: "hidden"
   },
   tableHeader: {
     display: "grid",
     gridTemplateColumns: "150px 1fr 120px 180px 120px",
-    background: "#1e293b",
+    background: "rgba(18, 22, 18, 0.03)",
     padding: "12px 20px",
     fontSize: "12px",
-    fontWeight: "7500",
-    color: "#cbd5e1"
+    fontWeight: "700",
+    color: "#121612"
   },
   th: {
     textAlign: "left"
@@ -410,15 +410,13 @@ const styles = {
     display: "grid",
     gridTemplateColumns: "150px 1fr 120px 180px 120px",
     padding: "14px 20px",
-    borderBottom: "1px solid rgba(255, 255, 255, 0.03)",
+    borderBottom: "1px solid rgba(18, 22, 18, 0.04)",
     fontSize: "13px",
-    color: "#cbd5e1",
+    color: "#121612",
     alignItems: "center",
     cursor: "pointer",
-    transition: "background 0.2s ease",
-    ":hover": {
-      background: "rgba(255, 255, 255, 0.02)"
-    }
+    background: "transparent",
+    transition: "background 0.2s ease"
   },
   td: {
     whiteSpace: "nowrap",
@@ -429,7 +427,7 @@ const styles = {
     whiteSpace: "nowrap",
     overflow: "hidden",
     textOverflow: "ellipsis",
-    color: "#94a3b8",
+    color: "#59635c",
     paddingRight: "16px"
   },
   logBadge: {
@@ -439,11 +437,11 @@ const styles = {
     borderRadius: "4px"
   },
   logLink: {
-    color: "#6366f1",
+    color: "#ec6f4f",
     fontWeight: "600"
   },
   simulatedText: {
-    color: "#64748b",
+    color: "#808f85",
     fontSize: "12px"
   },
   modalOverlay: {
@@ -452,7 +450,8 @@ const styles = {
     left: 0,
     right: 0,
     bottom: 0,
-    background: "rgba(0, 0, 0, 0.8)",
+    background: "rgba(18, 22, 18, 0.4)",
+    backdropFilter: "blur(4px)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -460,8 +459,8 @@ const styles = {
     padding: "20px"
   },
   modalContent: {
-    background: "#0b0f14",
-    border: "1px solid #212c3d",
+    background: "#ffffff",
+    border: "1px solid rgba(18, 22, 18, 0.1)",
     borderRadius: "16px",
     width: "100%",
     maxWidth: "600px",
@@ -469,16 +468,17 @@ const styles = {
     position: "relative",
     display: "flex",
     flexDirection: "column",
-    gap: "16px"
+    gap: "16px",
+    boxShadow: "0 24px 60px rgba(18, 22, 18, 0.1)"
   },
   closeBtn: {
     position: "absolute",
     top: "20px",
     right: "20px",
-    background: "rgba(255, 255, 255, 0.05)",
+    background: "rgba(18, 22, 18, 0.05)",
     border: "none",
     borderRadius: "8px",
-    color: "#cbd5e1",
+    color: "#121612",
     padding: "6px 12px",
     fontSize: "12px",
     cursor: "pointer"
@@ -486,19 +486,19 @@ const styles = {
   modalTitle: {
     fontSize: "18px",
     fontWeight: "800",
-    color: "#f8fafc",
+    color: "#121612",
     margin: 0
   },
   modalMetaGrid: {
     display: "grid",
     gridTemplateColumns: "1fr 1fr",
     gap: "12px",
-    background: "rgba(255, 255, 255, 0.02)",
+    background: "rgba(18, 22, 18, 0.02)",
     padding: "14px",
     borderRadius: "8px",
-    border: "1px solid rgba(255, 255, 255, 0.05)",
+    border: "1px solid rgba(18, 22, 18, 0.05)",
     fontSize: "13px",
-    color: "#94a3b8"
+    color: "#59635c"
   },
   logBodyBox: {
     display: "flex",
@@ -508,15 +508,15 @@ const styles = {
   logSectionHeader: {
     fontSize: "14px",
     fontWeight: "700",
-    color: "#cbd5e1",
+    color: "#121612",
     margin: 0
   },
   logContent: {
-    background: "#151b23",
+    background: "rgba(18, 22, 18, 0.02)",
     padding: "16px",
     borderRadius: "8px",
-    fontSize: "13px",
-    color: "#cbd5e1",
+    border: "1px solid rgba(18, 22, 18, 0.06)",
+    color: "#121612",
     overflowX: "auto",
     maxHeight: "220px",
     whiteSpace: "pre-wrap"

@@ -10,6 +10,7 @@ import ChannelsConnector from "../components/ChannelsConnector";
 import SettingsManager from "../components/SettingsManager";
 import { storageService } from "../lib/storageService";
 import { PRODUCT_NAME, MODEL_ROUTES_META } from "../lib/config";
+import LandingPage from "../components/LandingPage";
 
 const API_BASE = "/api";
 const ACCESS_TOKEN_STORAGE_KEY = "signalflow_owner_token";
@@ -35,6 +36,20 @@ export default function Home() {
   const [accessKey, setAccessKey] = useState("");
   const [accessMessage, setAccessMessage] = useState("");
   const [error, setError] = useState("");
+  const [showLanding, setShowLanding] = useState(false);
+
+  // Detect localhost to bypass landing
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const isLocalhost = 
+        window.location.hostname === "localhost" || 
+        window.location.hostname === "127.0.0.1" || 
+        window.location.hostname.startsWith("192.168.");
+      if (!isLocalhost) {
+        setShowLanding(true);
+      }
+    }
+  }, []);
 
   // Provider Connection Test States
   const [isTestingSettings, setIsTestingSettings] = useState(false);
@@ -518,6 +533,10 @@ export default function Home() {
     }
   }
 
+  if (showLanding) {
+    return <LandingPage onLaunch={() => setShowLanding(false)} />;
+  }
+
   return (
     <div style={styles.appContainer}>
       {accessLocked && !accessToken && !publicHosted ? (
@@ -651,27 +670,27 @@ const styles = {
     display: "flex",
     width: "100vw",
     height: "100vh",
-    background: "#090c10",
-    color: "#e2e8f0"
+    background: "transparent",
+    color: "#121612"
   },
   mainContent: {
     flexGrow: 1,
     height: "100%",
     overflowY: "auto",
-    background: "#090c10"
+    background: "transparent"
   },
   lockPanel: {
     margin: "auto",
     maxWidth: "400px",
-    background: "#151b23",
-    border: "1px solid #212c3d",
+    background: "#ffffff",
+    border: "1px solid rgba(18, 22, 18, 0.08)",
     padding: "36px",
     borderRadius: "16px",
     display: "flex",
     flexDirection: "column",
     gap: "24px",
     textAlign: "center",
-    boxShadow: "0 20px 40px rgba(0,0,0,0.5)"
+    boxShadow: "0 20px 40px rgba(18, 22, 18, 0.05)"
   },
   lockHeader: {
     display: "flex",
@@ -684,12 +703,12 @@ const styles = {
   lockTitle: {
     fontSize: "18px",
     fontWeight: "800",
-    color: "#f8fafc",
+    color: "#121612",
     margin: 0
   },
   lockDesc: {
     fontSize: "13px",
-    color: "#94a3b8",
+    color: "#59635c",
     lineHeight: "1.5",
     margin: 0
   },
@@ -699,9 +718,9 @@ const styles = {
     gap: "12px"
   },
   lockInput: {
-    background: "#0b0f14",
-    border: "1px solid #212c3d",
-    color: "#fff",
+    background: "#ffffff",
+    border: "1px solid rgba(18, 22, 18, 0.12)",
+    color: "#121612",
     padding: "12px",
     borderRadius: "8px",
     outline: "none",
@@ -709,7 +728,7 @@ const styles = {
     textAlign: "center"
   },
   lockBtn: {
-    background: "#6366f1",
+    background: "#24715d",
     color: "#fff",
     border: "none",
     padding: "12px",

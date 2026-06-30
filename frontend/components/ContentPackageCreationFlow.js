@@ -662,10 +662,11 @@ const styles = {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    background: "#151b23",
-    border: "1px solid #212c3d",
+    background: "#ffffff",
+    border: "1px solid rgba(18, 22, 18, 0.08)",
     padding: "20px",
-    borderRadius: "16px"
+    borderRadius: "16px",
+    boxShadow: "0 10px 30px rgba(18, 22, 18, 0.02)"
   },
   stepItem: {
     display: "flex",
@@ -676,8 +677,8 @@ const styles = {
     width: "30px",
     height: "30px",
     borderRadius: "50%",
-    background: "#1e293b",
-    color: "#64748b",
+    background: "rgba(18, 22, 18, 0.04)",
+    color: "#59635c",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -685,38 +686,39 @@ const styles = {
     fontSize: "13px"
   },
   stepCircleActive: {
-    background: "#6366f1",
+    background: "#ec6f4f",
     color: "#fff"
   },
   stepCircleDone: {
-    background: "rgba(16, 185, 129, 0.15)",
-    color: "#10b981",
-    border: "1px solid rgba(16, 185, 129, 0.3)"
+    background: "rgba(36, 113, 93, 0.1)",
+    color: "#24715d",
+    border: "1px solid rgba(36, 113, 93, 0.2)"
   },
   stepLabel: {
     fontSize: "13px",
-    color: "#64748b",
+    color: "#59635c",
     fontWeight: "500"
   },
   stepLabelActive: {
-    color: "#e2e8f0",
+    color: "#121612",
     fontWeight: "700"
   },
   mainCard: {
-    background: "#151b23",
-    border: "1px solid #212c3d",
+    background: "#ffffff",
+    border: "1px solid rgba(18, 22, 18, 0.08)",
     borderRadius: "16px",
-    padding: "32px"
+    padding: "32px",
+    boxShadow: "0 10px 30px rgba(18, 22, 18, 0.02)"
   },
   sectionTitle: {
     fontSize: "18px",
-    fontWeight: "8500",
-    color: "#f8fafc",
+    fontWeight: "800",
+    color: "#121612",
     margin: "0 0 8px 0"
   },
   sectionDesc: {
     fontSize: "14px",
-    color: "#94a3b8",
+    color: "#59635c",
     margin: "0 0 24px 0",
     lineHeight: "1.5"
   },
@@ -728,8 +730,8 @@ const styles = {
   },
   sourceCard: {
     padding: "20px",
-    background: "rgba(30, 41, 59, 0.2)",
-    border: "1px solid rgba(255, 255, 255, 0.03)",
+    background: "rgba(18, 22, 18, 0.02)",
+    border: "1px solid rgba(18, 22, 18, 0.06)",
     borderRadius: "14px",
     cursor: "pointer",
     display: "flex",
@@ -738,8 +740,8 @@ const styles = {
     transition: "all 0.2s ease"
   },
   sourceCardSelected: {
-    borderColor: "#6366f1",
-    background: "rgba(99, 102, 241, 0.08)"
+    borderColor: "#24715d",
+    background: "rgba(36, 113, 93, 0.08)"
   },
   sourceIcon: {
     fontSize: "24px"
@@ -752,23 +754,23 @@ const styles = {
   sourceLabel: {
     fontSize: "14px",
     fontWeight: "700",
-    color: "#f1f5f9"
+    color: "#121612"
   },
   sourceDesc: {
     fontSize: "11px",
-    color: "#64748b",
+    color: "#59635c",
     lineHeight: "1.4"
   },
   sourcePanel: {
-    background: "#0b0f14",
+    background: "rgba(18, 22, 18, 0.02)",
     borderRadius: "14px",
     padding: "24px",
-    border: "1px solid #212c3d",
+    border: "1px solid rgba(18, 22, 18, 0.06)",
     marginBottom: "24px"
   },
   panelTip: {
     fontSize: "13px",
-    color: "#94a3b8",
+    color: "#59635c",
     margin: 0
   },
   recorderWrapper: {
@@ -795,8 +797,8 @@ const styles = {
     cursor: "pointer"
   },
   stopBtn: {
-    background: "#334155",
-    color: "#cbd5e1",
+    background: "rgba(18, 22, 18, 0.08)",
+    color: "#121612",
     border: "none",
     padding: "10px 20px",
     borderRadius: "8px",
@@ -804,7 +806,7 @@ const styles = {
     cursor: "pointer"
   },
   screenshotBtn: {
-    background: "#38bdf8",
+    background: "#24715d",
     color: "#fff",
     border: "none",
     padding: "10px 20px",
@@ -817,17 +819,17 @@ const styles = {
     alignItems: "center",
     gap: "8px",
     fontSize: "13px",
-    color: "#cbd5e1",
+    color: "#59635c",
     cursor: "pointer",
     marginTop: "4px"
   },
   statusRow: {
     fontSize: "13px",
-    color: "#94a3b8"
+    color: "#59635c"
   },
   statusText: {
     fontWeight: "700",
-    color: "#818cf8"
+    color: "#24715d"
   },
   errorText: {
     fontSize: "13px",
@@ -837,10 +839,10 @@ const styles = {
   previewBox: {
     width: "100%",
     aspectRatio: "16/9",
-    background: "#1e293b",
+    background: "#121612",
     borderRadius: "8px",
     overflow: "hidden",
-    border: "1px solid #334155"
+    border: "1px solid rgba(18, 22, 18, 0.08)"
   },
   videoPreview: {
     width: "100%",
@@ -849,17 +851,17 @@ const styles = {
   },
   recordingNotesBox: {
     marginTop: "16px",
-    borderTop: "1px solid rgba(255, 255, 255, 0.05)",
+    borderTop: "1px solid rgba(18, 22, 18, 0.08)",
     paddingTop: "16px"
   },
   recordingNotesTitle: {
     fontSize: "14px",
     fontWeight: "700",
-    color: "#e2e8f0",
+    color: "#121612",
     margin: "0 0 12px 0"
   },
   fileUploadBox: {
-    border: "2px dashed #334155",
+    border: "2px dashed rgba(18, 22, 18, 0.2)",
     borderRadius: "12px",
     padding: "40px 20px",
     textAlign: "center",
@@ -870,19 +872,19 @@ const styles = {
     flexDirection: "column",
     alignItems: "center",
     gap: "12px",
-    color: "#94a3b8",
+    color: "#59635c",
     fontSize: "14px",
     cursor: "pointer"
   },
   assetsList: {
     marginTop: "20px",
-    borderTop: "1px solid rgba(255, 255, 255, 0.05)",
+    borderTop: "1px solid rgba(18, 22, 18, 0.08)",
     paddingTop: "16px"
   },
   assetsListTitle: {
     fontSize: "14px",
     fontWeight: "700",
-    color: "#f1f5f9",
+    color: "#121612",
     margin: "0 0 12px 0"
   },
   assetsGrid: {
@@ -895,9 +897,9 @@ const styles = {
     alignItems: "center",
     gap: "12px",
     padding: "8px 16px",
-    background: "rgba(255, 255, 255, 0.03)",
+    background: "rgba(18, 22, 18, 0.02)",
     borderRadius: "8px",
-    border: "1px solid rgba(255, 255, 255, 0.05)"
+    border: "1px solid rgba(18, 22, 18, 0.06)"
   },
   assetCategoryIcon: {
     fontSize: "18px"
@@ -911,7 +913,7 @@ const styles = {
   assetName: {
     fontSize: "13px",
     fontWeight: "600",
-    color: "#cbd5e1"
+    color: "#121612"
   },
   assetSize: {
     fontSize: "11px",
@@ -943,23 +945,23 @@ const styles = {
   label: {
     fontSize: "12px",
     fontWeight: "600",
-    color: "#cbd5e1"
+    color: "#121612"
   },
   input: {
-    background: "#0b0f14",
-    border: "1px solid #212c3d",
+    background: "#ffffff",
+    border: "1px solid rgba(18, 22, 18, 0.12)",
     borderRadius: "8px",
     padding: "10px 14px",
-    color: "#f8fafc",
+    color: "#121612",
     outline: "none",
     fontSize: "14px"
   },
   textarea: {
-    background: "#0b0f14",
-    border: "1px solid #212c3d",
+    background: "#ffffff",
+    border: "1px solid rgba(18, 22, 18, 0.12)",
     borderRadius: "8px",
     padding: "10px 14px",
-    color: "#f8fafc",
+    color: "#121612",
     outline: "none",
     fontSize: "14px",
     resize: "vertical"
@@ -968,17 +970,17 @@ const styles = {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
     gap: "10px",
-    background: "#0b0f14",
+    background: "#ffffff",
     padding: "16px",
     borderRadius: "8px",
-    border: "1px solid #212c3d"
+    border: "1px solid rgba(18, 22, 18, 0.12)"
   },
   checkboxLabel: {
     display: "flex",
     alignItems: "center",
     gap: "8px",
     fontSize: "13px",
-    color: "#cbd5e1",
+    color: "#121612",
     cursor: "pointer"
   },
   checkbox: {
@@ -989,19 +991,19 @@ const styles = {
     alignItems: "center",
     gap: "8px",
     padding: "12px 16px",
-    background: "rgba(99, 102, 241, 0.08)",
-    border: "1px solid rgba(99, 102, 241, 0.15)",
+    background: "rgba(36, 113, 93, 0.06)",
+    border: "1px solid rgba(36, 113, 93, 0.12)",
     borderRadius: "8px"
   },
   indicatorLabel: {
     fontSize: "12px",
-    color: "#94a3b8",
+    color: "#59635c",
     fontWeight: "500"
   },
   indicatorVal: {
     fontSize: "13px",
     fontWeight: "700",
-    color: "#818cf8"
+    color: "#24715d"
   },
   errorAlert: {
     padding: "16px",
@@ -1015,13 +1017,13 @@ const styles = {
     display: "flex",
     gap: "12px",
     marginTop: "12px",
-    borderTop: "1px solid rgba(255, 255, 255, 0.05)",
+    borderTop: "1px solid rgba(18, 22, 18, 0.08)",
     paddingTop: "20px"
   },
   cancelBtn: {
     background: "transparent",
-    border: "1px solid rgba(255, 255, 255, 0.1)",
-    color: "#cbd5e1",
+    border: "1px solid rgba(18, 22, 18, 0.15)",
+    color: "#121612",
     padding: "10px 20px",
     borderRadius: "8px",
     fontWeight: "600",

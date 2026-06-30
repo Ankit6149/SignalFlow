@@ -420,16 +420,16 @@ const styles = {
   title: {
     fontSize: "24px",
     fontWeight: "800",
-    color: "#f8fafc",
+    color: "#121612",
     margin: 0
   },
   subtitle: {
     fontSize: "14px",
-    color: "#94a3b8",
+    color: "#59635c",
     margin: "4px 0 0 0"
   },
   primaryBtn: {
-    background: "#6366f1",
+    background: "#24715d",
     color: "#ffffff",
     border: "none",
     padding: "10px 20px",
@@ -439,9 +439,9 @@ const styles = {
     cursor: "pointer"
   },
   secondaryBtn: {
-    background: "rgba(255, 255, 255, 0.05)",
-    border: "1px solid rgba(255, 255, 255, 0.1)",
-    color: "#cbd5e1",
+    background: "rgba(18, 22, 18, 0.04)",
+    border: "1px solid rgba(18, 22, 18, 0.1)",
+    color: "#121612",
     padding: "8px 16px",
     borderRadius: "8px",
     fontWeight: "600",
@@ -449,9 +449,9 @@ const styles = {
     cursor: "pointer"
   },
   activateBtn: {
-    background: "rgba(16, 185, 129, 0.15)",
-    border: "1px solid rgba(16, 185, 129, 0.2)",
-    color: "#10b981",
+    background: "rgba(36, 113, 93, 0.1)",
+    border: "1px solid rgba(36, 113, 93, 0.2)",
+    color: "#24715d",
     padding: "8px 16px",
     borderRadius: "8px",
     fontWeight: "600",
@@ -459,9 +459,9 @@ const styles = {
     cursor: "pointer"
   },
   deleteBtn: {
-    background: "rgba(244, 63, 94, 0.15)",
-    border: "1px solid rgba(244, 63, 94, 0.2)",
-    color: "#f43f5e",
+    background: "rgba(244, 63, 94, 0.06)",
+    border: "1px solid rgba(244, 63, 94, 0.15)",
+    color: "#e11d48",
     padding: "8px 16px",
     borderRadius: "8px",
     fontWeight: "600",
@@ -470,8 +470,8 @@ const styles = {
   },
   cancelBtn: {
     background: "transparent",
-    border: "1px solid rgba(255, 255, 255, 0.1)",
-    color: "#94a3b8",
+    border: "1px solid rgba(18, 22, 18, 0.15)",
+    color: "#121612",
     padding: "10px 20px",
     borderRadius: "8px",
     fontWeight: "600",
@@ -502,15 +502,15 @@ const styles = {
   },
   listItem: {
     padding: "16px",
-    background: "#151b23",
-    border: "1px solid #212c3d",
+    background: "#ffffff",
+    border: "1px solid rgba(18, 22, 18, 0.08)",
     borderRadius: "12px",
     cursor: "pointer",
     transition: "all 0.2s ease"
   },
   listItemSelected: {
-    borderColor: "#6366f1",
-    background: "rgba(99, 102, 241, 0.05)"
+    borderColor: "#24715d",
+    background: "rgba(36, 113, 93, 0.06)"
   },
   listInfo: {
     display: "flex",
@@ -525,11 +525,11 @@ const styles = {
   listName: {
     fontSize: "14px",
     fontWeight: "700",
-    color: "#f1f5f9"
+    color: "#121612"
   },
   activeBadge: {
-    background: "rgba(16, 185, 129, 0.15)",
-    color: "#10b981",
+    background: "rgba(36, 113, 93, 0.1)",
+    color: "#24715d",
     fontSize: "10px",
     fontWeight: "700",
     padding: "2px 6px",
@@ -538,34 +538,35 @@ const styles = {
   },
   listDesc: {
     fontSize: "12px",
-    color: "#64748b",
+    color: "#59635c",
     lineHeight: "1.4"
   },
   card: {
-    background: "#151b23",
-    border: "1px solid #212c3d",
+    background: "#ffffff",
+    border: "1px solid rgba(18, 22, 18, 0.08)",
     borderRadius: "16px",
     padding: "32px",
     display: "flex",
     flexDirection: "column",
-    gap: "24px"
+    gap: "24px",
+    boxShadow: "0 10px 30px rgba(18, 22, 18, 0.02)"
   },
   cardHeader: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "start",
-    borderBottom: "1px solid rgba(255, 255, 255, 0.05)",
+    borderBottom: "1px solid rgba(18, 22, 18, 0.08)",
     paddingBottom: "20px"
   },
   cardName: {
     fontSize: "20px",
     fontWeight: "800",
-    color: "#f8fafc",
+    color: "#121612",
     margin: 0
   },
   cardLink: {
     fontSize: "13px",
-    color: "#6366f1",
+    color: "#ec6f4f",
     marginTop: "4px",
     display: "inline-block"
   },
@@ -586,14 +587,14 @@ const styles = {
   },
   detailLabel: {
     fontSize: "11px",
-    color: "#64748b",
+    color: "#59635c",
     fontWeight: "700",
     textTransform: "uppercase",
     letterSpacing: "0.5px"
   },
   detailVal: {
     fontSize: "14px",
-    color: "#cbd5e1",
+    color: "#121612",
     lineHeight: "1.5",
     margin: 0
   },
@@ -604,32 +605,33 @@ const styles = {
     marginTop: "4px"
   },
   tag: {
-    background: "rgba(99, 102, 241, 0.15)",
-    color: "#818cf8",
+    background: "rgba(36, 113, 93, 0.1)",
+    color: "#24715d",
     fontSize: "12px",
     fontWeight: "600",
     padding: "4px 10px",
     borderRadius: "6px"
   },
   tagGoal: {
-    background: "rgba(56, 189, 248, 0.15)",
-    color: "#38bdf8",
+    background: "rgba(236, 111, 79, 0.1)",
+    color: "#ec6f4f",
     fontSize: "12px",
     fontWeight: "600",
     padding: "4px 10px",
     borderRadius: "6px"
   },
   noSelection: {
-    background: "#151b23",
-    border: "1px dashed #212c3d",
+    background: "#ffffff",
+    border: "1px dashed rgba(18, 22, 18, 0.15)",
     borderRadius: "16px",
     padding: "60px 20px",
     textAlign: "center",
-    color: "#64748b",
+    color: "#59635c",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    gap: "16px"
+    gap: "16px",
+    boxShadow: "0 10px 30px rgba(18, 22, 18, 0.02)"
   },
   form: {
     display: "flex",
@@ -639,7 +641,7 @@ const styles = {
   formTitle: {
     fontSize: "18px",
     fontWeight: "800",
-    color: "#f8fafc",
+    color: "#121612",
     margin: "0 0 8px 0"
   },
   formRow: {
@@ -656,23 +658,23 @@ const styles = {
   label: {
     fontSize: "12px",
     fontWeight: "600",
-    color: "#cbd5e1"
+    color: "#121612"
   },
   input: {
-    background: "#0b0f14",
-    border: "1px solid #212c3d",
+    background: "#ffffff",
+    border: "1px solid rgba(18, 22, 18, 0.12)",
     borderRadius: "8px",
     padding: "10px 14px",
-    color: "#f8fafc",
+    color: "#121612",
     outline: "none",
     fontSize: "14px"
   },
   textarea: {
-    background: "#0b0f14",
-    border: "1px solid #212c3d",
+    background: "#ffffff",
+    border: "1px solid rgba(18, 22, 18, 0.12)",
     borderRadius: "8px",
     padding: "10px 14px",
-    color: "#f8fafc",
+    color: "#121612",
     outline: "none",
     fontSize: "14px",
     resize: "vertical"
@@ -681,17 +683,17 @@ const styles = {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
     gap: "10px",
-    background: "#0b0f14",
+    background: "#ffffff",
     padding: "16px",
     borderRadius: "8px",
-    border: "1px solid #212c3d"
+    border: "1px solid rgba(18, 22, 18, 0.12)"
   },
   checkboxLabel: {
     display: "flex",
     alignItems: "center",
     gap: "8px",
     fontSize: "13px",
-    color: "#cbd5e1",
+    color: "#121612",
     cursor: "pointer"
   },
   checkbox: {
@@ -701,7 +703,7 @@ const styles = {
     display: "flex",
     gap: "12px",
     marginTop: "12px",
-    borderTop: "1px solid rgba(255, 255, 255, 0.05)",
+    borderTop: "1px solid rgba(18, 22, 18, 0.08)",
     paddingTop: "20px"
   }
 };

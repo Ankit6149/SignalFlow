@@ -58,8 +58,8 @@ export default function Sidebar({ view, setView, activeProjectName, aiStatus }) 
 const styles = {
   sidebar: {
     width: "260px",
-    background: "#0b0f14",
-    borderRight: "1px solid #1e293b",
+    background: "#121612",
+    borderRight: "1px solid rgba(255, 255, 255, 0.05)",
     display: "flex",
     flexDirection: "column",
     padding: "24px 16px",
@@ -79,14 +79,14 @@ const styles = {
     width: "36px",
     height: "36px",
     borderRadius: "8px",
-    background: "linear-gradient(135deg, #6366f1 0%, #a855f7 100%)",
+    background: "linear-gradient(135deg, #24715d 0%, #ec6f4f 100%)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     color: "#fff",
     fontWeight: "bold",
     fontSize: "16px",
-    boxShadow: "0 0 15px rgba(99, 102, 241, 0.4)"
+    boxShadow: "0 0 15px rgba(36, 113, 93, 0.4)"
   },
   brandName: {
     fontSize: "18px",
@@ -101,7 +101,7 @@ const styles = {
     fontWeight: "500"
   },
   activeBrandWidget: {
-    background: "rgba(30, 41, 59, 0.4)",
+    background: "rgba(255, 255, 255, 0.04)",
     border: "1px solid rgba(255, 255, 255, 0.05)",
     borderRadius: "12px",
     padding: "12px",
@@ -109,7 +109,7 @@ const styles = {
   },
   widgetLabel: {
     fontSize: "10px",
-    color: "#64748b",
+    color: "#808f85",
     fontWeight: "700",
     letterSpacing: "1px",
     marginBottom: "4px"
@@ -117,7 +117,7 @@ const styles = {
   widgetValue: {
     fontSize: "13px",
     fontWeight: "600",
-    color: "#e2e8f0",
+    color: "#f8fafc",
     whiteSpace: "nowrap",
     overflow: "hidden",
     textOverflow: "ellipsis"
@@ -144,9 +144,9 @@ const styles = {
     transition: "all 0.2s ease"
   },
   navButtonActive: {
-    background: "rgba(99, 102, 241, 0.15)",
-    color: "#818cf8",
-    fontWeight: "600"
+    background: "#24715d",
+    color: "#ffffff",
+    fontWeight: "700"
   },
   navIcon: {
     fontSize: "16px",
@@ -158,7 +158,7 @@ const styles = {
   footerWidget: {
     marginTop: "auto",
     padding: "12px",
-    background: "rgba(15, 23, 42, 0.6)",
+    background: "rgba(0, 0, 0, 0.2)",
     border: "1px solid rgba(255, 255, 255, 0.03)",
     borderRadius: "12px"
   },

@@ -484,18 +484,18 @@ const styles = {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    borderBottom: "1px solid rgba(255, 255, 255, 0.05)",
+    borderBottom: "1px solid rgba(18, 22, 18, 0.08)",
     paddingBottom: "16px"
   },
   title: {
     fontSize: "18px",
     fontWeight: "800",
-    color: "#f8fafc",
+    color: "#121612",
     margin: 0
   },
   subtitle: {
     fontSize: "13px",
-    color: "#94a3b8",
+    color: "#59635c",
     margin: "4px 0 0 0"
   },
   btnGroup: {
@@ -503,7 +503,7 @@ const styles = {
     gap: "10px"
   },
   primaryBtn: {
-    background: "#6366f1",
+    background: "#24715d",
     color: "#ffffff",
     border: "none",
     padding: "8px 16px",
@@ -514,8 +514,8 @@ const styles = {
   },
   cancelBtn: {
     background: "transparent",
-    border: "1px solid rgba(255, 255, 255, 0.1)",
-    color: "#cbd5e1",
+    border: "1px solid rgba(18, 22, 18, 0.15)",
+    color: "#121612",
     padding: "8px 16px",
     borderRadius: "8px",
     fontWeight: "600",
@@ -538,36 +538,37 @@ const styles = {
     alignItems: "center",
     gap: "12px",
     padding: "10px 14px",
-    background: "rgba(30, 41, 59, 0.2)",
+    background: "rgba(18, 22, 18, 0.04)",
     border: "none",
     borderRadius: "8px",
-    color: "#cbd5e1",
+    color: "#59635c",
     cursor: "pointer",
     textAlign: "left",
     fontSize: "13px",
     transition: "all 0.2s ease"
   },
   tabBtnActive: {
-    background: "rgba(99, 102, 241, 0.12)",
+    background: "rgba(36, 113, 93, 0.1)",
     fontWeight: "700",
-    color: "#818cf8"
+    color: "#24715d"
   },
   tabLabel: {
     flexGrow: 1
   },
   divider: {
     fontSize: "10px",
-    color: "#64748b",
+    color: "#59635c",
     fontWeight: "700",
     textTransform: "uppercase",
     letterSpacing: "1px",
     margin: "16px 0 6px 6px"
   },
   previewCol: {
-    background: "#0b0f14",
-    border: "1px solid #212c3d",
+    background: "#ffffff",
+    border: "1px solid rgba(18, 22, 18, 0.08)",
     borderRadius: "14px",
-    padding: "24px"
+    padding: "24px",
+    boxShadow: "0 10px 30px rgba(18, 22, 18, 0.02)"
   },
   previewWrapper: {
     width: "100%",
@@ -576,11 +577,11 @@ const styles = {
   },
   cardTextarea: {
     width: "100%",
-    background: "#151b23",
-    border: "1px solid #212c3d",
+    background: "#ffffff",
+    border: "1px solid rgba(18, 22, 18, 0.12)",
     borderRadius: "8px",
     padding: "12px",
-    color: "#cbd5e1",
+    color: "#121612",
     fontSize: "14px",
     lineHeight: "1.5",
     outline: "none",
@@ -692,9 +693,9 @@ const styles = {
   },
   addTweetBtn: {
     alignSelf: "flex-start",
-    background: "rgba(99, 102, 241, 0.15)",
-    border: "1px solid rgba(99, 102, 241, 0.2)",
-    color: "#818cf8",
+    background: "rgba(36, 113, 93, 0.1)",
+    border: "1px solid rgba(36, 113, 93, 0.2)",
+    color: "#24715d",
     padding: "8px 16px",
     borderRadius: "8px",
     fontWeight: "600",
@@ -804,24 +805,24 @@ const styles = {
     padding: "8px"
   },
   documentCard: {
-    background: "#151b23",
+    background: "#ffffff",
     borderRadius: "12px",
     padding: "24px",
-    border: "1px solid #212c3d"
+    border: "1px solid rgba(18, 22, 18, 0.08)"
   },
   docTitle: {
     fontSize: "16px",
-    fontWeight: "7500",
-    color: "#f8fafc",
+    fontWeight: "700",
+    color: "#121612",
     margin: "0 0 16px 0"
   },
   newsletterHeader: {
-    background: "rgba(255, 255, 255, 0.03)",
+    background: "rgba(18, 22, 18, 0.02)",
     padding: "12px",
     borderRadius: "8px",
-    border: "1px solid rgba(255, 255, 255, 0.05)",
+    border: "1px solid rgba(18, 22, 18, 0.05)",
     fontSize: "13px",
-    color: "#cbd5e1",
+    color: "#121612",
     display: "flex",
     flexDirection: "column",
     gap: "6px",
@@ -832,11 +833,11 @@ const styles = {
     gap: "12px",
     justifyContent: "center",
     marginTop: "24px",
-    borderTop: "1px solid rgba(255, 255, 255, 0.05)",
+    borderTop: "1px solid rgba(18, 22, 18, 0.08)",
     paddingTop: "20px"
   },
   actionBtnPrimary: {
-    background: "#6366f1",
+    background: "#ec6f4f",
     color: "#fff",
     border: "none",
     padding: "10px 20px",
@@ -846,9 +847,9 @@ const styles = {
     cursor: "pointer"
   },
   actionBtnSecondary: {
-    background: "rgba(255, 255, 255, 0.05)",
-    border: "1px solid rgba(255, 255, 255, 0.1)",
-    color: "#cbd5e1",
+    background: "rgba(18, 22, 18, 0.04)",
+    border: "1px solid rgba(18, 22, 18, 0.1)",
+    color: "#121612",
     padding: "10px 20px",
     borderRadius: "8px",
     fontWeight: "600",
@@ -861,7 +862,7 @@ const styles = {
     left: 0,
     right: 0,
     bottom: 0,
-    background: "rgba(0, 0, 0, 0.75)",
+    background: "rgba(18, 22, 18, 0.45)",
     backdropFilter: "blur(4px)",
     display: "flex",
     alignItems: "center",
@@ -870,20 +871,21 @@ const styles = {
     padding: "20px"
   },
   modalContentSmall: {
-    background: "#0b0f14",
-    border: "1px solid #212c3d",
+    background: "#ffffff",
+    border: "1px solid rgba(18, 22, 18, 0.1)",
     borderRadius: "16px",
     width: "100%",
     maxWidth: "400px",
     padding: "32px",
     display: "flex",
     flexDirection: "column",
-    gap: "20px"
+    gap: "20px",
+    boxShadow: "0 24px 60px rgba(18, 22, 18, 0.1)"
   },
   modalTitle: {
     fontSize: "18px",
     fontWeight: "800",
-    color: "#f8fafc",
+    color: "#121612",
     margin: 0
   },
   formCol: {
@@ -894,14 +896,14 @@ const styles = {
   label: {
     fontSize: "12px",
     fontWeight: "600",
-    color: "#cbd5e1"
+    color: "#121612"
   },
   input: {
-    background: "#151b23",
-    border: "1px solid #212c3d",
+    background: "#ffffff",
+    border: "1px solid rgba(18, 22, 18, 0.12)",
     borderRadius: "8px",
     padding: "10px 14px",
-    color: "#f8fafc",
+    color: "#121612",
     outline: "none",
     fontSize: "14px"
   },
@@ -909,11 +911,11 @@ const styles = {
     display: "flex",
     gap: "12px",
     marginTop: "8px",
-    borderTop: "1px solid rgba(255, 255, 255, 0.05)",
+    borderTop: "1px solid rgba(18, 22, 18, 0.08)",
     paddingTop: "16px"
   },
   confirmBtn: {
-    background: "#6366f1",
+    background: "#24715d",
     color: "#ffffff",
     border: "none",
     padding: "10px 20px",
@@ -924,8 +926,8 @@ const styles = {
   },
   cancelBtn: {
     background: "transparent",
-    border: "1px solid rgba(255, 255, 255, 0.1)",
-    color: "#cbd5e1",
+    border: "1px solid rgba(18, 22, 18, 0.15)",
+    color: "#121612",
     padding: "10px 20px",
     borderRadius: "8px",
     fontWeight: "600",
