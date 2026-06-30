@@ -79,6 +79,16 @@ From the frontend you can choose the input type, paste source material, select o
 
 API keys are not required for the default open-source workflow. Use demo/template mode, local models, session-only keys, or your own provider setup.
 
+## Chrome Extension Setup
+
+The repository includes a companion Chrome Extension in the `extension/` folder for clipping URLs and notes instantly from any browser tab into your SignalFlow Studio instance.
+
+To load the extension:
+1. Open Google Chrome and navigate to `chrome://extensions/`.
+2. Toggle the **"Developer mode"** switch (top-right) to **ON**.
+3. Click the **"Load unpacked"** button (top-left) and select the `extension/` directory of your cloned repository.
+4. Pin the extension. Open it, configure your destination Studio URL (e.g., `http://localhost:3000` or your hosted Vercel link), and click **"Send to SignalFlow Studio"** to transfer clip context.
+
 ## Useful Commands
 
 Build the frontend:
