@@ -5,11 +5,11 @@ SignalFlow Studio should be built as a serious product, even while it remains op
 The current goal is not a weak demo. The current goal is:
 
 ```text
-product quality local app now
-open source distribution now
-clean upgrade path to SaaS later
-no forced cloud account today
-no expensive server dependency today
+product quality local app
+open source distribution
+clean modular architecture
+no forced cloud account
+no expensive server dependency
 ```
 
 ## Product Positioning
@@ -69,52 +69,26 @@ For the open source version:
 - social posting should remain review first
 - mock posting must be labeled clearly
 
-## What Is Product Grade But Not SaaS Yet
+## Product Architecture
 
-The app should still be designed with upgrade paths:
+The app should be designed with clean boundaries:
 
 - storage service abstraction
 - provider service abstraction
 - posting service abstraction
 - audit event abstraction
-- plan and feature flag constants
+- feature flag constants
 - hosted mode guards
 - security docs
 - clean extension boundary
-- clear database schema docs for the future
+- database schema notes for self-hosting experiments
 
-Do not hardcode the app into a throwaway local demo. Keep the code modular enough that database, auth, billing, and encrypted secret storage can be added later.
-
-## Monetization Path Later
-
-Future monetization can be added as optional layers:
-
-### Open source free
-
-- local app
-- demo/template mode
-- BYOK AI
-- local models
-- local library
-- manual export
-
-### Paid hosted or pro version later
-
-- hosted sync
-- encrypted saved provider keys
-- connected channels
-- scheduling worker
-- team workspace
-- cloud package library
-- hosted AI credits
-- priority templates
-- advanced analytics
+Do not hardcode the app into a throwaway local demo. Keep the code modular, understandable, and easy to extend.
 
 ## What Not To Build Now
 
 Do not block the local product on:
 
-- billing
 - mandatory login
 - mandatory database
 - cloud video storage
@@ -122,7 +96,7 @@ Do not block the local product on:
 - team permissions
 - complicated enterprise settings
 
-These are future layers, not required for the first strong product.
+These are optional layers, not required for the first strong product.
 
 ## Engineering Rule
 
@@ -147,19 +121,17 @@ Before public open source launch, the app should have:
 - clear local first explanation
 - clear contribution direction
 - clean issue templates later
-- no misleading SaaS claims
+- no misleading product claims
 
-## Future SaaS Readiness
+## Self Hosting Readiness
 
-If SignalFlow becomes a paid hosted product later, it must add:
+For advanced self hosting, keep the app ready for optional infrastructure:
 
-- real user authentication
+- user authentication
 - database backed workspaces
 - encrypted server side secret storage
 - server side audit logs
 - usage limits
-- billing
-- abuse prevention
 - official social OAuth flows
 
-Those are documented separately and should be implemented when there is money or real demand.
+Those are optional deployment layers and should not slow down the local first product.
