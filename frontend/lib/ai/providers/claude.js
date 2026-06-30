@@ -1,12 +1,12 @@
-import { PROVIDERS } from "../types";
+import { PROVIDERS, getProviderApiKey } from "../types";
 
 /**
  * Calls Anthropic Claude completions API.
  */
 export async function generateClaude(prompt, modelOverride = null, config = {}) {
-  const apiKey = config.apiKey || process.env.ANTHROPIC_API_KEY || process.env.CLAUDE_API_KEY;
+  const apiKey = getProviderApiKey("claude", config);
   if (!apiKey) {
-    throw new Error("Claude API key is not configured (missing ANTHROPIC_API_KEY).");
+    throw new Error("Claude API key is not configured (missing key settings).");
   }
 
   const model = modelOverride || config.modelName || PROVIDERS.claude.defaultModel || "claude-3-5-sonnet-20241022";

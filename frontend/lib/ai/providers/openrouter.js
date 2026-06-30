@@ -1,12 +1,12 @@
-import { PROVIDERS } from "../types";
+import { PROVIDERS, getProviderApiKey } from "../types";
 
 /**
  * Calls OpenRouter chat completions endpoint.
  */
 export async function generateOpenRouter(prompt, modelOverride = null, config = {}) {
-  const apiKey = config.apiKey || process.env.OPENROUTER_API_KEY;
+  const apiKey = getProviderApiKey("openrouter", config);
   if (!apiKey) {
-    throw new Error("OpenRouter API key is not configured (missing OPENROUTER_API_KEY).");
+    throw new Error("OpenRouter API key is not configured (missing key settings).");
   }
 
   const model = modelOverride || config.modelName || PROVIDERS.openrouter.defaultModel || "google/gemma-3-27b-it:free";

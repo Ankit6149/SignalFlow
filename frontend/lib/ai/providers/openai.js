@@ -1,12 +1,12 @@
-import { PROVIDERS } from "../types";
+import { PROVIDERS, getProviderApiKey } from "../types";
 
 /**
  * Calls official OpenAI completions API.
  */
 export async function generateOpenAI(prompt, modelOverride = null, config = {}) {
-  const apiKey = config.apiKey || process.env.OPENAI_API_KEY;
+  const apiKey = getProviderApiKey("openai", config);
   if (!apiKey) {
-    throw new Error("OpenAI API key is not configured (missing OPENAI_API_KEY).");
+    throw new Error("OpenAI API key is not configured (missing key settings).");
   }
 
   const model = modelOverride || config.modelName || PROVIDERS.openai.defaultModel || "gpt-4o-mini";

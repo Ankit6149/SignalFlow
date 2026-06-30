@@ -1,12 +1,12 @@
-import { PROVIDERS } from "../types";
+import { PROVIDERS, getProviderApiKey } from "../types";
 
 /**
  * Calls Groq Cloud chat completion endpoint.
  */
 export async function generateGroq(prompt, modelOverride = null, config = {}) {
-  const apiKey = config.apiKey || process.env.GROQ_API_KEY;
+  const apiKey = getProviderApiKey("groq", config);
   if (!apiKey) {
-    throw new Error("Groq API key is not configured (missing GROQ_API_KEY).");
+    throw new Error("Groq API key is not configured (missing key settings).");
   }
 
   const model = modelOverride || config.modelName || PROVIDERS.groq.defaultModel || "llama-3.1-8b-instant";

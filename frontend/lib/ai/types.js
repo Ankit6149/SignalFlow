@@ -111,6 +111,23 @@ export const PROVIDERS = {
     defaultModel: process.env.DEFAULT_MODEL_NAME || "custom-model",
     requiredEnv: ["CUSTOM_OPENAI_BASE_URL", "CUSTOM_OPENAI_API_KEY"],
     canTest: true,
-    supportsTemporaryKey: true
   }
 };
+
+export function getProviderApiKey(providerKey, config = {}) {
+  // If public hosted mode is enabled, strictly require client-supplied keys
+  if (process.env.SIGNALFLOW_PUBLIC_HOSTED === "true") {
+    return config.apiKey || "";
+  }
+  
+  // Otherwise, allow fallback to server environment variables
+  switch (providerKey) {
+    case "openai": return config.apiKey || process.env.OPENAI_API_KEY || "";
+    case "claude": return config.apiKey || process.env.CLAUDE_API_KEY || process.env.ANTHROPIC_API_KEY || "";
+    case "gemini": return config.apiKey || process.env.GEMINI_API_KEY || "";
+    case "groq": return config.apiKey || process.env.GROQ_API_KEY || "";
+    case "openrouter": return config.apiKey || process.env.OPENROUTER_API_KEY || "";
+    case "custom": return config.apiKey || process.env.CUSTOM_OPENAI_API_KEY || "";
+    default: return config.apiKey || "";
+  }
+}

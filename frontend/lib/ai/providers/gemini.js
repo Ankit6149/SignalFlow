@@ -1,12 +1,12 @@
-import { PROVIDERS } from "../types";
+import { PROVIDERS, getProviderApiKey } from "../types";
 
 /**
  * Calls Google Gemini REST API.
  */
 export async function generateGemini(prompt, modelOverride = null, config = {}) {
-  const apiKey = config.apiKey || process.env.GEMINI_API_KEY;
+  const apiKey = getProviderApiKey("gemini", config);
   if (!apiKey) {
-    throw new Error("Gemini API key is not configured (missing GEMINI_API_KEY).");
+    throw new Error("Gemini API key is not configured (missing key settings).");
   }
 
   const model = modelOverride || config.modelName || PROVIDERS.gemini.defaultModel || "gemini-2.0-flash";

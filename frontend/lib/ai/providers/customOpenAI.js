@@ -1,4 +1,4 @@
-import { PROVIDERS } from "../types";
+import { PROVIDERS, getProviderApiKey } from "../types";
 
 /**
  * Calls a custom user-configured OpenAI-compatible completions gateway.
@@ -9,7 +9,7 @@ export async function generateCustomOpenAI(prompt, modelOverride = null, config 
     throw new Error("Custom OpenAI Base URL is not configured (missing CUSTOM_OPENAI_BASE_URL).");
   }
 
-  const apiKey = config.apiKey || process.env.CUSTOM_OPENAI_API_KEY;
+  const apiKey = getProviderApiKey("custom", config);
   const model = modelOverride || config.modelName || PROVIDERS.custom.defaultModel || "custom-model";
   const url = `${baseUrl.replace(/\/$/, "")}/chat/completions`;
 
