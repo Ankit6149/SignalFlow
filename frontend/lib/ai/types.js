@@ -17,6 +17,30 @@ export const PROVIDERS = {
     isConfigured: () => true,
     defaultModel: "deterministic-local"
   },
+  openai: {
+    id: "openai",
+    label: "OpenAI",
+    description: "Access GPT-4o, GPT-4o-mini, or legacy models directly.",
+    isLocal: false,
+    isFree: false,
+    isConfigured: () => Boolean(process.env.OPENAI_API_KEY),
+    defaultModel: process.env.DEFAULT_MODEL_NAME || "gpt-4o-mini",
+    requiredEnv: ["OPENAI_API_KEY"],
+    canTest: true,
+    supportsTemporaryKey: true
+  },
+  claude: {
+    id: "claude",
+    label: "Anthropic Claude",
+    description: "Access Claude 3.5 Sonnet or Claude 3 Opus models.",
+    isLocal: false,
+    isFree: false,
+    isConfigured: () => Boolean(process.env.ANTHROPIC_API_KEY || process.env.CLAUDE_API_KEY),
+    defaultModel: process.env.DEFAULT_MODEL_NAME || "claude-3-5-sonnet-20241022",
+    requiredEnv: ["ANTHROPIC_API_KEY"],
+    canTest: true,
+    supportsTemporaryKey: true
+  },
   gemini: {
     id: "gemini",
     label: "Google Gemini / Gemma via AI Studio",

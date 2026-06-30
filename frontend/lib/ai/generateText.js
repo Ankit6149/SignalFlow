@@ -1,3 +1,5 @@
+import { generateOpenAI } from "./providers/openai";
+import { generateClaude } from "./providers/claude";
 import { generateGemini } from "./providers/gemini";
 import { generateGroq } from "./providers/groq";
 import { generateOpenRouter } from "./providers/openrouter";
@@ -12,6 +14,10 @@ export async function generateText({ provider, prompt, modelOverride = null, con
   const p = (provider || "prompt").trim().toLowerCase();
 
   switch (p) {
+    case "openai":
+      return await generateOpenAI(prompt, modelOverride, config);
+    case "claude":
+      return await generateClaude(prompt, modelOverride, config);
     case "gemini":
       return await generateGemini(prompt, modelOverride, config);
     case "groq":
