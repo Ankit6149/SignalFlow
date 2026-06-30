@@ -24,6 +24,18 @@ export default function SettingsManager({
 
   // Advanced states
   const [devMode, setDevMode] = useState(false);
+  const [isPublicHosted, setIsPublicHosted] = useState(false);
+
+  React.useEffect(() => {
+    fetch("/api/health")
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.public_hosted) {
+          setIsPublicHosted(true);
+        }
+      })
+      .catch(err => console.error("Error loading health status:", err));
+  }, []);
 
   function handleProviderConfigChange(prov, field, val) {
     setSettings(prev => ({
@@ -88,6 +100,46 @@ export default function SettingsManager({
           {/* AI SETTINGS */}
           {activeSubTab === "ai" && (
             <div style={styles.form}>
+              {isPublicHosted ? (
+                <div style={{
+                  background: "rgba(79, 70, 229, 0.15)",
+                  border: "1px solid rgba(79, 70, 229, 0.3)",
+                  borderRadius: "8px",
+                  padding: "12px 16px",
+                  marginBottom: "20px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "12px"
+                }}>
+                  <span style={{ fontSize: "20px" }}>🌐</span>
+                  <div>
+                    <h4 style={{ margin: 0, color: "#a5b4fc", fontSize: "14px", fontWeight: "600" }}>Public SaaS Mode Active</h4>
+                    <p style={{ margin: "2px 0 0 0", color: "#cbd5e1", fontSize: "12px", lineHeight: "1.4" }}>
+                      This instance is configured in Bring-Your-Own-Key (BYOK) mode. To generate content, please configure your own personal API keys below. Your keys are secured locally in your browser cache.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div style={{
+                  background: "rgba(16, 185, 129, 0.15)",
+                  border: "1px solid rgba(16, 185, 129, 0.3)",
+                  borderRadius: "8px",
+                  padding: "12px 16px",
+                  marginBottom: "20px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "12px"
+                }}>
+                  <span style={{ fontSize: "20px" }}>💻</span>
+                  <div>
+                    <h4 style={{ margin: 0, color: "#a7f3d0", fontSize: "14px", fontWeight: "600" }}>Local Self-Hosted Mode</h4>
+                    <p style={{ margin: "2px 0 0 0", color: "#cbd5e1", fontSize: "12px", lineHeight: "1.4" }}>
+                      Running in local developer mode. Server-side environment fallbacks are allowed if you do not specify a custom key below.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               <div style={styles.formCol}>
                 <label style={styles.label}>Default AI Generation Route</label>
                 <select

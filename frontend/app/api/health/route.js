@@ -7,6 +7,7 @@ export async function GET() {
       mode: "app",
       runtime: "nextjs",
       access_locked: isAccessLocked(),
+      public_hosted: process.env.SIGNALFLOW_PUBLIC_HOSTED === "true",
     }),
     {
       status: 200,
