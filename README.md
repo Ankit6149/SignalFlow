@@ -10,18 +10,18 @@ Good search summary: **AI autoposting tool that turns descriptions, screenshots,
 
 ## Product Direction
 
-SignalFlow Studio is being built as a **product-grade open-source local-first studio**. It should work as a serious personal tool today while keeping a clean upgrade path for monetization later.
+SignalFlow Studio is being built as a **product-grade open-source local-first studio**. It should work as a serious personal tool while keeping the codebase modular, secure, and easy to extend.
 
 Current priority:
 
 ```text
-local-first product quality now
-open-source distribution now
-BYOK/local model support now
-SaaS monetization path later
+local-first product quality
+open-source distribution
+BYOK and local model support
+clean modular architecture
 ```
 
-See [docs/PRODUCT_GRADE_OPEN_SOURCE.md](docs/PRODUCT_GRADE_OPEN_SOURCE.md) for the product direction and monetization path.
+See [docs/PRODUCT_GRADE_OPEN_SOURCE.md](docs/PRODUCT_GRADE_OPEN_SOURCE.md) for the product direction.
 
 ## What Works Today
 
@@ -77,7 +77,7 @@ For local use or someone else's self-hosted install, this variable can be left e
 
 From the frontend you can choose the input type, paste source material, select output channels, capture media, and prepare a manual, file, webhook, or official-API distribution config.
 
-API keys are not a SaaS requirement for the open-source workflow. Use demo/template mode, local models, session-only keys, or your own provider setup.
+API keys are not required for the default open-source workflow. Use demo/template mode, local models, session-only keys, or your own provider setup.
 
 ## Useful Commands
 
@@ -101,7 +101,7 @@ curl -X POST http://127.0.0.1:3000/api/launch_kit \
 - `frontend/` - the hosted SignalFlow Studio product: UI, app API routes, crawler files, media capture, and generation workflow.
 - `extension/` - Chrome/WebExtension scaffold for future browser capture and handoff workflows.
 - `signalflow/` - engine research code used to evolve ingestion, model adapters, and media utilities.
-- `docs/` - architecture, integration, security, monetization path, and discoverability notes.
+- `docs/` - architecture, integration, security, and discoverability notes.
 
 ## Open-Source Direction
 
