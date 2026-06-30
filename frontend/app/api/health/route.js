@@ -1,4 +1,4 @@
-import { isAccessLocked } from "../_auth";
+import { isAccessLocked, isPublicHostedMode } from "../../../lib/hostedMode.js";
 
 export async function GET() {
   return new Response(
@@ -7,7 +7,7 @@ export async function GET() {
       mode: "app",
       runtime: "nextjs",
       access_locked: isAccessLocked(),
-      public_hosted: process.env.SIGNALFLOW_PUBLIC_HOSTED === "true",
+      public_hosted: isPublicHostedMode(),
     }),
     {
       status: 200,

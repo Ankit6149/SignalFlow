@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import { isAccessLocked } from "../../lib/hostedMode.js";
 
 const ACCESS_HEADER = "x-signalflow-access-key";
 const AUTH_HEADER = "authorization";
@@ -23,9 +24,6 @@ function safeEqual(left, right) {
   return crypto.timingSafeEqual(leftBuffer, rightBuffer);
 }
 
-export function isAccessLocked() {
-  return Boolean(process.env.SIGNALFLOW_ACCESS_KEY);
-}
 
 export function createSessionToken() {
   const secret = process.env.SIGNALFLOW_ACCESS_KEY;

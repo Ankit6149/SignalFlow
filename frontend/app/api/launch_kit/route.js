@@ -7,12 +7,26 @@ import { generateStudioPackage } from "../../../lib/ai/generateStudioPackage";
 
 export async function POST(request) {
   const accessError = requireOwnerAccess(request);
-  if (accessError) {
-    return accessError;
-  }
+  const isOwner = accessError === null;
 
   try {
     const body = await request.json();
+
+    if (!isOwner && Boolean(process.env.SIGNALFLOW_ACCESS_KEY)) {
+      const generator = body.generator || "template";
+      const userKey = (body.providerApiKey || "").trim();
+      if (generator !== "template" && generator !== "offline" && !userKey) {
+        return new Response(
+          JSON.stringify({
+            error: "This hosted workspace is private. Enter the owner's access key or supply your own personal API key in settings to use cloud providers.",
+          }),
+          {
+            status: 401,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
+    }
 
     // 1. Validate inputs
     const validation = validateGenerationInputs(body);

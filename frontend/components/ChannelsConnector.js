@@ -5,7 +5,10 @@ export default function ChannelsConnector({
   connectedChannels,
   onConnectPlatform,
   onDisconnectPlatform,
-  postingLogs = []
+  postingLogs = [],
+  accessLocked = false,
+  publicHosted = false,
+  isOwnerAuthenticated = false
 }) {
   const [activeLog, setActiveLog] = useState(null);
 
@@ -40,17 +43,25 @@ export default function ChannelsConnector({
                   </div>
                 </div>
                 
-                <span style={{
-                  ...styles.statusBadge,
-                  background: isConnected ? "rgba(16, 185, 129, 0.15)" : "rgba(244, 63, 94, 0.15)",
-                  color: isConnected ? "#10b981" : "#f43f5e"
-                }}>
-                  {isConnected ? "Connected" : "Disconnected"}
-                </span>
+                {accessLocked && !isOwnerAuthenticated ? (
+                  <span style={{ ...styles.statusBadge, background: "rgba(148, 163, 184, 0.15)", color: "#cbd5e1" }}>
+                    Protected
+                  </span>
+                ) : (
+                  <span style={{
+                    ...styles.statusBadge,
+                    background: isConnected ? "rgba(16, 185, 129, 0.15)" : "rgba(244, 63, 94, 0.15)",
+                    color: isConnected ? "#10b981" : "#f43f5e"
+                  }}>
+                    {isConnected ? "Connected" : "Disconnected"}
+                  </span>
+                )}
               </div>
 
               <div style={styles.cardBody}>
-                {isConnected ? (
+                {accessLocked && !isOwnerAuthenticated ? (
+                  <p style={styles.desc}>Connected owner channels are hidden on this hosted workspace.</p>
+                ) : isConnected ? (
                   <div style={styles.profileDetails}>
                     <p style={styles.desc}>Linked to profile: <strong>{status.profile?.name || status.profile?.username || "Active Member"}</strong></p>
                     <p style={styles.metaText}>Authorized: {new Date(status.connectedAt).toLocaleDateString()}</p>
@@ -61,7 +72,9 @@ export default function ChannelsConnector({
               </div>
 
               <div style={styles.cardFooter}>
-                {isConnected ? (
+                {accessLocked && !isOwnerAuthenticated ? (
+                  <span style={styles.manualActionText}>🔒 Owner credentials hidden</span>
+                ) : isConnected ? (
                   <button
                     onClick={() => onDisconnectPlatform(key)}
                     style={styles.disconnectBtn}
@@ -148,7 +161,10 @@ export default function ChannelsConnector({
                       background: log.status === "posted" ? "rgba(16, 185, 129, 0.15)" : "rgba(244, 63, 94, 0.15)",
                       color: log.status === "posted" ? "#10b981" : "#f43f5e"
                     }}>
-                      {log.status === "posted" ? "SUCCESS" : "FAILED"}
+                      {log.status === "posted" 
+                        ? (log.postUrl ? "SUCCESS" : (log.connectorType === "Simulated Scheduler Runner" ? "Simulated schedule" : "Mock post")) 
+                        : "FAILED"
+                      }
                     </span>
                   </span>
                   <span style={styles.td}>{new Date(log.timestamp).toLocaleString()}</span>
@@ -158,7 +174,7 @@ export default function ChannelsConnector({
                         View Live 🔗
                       </a>
                     ) : (
-                      <span style={styles.simulatedText}>Simulated</span>
+                      <span style={styles.simulatedText}>Demo connector</span>
                     )}
                   </span>
                 </div>
@@ -180,10 +196,10 @@ export default function ChannelsConnector({
                 <strong>Platform:</strong> {activeLog.platform.toUpperCase()}
               </div>
               <div>
-                <strong>Status:</strong> {activeLog.status.toUpperCase()}
+                <strong>Status:</strong> {activeLog.postUrl ? activeLog.status.toUpperCase() : "SIMULATED / MOCK POST"}
               </div>
               <div>
-                <strong>Connector:</strong> {activeLog.connectorType || "Simulated"}
+                <strong>Connector:</strong> {activeLog.postUrl ? (activeLog.connectorType || "Official API") : "Demo connector"}
               </div>
               <div>
                 <strong>Published:</strong> {new Date(activeLog.timestamp).toLocaleString()}

@@ -11,7 +11,10 @@ export default function Dashboard({
   setView,
   setActiveProjectId,
   onSelectPackage,
-  setCreationSource
+  setCreationSource,
+  accessLocked = false,
+  publicHosted = false,
+  isOwnerAuthenticated = false
 }) {
   const activeProject = projects.find(p => p.id === activeProjectId) || projects[0];
   const recentPackages = [...packages]
@@ -33,6 +36,44 @@ export default function Dashboard({
     { label: "Paste App URL", icon: "🔗", desc: "Analyze links for content", source: "url", view: "create" },
     { label: "Configure Channels", icon: "🔌", desc: "Manage Oauth integrations", view: "channels" }
   ];
+
+  // Hosted Mode Banner Definitions
+  let bannerText = "";
+  let bannerTitle = "";
+  let bannerColor = "rgba(148, 163, 184, 0.1)";
+  let bannerBorder = "rgba(148, 163, 184, 0.25)";
+  let bannerIcon = "💻";
+  let bannerTextColor = "#94a3b8";
+
+  if (publicHosted && !isOwnerAuthenticated) {
+    bannerTitle = "Public demo mode";
+    bannerText = "Use demo/template generation or self-host SignalFlow to connect your own keys and channels.";
+    bannerColor = "rgba(245, 158, 11, 0.1)";
+    bannerBorder = "rgba(245, 158, 11, 0.25)";
+    bannerIcon = "🌐";
+    bannerTextColor = "#f59e0b";
+  } else if (accessLocked && !isOwnerAuthenticated) {
+    bannerTitle = "Private hosted workspace";
+    bannerText = "Owner model and social connections are hidden. Enter the owner access key to use protected generation and channel routes.";
+    bannerColor = "rgba(239, 68, 68, 0.1)";
+    bannerBorder = "rgba(239, 68, 68, 0.25)";
+    bannerIcon = "🔒";
+    bannerTextColor = "#ef4444";
+  } else if (accessLocked && isOwnerAuthenticated) {
+    bannerTitle = "Owner session active";
+    bannerText = "Protected generation and connected-channel status are available in this browser session.";
+    bannerColor = "rgba(79, 70, 229, 0.15)";
+    bannerBorder = "rgba(79, 70, 229, 0.3)";
+    bannerIcon = "🔑";
+    bannerTextColor = "#818cf8";
+  } else {
+    bannerTitle = "Local-first mode";
+    bannerText = "Your projects, package drafts, and cached keys stay in this browser unless you export or connect services.";
+    bannerColor = "rgba(16, 185, 129, 0.12)";
+    bannerBorder = "rgba(16, 185, 129, 0.25)";
+    bannerIcon = "💻";
+    bannerTextColor = "#10b981";
+  }
 
   return (
     <div style={styles.container}>
@@ -57,6 +98,24 @@ export default function Dashboard({
           </div>
         )}
       </header>
+
+      {/* Dynamic Workspace State Banner */}
+      <div style={{
+        background: bannerColor,
+        border: `1px solid ${bannerBorder}`,
+        borderRadius: "12px",
+        padding: "16px 20px",
+        marginBottom: "24px",
+        display: "flex",
+        alignItems: "center",
+        gap: "16px"
+      }}>
+        <span style={{ fontSize: "24px" }}>{bannerIcon}</span>
+        <div>
+          <h4 style={{ margin: 0, color: bannerTextColor, fontSize: "14px", fontWeight: "700" }}>{bannerTitle}</h4>
+          <p style={{ margin: "4px 0 0 0", color: "#cbd5e1", fontSize: "13px", lineHeight: "1.5" }}>{bannerText}</p>
+        </div>
+      </div>
 
       {/* Grid of stats */}
       <section style={styles.statsGrid}>

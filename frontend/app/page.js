@@ -29,6 +29,8 @@ export default function Home() {
 
   // Session & Access States
   const [accessLocked, setAccessLocked] = useState(false);
+  const [publicHosted, setPublicHosted] = useState(false);
+  const [isOwnerAuthenticated, setIsOwnerAuthenticated] = useState(false);
   const [accessToken, setAccessToken] = useState("");
   const [accessKey, setAccessKey] = useState("");
   const [accessMessage, setAccessMessage] = useState("");
@@ -143,8 +145,10 @@ export default function Home() {
       const resp = await fetch(`${API_BASE}/health`);
       const data = await resp.json();
       setAccessLocked(Boolean(data?.access_locked));
+      setPublicHosted(Boolean(data?.public_hosted));
     } catch {
       setAccessLocked(false);
+      setPublicHosted(false);
     }
   }
 
@@ -155,15 +159,21 @@ export default function Home() {
       if (resp.ok) {
         const data = await resp.json();
         setConnectedChannels(data.platforms || {});
+        setIsOwnerAuthenticated(true);
+      } else {
+        setConnectedChannels({});
+        setIsOwnerAuthenticated(false);
       }
     } catch (e) {
       console.error("Failed to query social credentials", e);
+      setConnectedChannels({});
+      setIsOwnerAuthenticated(false);
     }
   }
 
   // Session login
-  async function unlockWorkspace(e) {
-    e.preventDefault();
+  async function unlockWorkspace(directKey = null) {
+    const keyToUse = typeof directKey === "string" ? directKey : accessKey;
     setAccessMessage("");
     setError("");
 
@@ -171,7 +181,7 @@ export default function Home() {
       const resp = await fetch(`${API_BASE}/session`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ access_key: accessKey }),
+        body: JSON.stringify({ access_key: keyToUse }),
       });
       const data = await resp.json();
 
@@ -183,10 +193,33 @@ export default function Home() {
       setAccessToken(data.token);
       setAccessKey("");
       setAccessMessage(`Unlocked successfully.`);
-      fetchBackendSocialStatus();
+      setIsOwnerAuthenticated(true);
+      
+      try {
+        const respStatus = await fetch(`${API_BASE}/social/status`, {
+          headers: { "Authorization": `Bearer ${data.token}` }
+        });
+        if (respStatus.ok) {
+          const dataStatus = await respStatus.json();
+          setConnectedChannels(dataStatus.platforms || {});
+        }
+      } catch (e) {
+        console.error("Failed to query social credentials", e);
+      }
+      return { success: true };
     } catch (err) {
       setAccessMessage(err.message);
+      return { success: false, error: err.message };
     }
+  }
+
+  function handleLockWorkspace() {
+    window.localStorage.removeItem(ACCESS_TOKEN_STORAGE_KEY);
+    setAccessToken("");
+    setIsOwnerAuthenticated(false);
+    setConnectedChannels({});
+    setAccessMessage("");
+    alert("Owner session closed successfully.");
   }
 
   // Projects CRUD Bridge
@@ -487,14 +520,14 @@ export default function Home() {
 
   return (
     <div style={styles.appContainer}>
-      {accessLocked && !accessToken ? (
+      {accessLocked && !accessToken && !publicHosted ? (
         <section style={styles.lockPanel}>
           <div style={styles.lockHeader}>
             <div style={styles.lockIcon}>🔒</div>
             <h2 style={styles.lockTitle}>SignalFlow Workspace Locked</h2>
             <p style={styles.lockDesc}>This instance requires the owner password key to unlock generative modules.</p>
           </div>
-          <form onSubmit={unlockWorkspace} style={styles.lockForm}>
+          <form onSubmit={(e) => { e.preventDefault(); unlockWorkspace(); }} style={styles.lockForm}>
             <input
               type="password"
               placeholder="Enter owner access key"
@@ -528,10 +561,12 @@ export default function Home() {
                 setView={setView}
                 setActiveProjectId={handleSelectActiveProject}
                 onSelectPackage={(pkg) => {
-                  // Direct edit / preview modal
                   setView("library");
                 }}
                 setCreationSource={setCreationSource}
+                accessLocked={accessLocked}
+                publicHosted={publicHosted}
+                isOwnerAuthenticated={isOwnerAuthenticated}
               />
             )}
 
@@ -575,6 +610,9 @@ export default function Home() {
                 onConnectPlatform={handleConnectPlatform}
                 onDisconnectPlatform={handleDisconnectPlatform}
                 postingLogs={postingLogs}
+                accessLocked={accessLocked}
+                publicHosted={publicHosted}
+                isOwnerAuthenticated={isOwnerAuthenticated}
               />
             )}
 
@@ -592,6 +630,13 @@ export default function Home() {
                 onImportData={handleImportBackup}
                 onExportData={handleExportBackup}
                 onClearAllData={handleClearAll}
+                accessLocked={accessLocked}
+                publicHosted={publicHosted}
+                isOwnerAuthenticated={isOwnerAuthenticated}
+                onUnlockWorkspace={unlockWorkspace}
+                onLockWorkspace={handleLockWorkspace}
+                accessMessage={accessMessage}
+                clearAccessMessage={() => setAccessMessage("")}
               />
             )}
           </main>

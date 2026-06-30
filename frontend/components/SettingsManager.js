@@ -10,7 +10,14 @@ export default function SettingsManager({
   clearTestData,
   onImportData,
   onExportData,
-  onClearAllData
+  onClearAllData,
+  accessLocked = false,
+  publicHosted = false,
+  isOwnerAuthenticated = false,
+  onUnlockWorkspace,
+  onLockWorkspace,
+  accessMessage,
+  clearAccessMessage
 }) {
   const [activeSubTab, setActiveSubTab] = useState("ai");
 
@@ -24,18 +31,6 @@ export default function SettingsManager({
 
   // Advanced states
   const [devMode, setDevMode] = useState(false);
-  const [isPublicHosted, setIsPublicHosted] = useState(false);
-
-  React.useEffect(() => {
-    fetch("/api/health")
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.public_hosted) {
-          setIsPublicHosted(true);
-        }
-      })
-      .catch(err => console.error("Error loading health status:", err));
-  }, []);
 
   function handleProviderConfigChange(prov, field, val) {
     setSettings(prev => ({
@@ -100,7 +95,45 @@ export default function SettingsManager({
           {/* AI SETTINGS */}
           {activeSubTab === "ai" && (
             <div style={styles.form}>
-              {isPublicHosted ? (
+              {publicHosted && !isOwnerAuthenticated ? (
+                <div style={{
+                  background: "rgba(245, 158, 11, 0.15)",
+                  border: "1px solid rgba(245, 158, 11, 0.3)",
+                  borderRadius: "8px",
+                  padding: "12px 16px",
+                  marginBottom: "20px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "12px"
+                }}>
+                  <span style={{ fontSize: "20px" }}>🌐</span>
+                  <div>
+                    <h4 style={{ margin: 0, color: "#f59e0b", fontSize: "14px", fontWeight: "600" }}>Public demo mode</h4>
+                    <p style={{ margin: "2px 0 0 0", color: "#cbd5e1", fontSize: "12px", lineHeight: "1.4" }}>
+                      Use demo/template generation or self-host SignalFlow to connect your own keys and channels.
+                    </p>
+                  </div>
+                </div>
+              ) : accessLocked && !isOwnerAuthenticated ? (
+                <div style={{
+                  background: "rgba(239, 68, 68, 0.15)",
+                  border: "1px solid rgba(239, 68, 68, 0.3)",
+                  borderRadius: "8px",
+                  padding: "12px 16px",
+                  marginBottom: "20px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "12px"
+                }}>
+                  <span style={{ fontSize: "20px" }}>🔒</span>
+                  <div>
+                    <h4 style={{ margin: 0, color: "#ef4444", fontSize: "14px", fontWeight: "600" }}>Private hosted workspace</h4>
+                    <p style={{ margin: "2px 0 0 0", color: "#cbd5e1", fontSize: "12px", lineHeight: "1.4" }}>
+                      Owner model and social connections are hidden. Enter the owner access key in the Advanced tab to unlock the owner session.
+                    </p>
+                  </div>
+                </div>
+              ) : accessLocked && isOwnerAuthenticated ? (
                 <div style={{
                   background: "rgba(79, 70, 229, 0.15)",
                   border: "1px solid rgba(79, 70, 229, 0.3)",
@@ -111,11 +144,11 @@ export default function SettingsManager({
                   alignItems: "center",
                   gap: "12px"
                 }}>
-                  <span style={{ fontSize: "20px" }}>🌐</span>
+                  <span style={{ fontSize: "20px" }}>🔑</span>
                   <div>
-                    <h4 style={{ margin: 0, color: "#a5b4fc", fontSize: "14px", fontWeight: "600" }}>Public SaaS Mode Active</h4>
+                    <h4 style={{ margin: 0, color: "#818cf8", fontSize: "14px", fontWeight: "600" }}>Owner session active</h4>
                     <p style={{ margin: "2px 0 0 0", color: "#cbd5e1", fontSize: "12px", lineHeight: "1.4" }}>
-                      This instance is configured in Bring-Your-Own-Key (BYOK) mode. To generate content, please configure your own personal API keys below. Your keys are secured locally in your browser cache.
+                      Protected generation and connected-channel status are available in this browser session.
                     </p>
                   </div>
                 </div>
@@ -132,11 +165,26 @@ export default function SettingsManager({
                 }}>
                   <span style={{ fontSize: "20px" }}>💻</span>
                   <div>
-                    <h4 style={{ margin: 0, color: "#a7f3d0", fontSize: "14px", fontWeight: "600" }}>Local Self-Hosted Mode</h4>
+                    <h4 style={{ margin: 0, color: "#10b981", fontSize: "14px", fontWeight: "600" }}>Local-first mode</h4>
                     <p style={{ margin: "2px 0 0 0", color: "#cbd5e1", fontSize: "12px", lineHeight: "1.4" }}>
-                      Running in local developer mode. Server-side environment fallbacks are allowed if you do not specify a custom key below.
+                      Your projects, package drafts, and cached keys stay in this browser unless you export or connect services.
                     </p>
                   </div>
+                </div>
+              )}
+
+              {accessLocked && !isOwnerAuthenticated && (
+                <div style={{
+                  background: "rgba(239, 68, 68, 0.1)",
+                  border: "1px solid rgba(239, 68, 68, 0.2)",
+                  borderRadius: "8px",
+                  padding: "12px 16px",
+                  marginBottom: "20px",
+                  color: "#cbd5e1",
+                  fontSize: "12px",
+                  lineHeight: "1.4"
+                }}>
+                  🔒 This hosted workspace is private. Model and channel connections are hidden.
                 </div>
               )}
 
@@ -162,7 +210,7 @@ export default function SettingsManager({
               {/* Warnings for cloud keys */}
               {!currentMeta?.isLocal && (
                 <div style={styles.warningBox}>
-                  ⚠️ <strong>Security Alert:</strong> Local storage is used for offline convenience. Avoid saving production/org admin keys in public sandboxes. If you run on shared screens, toggle the input visibility or type temporarily in the wizard details tab.
+                  ⚠️ <strong>Security Notice:</strong> Stored keys are kept only in this browser session. If you are on a public deployment, these keys remain strictly local to your device and are never shared or uploaded to any owner workspace.
                 </div>
               )}
 
@@ -181,6 +229,9 @@ export default function SettingsManager({
                         style={styles.input}
                         placeholder={`Paste your ${currentMeta?.title} key`}
                       />
+                      <p style={{ margin: "4px 0 0 0", color: "#cbd5e1", fontSize: "11px" }}>
+                        🔒 Stored only in this browser.
+                      </p>
                     </div>
                   )}
 
@@ -350,6 +401,49 @@ export default function SettingsManager({
                   <button onClick={onClearAllData} style={styles.clearBtn}>Clear Local Database</button>
                 </div>
               </div>
+
+              {accessLocked && (
+                <div style={{ ...styles.adminDataSection, marginTop: "24px", paddingTop: "24px", borderTop: "1px solid #212c3d" }}>
+                  <h4 style={styles.credentialsTitle}>Owner Workspace Session</h4>
+                  <p style={styles.metaDesc}>Authenticate as the workspace owner to unlock server-configured credentials and direct platform publishing channels.</p>
+                  
+                  {isOwnerAuthenticated ? (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "12px", alignItems: "flex-start" }}>
+                      <div style={{ color: "#10b981", fontSize: "13px", fontWeight: "700", display: "flex", alignItems: "center", gap: "6px" }}>
+                        <span>🔑</span> Owner Session Active (Authenticated)
+                      </div>
+                      <button onClick={onLockWorkspace} style={{ ...styles.clearBtn, width: "auto" }}>
+                        Close Owner Session
+                      </button>
+                    </div>
+                  ) : (
+                    <form
+                      onSubmit={async (e) => {
+                        e.preventDefault();
+                        const pwd = e.target.elements.ownerKey.value;
+                        const res = await onUnlockWorkspace(pwd);
+                        if (res && res.success) {
+                          e.target.reset();
+                          alert("Workspace unlocked successfully.");
+                        } else {
+                          alert(res?.error || "Invalid owner key.");
+                        }
+                      }}
+                      style={{ display: "flex", gap: "10px", alignItems: "center", maxWidth: "450px", marginTop: "12px" }}
+                    >
+                      <input
+                        type="password"
+                        name="ownerKey"
+                        placeholder="Enter owner access key"
+                        style={styles.input}
+                        required
+                      />
+                      <button type="submit" style={styles.saveBtn}>Unlock Session</button>
+                    </form>
+                  )}
+                  {accessMessage && <p style={{ color: "#f43f5e", fontSize: "12px", marginTop: "8px" }}>{accessMessage}</p>}
+                </div>
+              )}
             </div>
           )}
         </div>
