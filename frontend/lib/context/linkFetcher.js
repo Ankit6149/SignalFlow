@@ -1,31 +1,43 @@
 /**
  * Fetches HTML from a webpage URL and cleanses it to plain text.
+ * Public hosted mode blocks local hostnames, embedded credentials, and oversized responses.
  */
+const MAX_RESPONSE_CHARS = 1_000_000;
+const MAX_CONTEXT_CHARS = 10000;
+const FETCH_TIMEOUT_MS = 8000;
+
 export async function fetchUrlContent(urlStr) {
   if (!urlStr) return null;
 
-  let url = urlStr.trim();
-  if (!url.startsWith("http://") && !url.startsWith("https://")) {
-    url = "https://" + url;
-  }
-
   const result = {
-    url,
+    url: "",
     title: "",
     description: "",
     text: "",
     warnings: []
   };
 
+  let url;
+  try {
+    url = normalizeAndValidateUrl(urlStr);
+    result.url = url.toString();
+  } catch (err) {
+    return {
+      ...result,
+      url: String(urlStr || "").trim(),
+      warnings: [`Skipped URL: ${err.message}`]
+    };
+  }
+
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8-second timeout
+    const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
-    const resp = await fetch(url, {
+    const resp = await fetch(url.toString(), {
       signal: controller.signal,
       headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
-        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+        "User-Agent": "SignalFlowStudio/1.0",
+        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,text/plain;q=0.8,*/*;q=0.5"
       }
     });
 
@@ -35,63 +47,80 @@ export async function fetchUrlContent(urlStr) {
       throw new Error(`HTTP Error ${resp.status}`);
     }
 
-    const html = await resp.text();
+    const contentLength = Number(resp.headers.get("content-length") || 0);
+    if (contentLength > MAX_RESPONSE_CHARS) {
+      throw new Error("Response is larger than the allowed fetch limit.");
+    }
 
-    // 1. Extract title
+    let html = await resp.text();
+    if (html.length > MAX_RESPONSE_CHARS) {
+      result.warnings.push("Fetched content was truncated before parsing because it exceeded the fetch limit.");
+      html = html.substring(0, MAX_RESPONSE_CHARS);
+    }
+
     const titleMatch = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
     if (titleMatch && titleMatch[1]) {
       result.title = cleanText(titleMatch[1]);
     }
 
-    // 2. Extract meta description
-    const descMatch = html.match(/<meta\s+name=["']description["']\s+content=["']([\s\S]*?)["']/i) || 
-                      html.match(/<meta\s+content=["']([\s\S]*?)["']\s+name=["']description["']/i);
+    const descMatch = html.match(/<meta\s+name=["']description["']\s+content=["']([\s\S]*?)["']/i) ||
+      html.match(/<meta\s+content=["']([\s\S]*?)["']\s+name=["']description["']/i);
     if (descMatch && descMatch[1]) {
       result.description = cleanText(descMatch[1]);
     }
 
-    // 3. Clean HTML body
     let bodyContent = html;
-    
-    // Find body element if present to restrict scraping to body
     const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
     if (bodyMatch && bodyMatch[1]) {
       bodyContent = bodyMatch[1];
     }
 
-    // Strip scripts
     bodyContent = bodyContent.replace(/<script[^>]*>([\s\S]*?)<\/script>/gi, "");
-    // Strip styles
     bodyContent = bodyContent.replace(/<style[^>]*>([\s\S]*?)<\/style>/gi, "");
-    // Strip comments
     bodyContent = bodyContent.replace(/<!--([\s\S]*?)-->/g, "");
-    // Replace block tags with newlines
     bodyContent = bodyContent.replace(/<\/p>|<\/div>|<\/h[1-6]>|<\/li>|<\/tr>/gi, "\n");
-    // Strip all HTML tags
+
     let plainText = bodyContent.replace(/<[^>]*>/g, " ");
-
-    // Decode standard HTML entities
-    plainText = decodeHtmlEntities(plainText);
-
-    // Normalize spacing and newlines
-    plainText = plainText
+    plainText = decodeHtmlEntities(plainText)
       .split("\n")
-      .map(line => line.trim())
-      .filter(line => line.length > 0)
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0)
       .join("\n");
 
-    // Limit output length to conserve tokens
-    if (plainText.length > 10000) {
-      plainText = plainText.substring(0, 10000) + "\n\n... [Content truncated to fit context budget] ...";
+    if (plainText.length > MAX_CONTEXT_CHARS) {
+      plainText = `${plainText.substring(0, MAX_CONTEXT_CHARS)}\n\n... [Content truncated to fit context budget] ...`;
     }
 
     result.text = plainText;
-
   } catch (err) {
-    result.warnings.push(`Failed to fetch URL content for ${url}: ${err.message}`);
+    result.warnings.push(`Failed to fetch URL content for ${result.url}: ${err.message}`);
   }
 
   return result;
+}
+
+function normalizeAndValidateUrl(urlStr) {
+  let normalized = String(urlStr || "").trim();
+  if (!normalized.startsWith("http://") && !normalized.startsWith("https://")) {
+    normalized = `https://${normalized}`;
+  }
+
+  const url = new URL(normalized);
+  if (!["http:", "https:"].includes(url.protocol)) {
+    throw new Error("Only http and https URLs are supported.");
+  }
+  if (url.username || url.password) {
+    throw new Error("URLs with embedded credentials are not allowed.");
+  }
+  if (process.env.SIGNALFLOW_PUBLIC_HOSTED === "true" && looksLocal(url.hostname)) {
+    throw new Error("Local/internal targets are blocked in public hosted mode.");
+  }
+  return url;
+}
+
+function looksLocal(hostname) {
+  const host = hostname.toLowerCase().replace(/^\[|\]$/g, "");
+  return host === "localhost" || host.endsWith(".localhost") || host.endsWith(".local") || host.includes("metadata");
 }
 
 function cleanText(text) {
