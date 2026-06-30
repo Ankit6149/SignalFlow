@@ -8,6 +8,21 @@ The product goal is low-click autopilot: the user provides information, connects
 
 Good search summary: **AI autoposting tool that turns descriptions, screenshots, screen recordings, links, and data into formatted social media posts for LinkedIn, X, Instagram, blogs, newsletters, and release notes.**
 
+## Product Direction
+
+SignalFlow Studio is being built as a **product-grade open-source local-first studio**. It should work as a serious personal tool today while keeping a clean upgrade path for monetization later.
+
+Current priority:
+
+```text
+local-first product quality now
+open-source distribution now
+BYOK/local model support now
+SaaS monetization path later
+```
+
+See [docs/PRODUCT_GRADE_OPEN_SOURCE.md](docs/PRODUCT_GRADE_OPEN_SOURCE.md) for the product direction and monetization path.
+
 ## What Works Today
 
 - Generate platform drafts from descriptions, pasted notes, changelogs, code snippets, screenshots text, repository context, or research excerpts.
@@ -25,6 +40,7 @@ Good search summary: **AI autoposting tool that turns descriptions, screenshots,
 Run the app:
 
 ```bash
+cd frontend
 npm install
 npm run dev
 ```
@@ -43,8 +59,7 @@ Build Command: npm run build
 Output Directory: .next
 ```
 
-Do not use `npm install --prefix frontend` when Vercel Root Directory is already
-set to `frontend`; that makes Vercel look for `frontend/frontend/package.json`.
+Do not use `npm install --prefix frontend` when Vercel Root Directory is already set to `frontend`; that makes Vercel look for `frontend/frontend/package.json`.
 
 ### Protect Your Hosted Demo
 
@@ -54,51 +69,46 @@ For your personal Vercel link, add this environment variable:
 SIGNALFLOW_ACCESS_KEY=make-a-long-private-key-here
 ```
 
-When this is set, visitors can still see the product, docs, and UI, but they
-cannot generate post packages unless they enter the owner key. After the key is
-entered once, SignalFlow Studio stores a signed 30-day browser session token, so
-you do not have to remember or paste the key every time.
+When this is set, visitors can still see the product, docs, and UI, but they cannot generate post packages unless they enter the owner key. After the key is entered once, SignalFlow Studio stores a signed 30-day browser session token, so you do not have to remember or paste the key every time.
 
-Do not create this as a `NEXT_PUBLIC_` variable. `SIGNALFLOW_ACCESS_KEY` is read
-only by server-side API routes. The browser receives only a signed session token,
-not the secret environment value.
+Do not create this as a `NEXT_PUBLIC_` variable. `SIGNALFLOW_ACCESS_KEY` is read only by server-side API routes. The browser receives only a signed session token, not the secret environment value.
 
-For local use or someone else's self-hosted install, this variable can be left
-empty. In that mode generation is unlocked by default.
+For local use or someone else's self-hosted install, this variable can be left empty. In that mode generation is unlocked by default.
 
-From the frontend you can choose the input type, paste source material,
-select output channels, capture media, and prepare a manual, file, webhook,
-or official-API distribution config.
-API keys are not persisted by SignalFlow Studio; wire them through your own local vault
-or deployment environment when connecting a real provider.
+From the frontend you can choose the input type, paste source material, select output channels, capture media, and prepare a manual, file, webhook, or official-API distribution config.
+
+API keys are not a SaaS requirement for the open-source workflow. Use demo/template mode, local models, session-only keys, or your own provider setup.
 
 ## Useful Commands
 
 Build the frontend:
 
 ```bash
+cd frontend
 npm run build
 ```
 
 Create a post package through the standalone frontend API:
 
 ```bash
-curl -X POST http://127.0.0.1:3000/api/launch_kit ^
-  -H "Content-Type: application/json" ^
-  -d "{\"input_type\":\"brief\",\"notes\":\"raw post brief\",\"project_name\":\"My Project\",\"channels\":[\"linkedin\",\"x\"],\"generator\":\"standalone\"}"
+curl -X POST http://127.0.0.1:3000/api/launch_kit \
+  -H "Content-Type: application/json" \
+  -d '{"input_type":"brief","notes":"raw post brief","project_name":"My Project","channels":["linkedin","x"],"generator":"standalone"}'
 ```
 
 ## Project Structure
 
 - `frontend/` - the hosted SignalFlow Studio product: UI, app API routes, crawler files, media capture, and generation workflow.
+- `extension/` - Chrome/WebExtension scaffold for future browser capture and handoff workflows.
 - `signalflow/` - engine research code used to evolve ingestion, model adapters, and media utilities.
-- `docs/` - architecture, integration, and discoverability notes.
+- `docs/` - architecture, integration, security, monetization path, and discoverability notes.
 
 ## Open-Source Direction
 
 The strongest product angle is: **a local-first autoposting engine that turns descriptions, data, and captured media into platform-ready posting packages**.
 
 See [ROADMAP.md](ROADMAP.md) for the path from prototype to a product people can understand, try, and contribute to.
+See [docs/PRODUCT_GRADE_OPEN_SOURCE.md](docs/PRODUCT_GRADE_OPEN_SOURCE.md) for the product-grade open-source direction.
 See [docs/INTEGRATIONS.md](docs/INTEGRATIONS.md) for the asset-to-model and channel integration strategy.
 See [docs/DISCOVERABILITY.md](docs/DISCOVERABILITY.md) for GitHub topics, search keywords, and AI visibility setup.
 
