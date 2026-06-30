@@ -3,7 +3,23 @@ document.addEventListener("DOMContentLoaded", async () => {
   const notesTextarea = document.getElementById("notes");
   const sendBtn = document.getElementById("send-btn");
   const openBtn = document.getElementById("open-btn");
+  const studioUrlInput = document.getElementById("studio-url");
   const statusMsg = document.getElementById("status-msg");
+
+  // Load configured destination URL
+  chrome.storage.local.get(["studioUrl"], (res) => {
+    if (res.studioUrl) {
+      studioUrlInput.value = res.studioUrl;
+    }
+  });
+
+  // Save changes to destination URL
+  studioUrlInput.addEventListener("input", () => {
+    const val = studioUrlInput.value.trim();
+    if (val) {
+      chrome.storage.local.set({ studioUrl: val });
+    }
+  });
 
   // Get active tab URL
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -14,6 +30,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   sendBtn.addEventListener("click", async () => {
     const notes = notesTextarea.value.trim();
     const url = tabUrlInput.value;
+    const destStudioUrl = studioUrlInput.value.trim() || "http://localhost:3000";
 
     if (!notes) {
       alert("Please add notes before sending.");
@@ -21,11 +38,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     try {
-      // Send message to background worker or directly to local storage / localhost app
-      // Communication utilizes custom window dispatching when user keeps SignalFlow page open
       chrome.runtime.sendMessage({
         action: "send_context",
-        data: { url, notes, timestamp: Date.now() }
+        data: { url, notes, timestamp: Date.now() },
+        studioUrl: destStudioUrl
       }, (response) => {
         if (response && response.success) {
           statusMsg.style.display = "block";
@@ -34,7 +50,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             statusMsg.style.display = "none";
           }, 3000);
         } else {
-          alert("Could not transfer data. Make sure SignalFlow Studio (http://localhost:3000) is open.");
+          alert(`Could not transfer data. Make sure SignalFlow Studio is open at: ${destStudioUrl}`);
         }
       });
     } catch (err) {
@@ -43,6 +59,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   openBtn.addEventListener("click", () => {
-    chrome.tabs.create({ url: "http://localhost:3000" });
+    const destStudioUrl = studioUrlInput.value.trim() || "http://localhost:3000";
+    chrome.tabs.create({ url: destStudioUrl });
   });
 });
