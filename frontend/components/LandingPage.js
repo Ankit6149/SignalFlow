@@ -52,7 +52,7 @@ export default function LandingPage({ onLaunch }) {
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
   return (
-    <div style={s.page} id="top">
+    <div style={s.page} id="top" className="grid-paper-bg">
       {/* ─── Sticky Header ─── */}
       <header style={{ ...s.header, ...(scrolled ? s.headerScrolled : {}) }}>
         <div style={s.headerInner}>
@@ -112,14 +112,44 @@ export default function LandingPage({ onLaunch }) {
           </div>
         </div>
 
-        {/* Hero Visual — real photo */}
-        <div style={s.heroVisual}>
-          <div style={s.heroImageWrap} className="hand-drawn float-effect">
-            <img
-              src="/hero-workspace.png"
-              alt="Clean content creation workspace"
-              style={s.heroPhoto}
-            />
+        {/* Tilted Sticker Collage (Daisy/Super Hello visual) */}
+        <div style={s.collageContainer} className="float-effect">
+          {/* Card 1: Polaroid Card */}
+          <div style={{ ...s.collageCard, background: "var(--pastel-yellow)", transform: "rotate(-6deg) translate(-20px, 0px)", zIndex: 3 }} className="hand-drawn offset-border neo-shadow">
+            <div style={s.polaroidTop}>
+              <span style={{ fontSize: "28px" }}>📦</span>
+              <span style={{ fontSize: "10px", background: "var(--ink-black)", color: "#fff", padding: "2px 6px", borderRadius: "4px" }} className="handwritten">LAUNCH KIT</span>
+            </div>
+            <h4 style={{ margin: "16px 0 6px 0", fontSize: "15px", fontWeight: "800" }}>ASICS x Brain Dead</h4>
+            <p style={{ margin: 0, fontSize: "11px", color: "var(--ink-black)", lineHeight: "1.4" }} className="handwritten">
+              Automatic post package created from landing page.
+            </p>
+          </div>
+
+          {/* Card 2: Sticker Badge */}
+          <div style={{ ...s.collageCard, background: "var(--pastel-red)", transform: "rotate(8deg) translate(80px, -40px)", zIndex: 4 }} className="hand-drawn offset-border neo-shadow">
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontWeight: "800", color: "#fff", fontSize: "11px" }}>LINK SCANNER</span>
+              <span style={{ fontSize: "16px" }}>🔗</span>
+            </div>
+            <div style={{ background: "#fff", border: "1.5px solid var(--ink-black)", borderRadius: "6px", padding: "6px", marginTop: "12px" }}>
+              <p style={{ margin: 0, fontSize: "9px", color: "#6b6b6b", fontFamily: "monospace" }}>https://linear.app</p>
+            </div>
+          </div>
+
+          {/* Card 3: Flower Art Badge */}
+          <div style={{ ...s.collageCard, background: "var(--pastel-green)", transform: "rotate(-2deg) translate(30px, 90px)", zIndex: 2, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", minHeight: "130px" }} className="hand-drawn offset-border neo-shadow">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--ink-black)" strokeWidth="2">
+              <path d="M12 12m-3 0a3 3 0 1 0 6 0 3 3 0 1 0 -6 0" fill="#fee440" />
+              <path d="M12 2a3 3 0 0 1 3 3v1a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3zM12 18a3 3 0 0 1 3 3v1a3 3 0 0 1-6 0v-1a3 3 0 0 1 3-3zM2 12a3 3 0 0 1 3-3h1a3 3 0 0 1 0 6H5a3 3 0 0 1-3-3zM18 12a3 3 0 0 1 3-3h1a3 3 0 0 1 0 6h-1a3 3 0 0 1-3-3z" />
+            </svg>
+            <span style={{ fontSize: "11px", fontWeight: "700", marginTop: "6px" }} className="handwritten">Let it Flow</span>
+          </div>
+
+          {/* Card 4: LinkedIn Tape Tag */}
+          <div style={{ ...s.collageCard, background: "var(--pastel-blue)", transform: "rotate(4deg) translate(-90px, 70px)", zIndex: 1, padding: "10px 14px" }} className="hand-drawn offset-border neo-shadow">
+            <span style={{ fontSize: "10px", fontWeight: "800", color: "#fff", background: "var(--ink-black)", padding: "2px 6px", borderRadius: "3px" }}>INSPECT PREVIEW</span>
+            <p style={{ margin: "6px 0 0 0", fontSize: "10px", lineHeight: "1.4" }}>Tailored drafts for X & LinkedIn channels.</p>
           </div>
         </div>
       </section>
@@ -399,8 +429,8 @@ const s = {
   /* ── Page ── */
   page: {
     minHeight: "100vh",
-    background: "#faf9f6",
-    color: "#1a1a1a",
+    background: "#faf8f2",
+    color: "var(--ink-black)",
     fontFamily: "'Plus Jakarta Sans', system-ui, -apple-system, sans-serif",
     overflowX: "hidden",
   },
@@ -417,9 +447,9 @@ const s = {
     background: "transparent",
   },
   headerScrolled: {
-    background: "rgba(250, 249, 246, 0.92)",
+    background: "rgba(250, 248, 242, 0.92)",
     backdropFilter: "blur(12px)",
-    borderBottom: "1px solid rgba(0,0,0,0.06)",
+    borderBottom: "1.5px solid var(--ink-black)",
     padding: "12px 0",
   },
   headerInner: {
@@ -439,11 +469,11 @@ const s = {
     width: "32px",
     height: "32px",
     borderRadius: "8px",
-    background: "linear-gradient(135deg, #2d6a4f, #52b788)",
+    background: "var(--pastel-green)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    color: "#fff",
+    color: "var(--ink-black)",
     fontWeight: "700",
     fontSize: "13px",
   },
@@ -466,7 +496,7 @@ const s = {
     transition: "color 0.2s",
   },
   headerCta: {
-    background: "#1a1a1a",
+    background: "var(--ink-black)",
     color: "#fff",
     border: "none",
     padding: "9px 20px",
@@ -481,45 +511,48 @@ const s = {
   hero: {
     maxWidth: "1120px",
     margin: "0 auto",
-    padding: "140px 32px 80px",
+    padding: "160px 32px 100px",
     display: "grid",
-    gridTemplateColumns: "1fr 1fr",
+    gridTemplateColumns: "1.1fr 0.9fr",
     gap: "64px",
     alignItems: "center",
   },
   heroContent: {
     display: "flex",
     flexDirection: "column",
-    gap: "20px",
+    gap: "24px",
   },
   heroPill: {
     display: "inline-block",
     alignSelf: "flex-start",
-    background: "rgba(45, 106, 79, 0.08)",
-    color: "#2d6a4f",
+    background: "var(--pastel-lavender)",
+    color: "var(--ink-black)",
     padding: "6px 14px",
     borderRadius: "100px",
     fontSize: "12px",
-    fontWeight: "600",
+    fontWeight: "700",
     letterSpacing: "0.3px",
+    border: "1.5px solid var(--ink-black)",
+    boxShadow: "2px 2px 0px var(--ink-black)",
   },
   heroTitle: {
-    fontSize: "46px",
-    fontWeight: "800",
-    lineHeight: "1.12",
-    letterSpacing: "-1.5px",
-    color: "#1a1a1a",
+    fontFamily: "'Playfair Display', Georgia, serif",
+    fontSize: "58px",
+    fontWeight: "700",
+    lineHeight: "1.1",
+    color: "var(--ink-black)",
     margin: 0,
   },
   heroAccent: {
-    background: "linear-gradient(135deg, #2d6a4f, #52b788)",
+    background: "linear-gradient(135deg, var(--pastel-green), var(--pastel-blue))",
     WebkitBackgroundClip: "text",
     WebkitTextFillColor: "transparent",
   },
   heroSub: {
-    fontSize: "16px",
-    lineHeight: "1.7",
-    color: "#6b6b6b",
+    fontFamily: "'Courier Prime', monospace",
+    fontSize: "14px",
+    lineHeight: "1.6",
+    color: "#4a4a4a",
     margin: 0,
     maxWidth: "480px",
   },
@@ -687,19 +720,21 @@ const s = {
     marginBottom: "12px",
   },
   sectionTitle: {
-    fontSize: "36px",
-    fontWeight: "800",
-    letterSpacing: "-1px",
-    color: "#1a1a1a",
+    fontFamily: "'Playfair Display', Georgia, serif",
+    fontSize: "44px",
+    fontWeight: "700",
+    letterSpacing: "-0.5px",
+    color: "var(--ink-black)",
     margin: "0 0 12px 0",
-    lineHeight: "1.2",
+    lineHeight: "1.15",
   },
   sectionSub: {
-    fontSize: "16px",
-    color: "#6b6b6b",
+    fontFamily: "'Courier Prime', monospace",
+    fontSize: "14px",
+    color: "#4a4a4a",
     margin: "0 0 48px 0",
     maxWidth: "560px",
-    lineHeight: "1.7",
+    lineHeight: "1.65",
   },
   sectionHidden: {
     opacity: 0,
@@ -720,10 +755,11 @@ const s = {
   },
   featureCard: {
     background: "#fff",
-    border: "1px solid rgba(0,0,0,0.06)",
-    borderRadius: "14px",
+    border: "2px solid var(--ink-black)",
+    borderRadius: "15px",
     padding: "28px 24px",
-    transition: "transform 0.2s, box-shadow 0.2s",
+    transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
+    boxShadow: "3px 4px 0px var(--ink-black)",
   },
   featureIcon: {
     fontSize: "28px",
@@ -731,14 +767,14 @@ const s = {
   },
   featureTitle: {
     fontSize: "16px",
-    fontWeight: "700",
+    fontWeight: "800",
     margin: "0 0 8px 0",
-    color: "#1a1a1a",
+    color: "var(--ink-black)",
   },
   featureDesc: {
-    fontSize: "14px",
+    fontSize: "13px",
     lineHeight: "1.6",
-    color: "#6b6b6b",
+    color: "#4a4a4a",
     margin: 0,
   },
 
@@ -751,11 +787,12 @@ const s = {
   },
   stepCard: {
     background: "#fff",
-    border: "1px solid rgba(0,0,0,0.06)",
-    borderRadius: "14px",
+    border: "2.5px solid var(--ink-black)",
+    borderRadius: "16px",
     padding: "32px 24px",
     position: "relative",
     textAlign: "center",
+    boxShadow: "5px 6px 0px var(--ink-black)",
   },
   stepNum: {
     fontSize: "36px",
@@ -930,4 +967,28 @@ const s = {
     cursor: "pointer",
     textDecoration: "none",
   },
+  collageContainer: {
+    position: "relative",
+    width: "100%",
+    height: "380px",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center"
+  },
+  collageCard: {
+    position: "absolute",
+    width: "210px",
+    borderRadius: "12px",
+    padding: "20px 18px",
+    border: "2px solid var(--ink-black)",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
+    transition: "all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
+  },
+  polaroidTop: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center"
+  }
 };

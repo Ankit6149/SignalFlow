@@ -947,13 +947,16 @@ const styles = {
   },
   workspaceCard: {
     background: "#fff",
-    border: "1px solid rgba(0,0,0,0.06)",
+    border: "2.5px solid var(--ink-black)",
     borderRadius: "16px",
-    padding: "24px",
+    padding: "48px 40px",
     display: "flex",
     flexDirection: "column",
-    gap: "18px",
-    boxShadow: "0 8px 30px rgba(0,0,0,0.015)"
+    gap: "24px",
+    boxShadow: "6px 8px 0px var(--ink-black)",
+    maxWidth: "720px",
+    width: "100%",
+    margin: "24px auto"
   },
   cardHeader: {
     display: "flex",

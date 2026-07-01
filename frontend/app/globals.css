@@ -1,18 +1,20 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700;800&family=Architects+Daughter&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700;800&family=Architects+Daughter&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Courier+Prime:wght@400;700&display=swap');
 
 :root {
-  --bg-cream: #fbf9f4;
-  --pastel-green: #e6f2eb;
-  --pastel-green-border: #2d6a4f;
-  --pastel-yellow: #fdf6e2;
-  --pastel-yellow-border: #d97706;
-  --pastel-blue: #e8f4fd;
-  --pastel-blue-border: #2563eb;
-  --pastel-red: #fdf2f2;
-  --pastel-red-border: #dc2626;
-  --pastel-lavender: #f3f0fc;
-  --pastel-lavender-border: #7c3aed;
-  --ink-black: #1e1e1a;
+  --bg-cream: #faf8f2;
+  --pastel-green: #00f5d4;
+  --pastel-green-border: #121612;
+  --pastel-yellow: #fee440;
+  --pastel-yellow-border: #121612;
+  --pastel-blue: #00bbf9;
+  --pastel-blue-border: #121612;
+  --pastel-red: #ff006e;
+  --pastel-red-border: #121612;
+  --pastel-lavender: #be90d4;
+  --pastel-lavender-border: #121612;
+  --pastel-orange: #ff6b35;
+  --pastel-orange-border: #121612;
+  --ink-black: #121612;
 }
 
 html,
@@ -263,6 +265,7 @@ a {
 
 .offset-border {
   position: relative !important;
+  border: 2px solid var(--ink-black) !important;
 }
 
 .offset-border::after {
