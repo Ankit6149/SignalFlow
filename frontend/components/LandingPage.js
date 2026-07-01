@@ -1,660 +1,846 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 export default function LandingPage({ onLaunch }) {
-  const [packagesCount, setPackagesCount] = useState(115);
-  const [timeSaved, setTimeSaved] = useState(14);
-  const [activeTab, setActiveTab] = useState("clip");
+  const [scrolled, setScrolled] = useState(false);
+  const [visibleSections, setVisibleSections] = useState(new Set());
+  const sectionRefs = useRef({});
 
-  // Soft stats count-up animation
+  // Header scroll effect
   useEffect(() => {
-    const pkgInterval = setInterval(() => {
-      setPackagesCount((prev) => (prev < 142 ? prev + 1 : prev));
-    }, 120);
-
-    const timeInterval = setInterval(() => {
-      setTimeSaved((prev) => (prev < 18 ? prev + 1 : prev));
-    }, 280);
-
-    return () => {
-      clearInterval(pkgInterval);
-      clearInterval(timeInterval);
-    };
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const mockFeed = [
-    { platform: "Twitter", icon: "🐦", title: "Scale local-first tools for creators", preview: "1/ Why local-first is the future of content creation... #buildinpublic" },
-    { platform: "LinkedIn", icon: "💼", title: "Design Systems in 2026", preview: "Consistency is key. Yesterday we launched our warm sand palette, focusing on..." },
-    { platform: "Newsletter", icon: "📧", title: "SignalFlow Weekly Issue 12", preview: "Welcome back! Today we are discussing safe client-side browser storage and keys..." },
-    { platform: "Instagram", icon: "📸", title: "Visual Assets Automation", preview: "Preview of automatically generated graphic cards for developer tutorials." },
-    { platform: "Reddit", icon: "👽", title: "Self-hosting vs SaaS solutions", preview: "Here is why we decided to offer both owner key locking and visitor BYOK..." }
-  ];
+  // Intersection observer for fade-in animations
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setVisibleSections((prev) => new Set([...prev, entry.target.id]));
+          }
+        });
+      },
+      { threshold: 0.15 }
+    );
+
+    Object.values(sectionRefs.current).forEach((el) => {
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const isVisible = (id) => visibleSections.has(id);
+
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
   return (
-    <div style={styles.page}>
-      {/* Premium Ambient Gradients */}
-      <div style={styles.ambientBlob1} />
-      <div style={styles.ambientBlob2} />
-
-      {/* Header */}
-      <header style={styles.header}>
-        <div style={styles.logoRow}>
-          <div style={styles.logoBadge}>SF</div>
-          <span style={styles.logoText}>SignalFlow Studio</span>
+    <div style={s.page} id="top">
+      {/* ─── Sticky Header ─── */}
+      <header style={{ ...s.header, ...(scrolled ? s.headerScrolled : {}) }}>
+        <div style={s.headerInner}>
+          <a onClick={scrollToTop} style={{ ...s.logoGroup, cursor: 'pointer', textDecoration: 'none' }}>
+            <div style={s.logoBadge}>SF</div>
+            <span style={s.logoText}>SignalFlow Studio</span>
+          </a>
+          <nav style={s.headerNav}>
+            <a href="#features" style={s.navLink}>Features</a>
+            <a href="#how" style={s.navLink}>How It Works</a>
+            <a href="#privacy" style={s.navLink}>Privacy</a>
+            <a href="https://github.com/Ankit6149/SignalFlow-Studio" target="_blank" rel="noreferrer" style={s.navLink}>GitHub</a>
+            <button onClick={onLaunch} style={s.headerCta}>
+              Open Studio →
+            </button>
+          </nav>
         </div>
-        <button onClick={onLaunch} style={styles.launchHeaderBtn}>
-          Open Studio
-        </button>
       </header>
 
-      {/* Hero Section */}
-      <section style={styles.hero}>
-        <div style={styles.heroLeft}>
-          <div style={styles.badge}>
-            ✨ Open Source & Local First
-          </div>
-          <h1 style={styles.heroTitle}>
-            Scale Your Content Production, <span style={styles.accentText}>Calmly</span>
+      {/* ─── Hero ─── */}
+      <section style={s.hero}>
+        <div style={s.heroContent}>
+          <span style={s.heroPill}>✦ Open Source · Local First · Privacy Native</span>
+          <h1 style={s.heroTitle}>
+            Turn raw ideas into<br />
+            <span style={s.heroAccent}>publish‑ready content</span>
           </h1>
-          <p style={styles.heroDesc}>
-            SignalFlow is a distraction-free production workspace. Clip articles, capture raw notes, and convert context into ready-to-publish threads, newsletters, and social drafts.
+          <p style={s.heroSub}>
+            SignalFlow is a distraction-free workspace that converts notes, screen recordings, 
+            and code into polished social posts, threads, and newsletters — all running locally 
+            on your machine.
           </p>
-          <div style={styles.ctaGroup}>
-            <button onClick={onLaunch} style={styles.heroCta}>
-              Launch Studio Workspace →
+          <div style={s.heroBtnRow}>
+            <button onClick={onLaunch} style={s.heroBtn}>
+              Launch Workspace
             </button>
-            <a href="#features" style={styles.heroSecondaryCta}>
-              Explore Features
+            <a href="https://github.com/Ankit6149/SignalFlow-Studio" target="_blank" rel="noreferrer" style={s.heroGhBtn}>
+              ★ Star on GitHub
             </a>
           </div>
-
-          {/* Quick Metrics */}
-          <div style={styles.metricsRow}>
-            <div style={styles.metricCard}>
-              <div style={styles.metricVal}>{packagesCount}</div>
-              <div style={styles.metricLabel}>Draft Packages Generated</div>
+          <div style={s.heroStats}>
+            <div style={s.stat}>
+              <span style={s.statNum}>6</span>
+              <span style={s.statLabel}>Source Inputs</span>
             </div>
-            <div style={styles.metricCard}>
-              <div style={styles.metricVal}>{timeSaved}h</div>
-              <div style={styles.metricLabel}>Estimated Time Saved</div>
+            <div style={s.statDivider} />
+            <div style={s.stat}>
+              <span style={s.statNum}>7+</span>
+              <span style={s.statLabel}>Platform Outputs</span>
             </div>
-            <div style={styles.metricCard}>
-              <div style={styles.metricVal}>100%</div>
-              <div style={styles.metricLabel}>Local Storage Privacy</div>
+            <div style={s.statDivider} />
+            <div style={s.stat}>
+              <span style={s.statNum}>100%</span>
+              <span style={s.statLabel}>Client-Side Keys</span>
             </div>
           </div>
         </div>
 
-        <div style={styles.heroRight}>
-          <div style={styles.imageCard}>
+        {/* Hero Visual — real photo */}
+        <div style={s.heroVisual}>
+          <div style={s.heroImageWrap}>
             <img
-              src="/landing_hero_mockup.png"
-              alt="SignalFlow Dashboard Mockup"
-              style={styles.heroImage}
+              src="/hero-workspace.png"
+              alt="Clean content creation workspace"
+              style={s.heroPhoto}
             />
-            {/* Soft Floating Card */}
-            <div style={styles.floatingCard}>
-              <div style={styles.floatingIndicator}>
-                <div style={styles.statusPulse} />
-                <span>Active Generation Session</span>
-              </div>
-              <p style={styles.floatingText}>"Create 3 Twitter posts from last interview draft"</p>
-            </div>
           </div>
         </div>
       </section>
 
-      {/* Active Content Showcase (Scrolling Feed) */}
-      <section style={styles.feedSection}>
-        <div style={styles.feedHeader}>
-          <h3 style={styles.feedTitle}>Active Workspace Operations</h3>
-          <p style={styles.feedDesc}>Real-time simulation of cross-platform post builds and distributions.</p>
-        </div>
-
-        <div style={styles.feedScrollWrapper}>
-          <div style={styles.feedTrack}>
-            {/* Render Twice for Infinite Loop */}
-            {[...mockFeed, ...mockFeed].map((item, index) => (
-              <div key={index} style={styles.feedItem}>
-                <div style={styles.feedItemHeader}>
-                  <span style={styles.feedIcon}>{item.icon}</span>
-                  <span style={styles.feedPlatform}>{item.platform}</span>
-                  <span style={styles.feedLiveBadge}>Ready</span>
-                </div>
-                <h4 style={styles.feedItemTitle}>{item.title}</h4>
-                <p style={styles.feedItemPreview}>{item.preview}</p>
+      {/* ─── Features ─── */}
+      <section
+        id="features"
+        ref={(el) => (sectionRefs.current.features = el)}
+        style={{ ...s.section, ...(isVisible("features") ? s.sectionVisible : s.sectionHidden) }}
+      >
+        <div style={s.sectionInner}>
+          <span style={s.sectionPill}>Features</span>
+          <h2 style={s.sectionTitle}>Everything you need, nothing you don't</h2>
+          <p style={s.sectionSub}>
+            A focused set of tools designed around one goal — getting your content published faster.
+          </p>
+          <div style={s.featureGrid}>
+            {[
+              { icon: "✍️", title: "Multi-Source Input", desc: "Write manually, record your screen, paste URLs, upload images, scan GitHub repos, or paste changelogs. Six input types, one unified flow." },
+              { icon: "🤖", title: "AI-Powered Drafts", desc: "Route through Gemini, OpenAI, Claude, Ollama, or offline templates. Bring your own API key — it never leaves your browser." },
+              { icon: "📱", title: "Platform-Native Output", desc: "Generate content tailored for LinkedIn, X/Twitter, Instagram, Reddit, newsletters, and dev blogs simultaneously." },
+              { icon: "🎯", title: "Brand Profiles", desc: "Save multiple brand voices with audience targeting, tone presets, and platform preferences per project." },
+              { icon: "📦", title: "Content Library", desc: "Every generated package is saved with full context. Search, edit, re-export, or republish from your local archive." },
+              { icon: "🔒", title: "Self-Host Ready", desc: "Run on your machine with npm. No accounts, no databases, no cloud dependencies. Your data stays yours." },
+            ].map((f, i) => (
+              <div key={i} style={s.featureCard}>
+                <div style={s.featureIcon}>{f.icon}</div>
+                <h3 style={s.featureTitle}>{f.title}</h3>
+                <p style={s.featureDesc}>{f.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Interactive Tabs (Features Tour) */}
-      <section id="features" style={styles.tourSection}>
-        <h2 style={styles.tourSectionTitle}>How SignalFlow Operates</h2>
-        <p style={styles.tourSectionDesc}>A clean, step-wise flow designed to bring structure to raw input files.</p>
+      {/* ─── Lifestyle Photo Break ─── */}
+      <section style={s.photoBanner}>
+        <img
+          src="/creator-working.png"
+          alt="Creator working in a modern workspace"
+          style={s.bannerPhoto}
+        />
+        <div style={s.bannerOverlay}>
+          <p style={s.bannerQuote}>
+            "Built for creators who'd rather spend time building than writing about it."
+          </p>
+        </div>
+      </section>
 
-        <div style={styles.tourLayout}>
-          <div style={styles.tourTabs}>
-            <button
-              onClick={() => setActiveTab("clip")}
-              style={{ ...styles.tourTabBtn, ...(activeTab === "clip" ? styles.tourTabBtnActive : {}) }}
-            >
-              <span style={styles.tourTabNum}>01</span>
-              <div>
-                <h4 style={styles.tourTabTitle}>Clip Context</h4>
-                <p style={styles.tourTabSubtitle}>Unpacked Chrome Extension gathers article snippets.</p>
-              </div>
-            </button>
+      {/* ─── How It Works ─── */}
+      <section
+        id="how"
+        ref={(el) => (sectionRefs.current.how = el)}
+        style={{ ...s.sectionAlt, ...(isVisible("how") ? s.sectionVisible : s.sectionHidden) }}
+      >
+        <div style={s.sectionInner}>
+          <span style={s.sectionPill}>How It Works</span>
+          <h2 style={s.sectionTitle}>Three steps from idea to publish</h2>
+          <p style={s.sectionSub}>No complex setup. No learning curve. Just follow the steps.</p>
 
-            <button
-              onClick={() => setActiveTab("formulate")}
-              style={{ ...styles.tourTabBtn, ...(activeTab === "formulate" ? styles.tourTabBtnActive : {}) }}
-            >
-              <span style={styles.tourTabNum}>02</span>
-              <div>
-                <h4 style={styles.tourTabTitle}>Formulate Packages</h4>
-                <p style={styles.tourTabSubtitle}>Choose AI routes to generate platform drafts.</p>
+          <div style={s.stepsRow}>
+            {[
+              { num: "01", title: "Add Your Context", desc: "Drop in screenshots, paste a URL, record a walkthrough, or type raw notes. SignalFlow understands what you built." },
+              { num: "02", title: "Set Your Voice", desc: "Pick a tone, select target platforms, and let the AI engine draft platform-native posts for each channel." },
+              { num: "03", title: "Review & Publish", desc: "Edit the generated drafts inline, preview how they look on each platform, then export or publish directly." },
+            ].map((step, i) => (
+              <div key={i} style={s.stepCard}>
+                <div style={s.stepNum}>{step.num}</div>
+                <h3 style={s.stepTitle}>{step.title}</h3>
+                <p style={s.stepDesc}>{step.desc}</p>
+                {i < 2 && <div style={s.stepArrow}>→</div>}
               </div>
-            </button>
-
-            <button
-              onClick={() => setActiveTab("safe")}
-              style={{ ...styles.tourTabBtn, ...(activeTab === "safe" ? styles.tourTabBtnActive : {}) }}
-            >
-              <span style={styles.tourTabNum}>03</span>
-              <div>
-                <h4 style={styles.tourTabTitle}>Safe Client-Side Storage</h4>
-                <p style={styles.tourTabSubtitle}>Your keys stay strictly in your local browser vault.</p>
-              </div>
-            </button>
-          </div>
-
-          <div style={styles.tourDisplay}>
-            {activeTab === "clip" && (
-              <div style={styles.tourContent}>
-                <div style={styles.tourDisplayIcon}>🔌</div>
-                <h3>Developer Chrome Extension Integration</h3>
-                <p>Install the unpackaged directory in Developer Mode. Browse the web, clip paragraphs, or record voice memos. One-click pushes directly to the active workspace page tab.</p>
-                <div style={styles.mockCode}>
-                  // Extension Ingestion Payload<br/>
-                  {"{"} url: "https://example.com/blog", title: "Building Local First"... {"}"}
-                </div>
-              </div>
-            )}
-
-            {activeTab === "formulate" && (
-              <div style={styles.tourContent}>
-                <div style={styles.tourDisplayIcon}>🤖</div>
-                <h3>Context-Rich Output Generation</h3>
-                <p>Run your raw context inputs through custom AI template engines. Build threads, LinkedIn messages, or news outlines in one single unified workspace draft package.</p>
-                <div style={styles.mockCode}>
-                  // Status: Generative Output Built Successfully<br/>
-                  → 3 Platform-Native Snippets Ready in Draft Queue
-                </div>
-              </div>
-            )}
-
-            {activeTab === "safe" && (
-              <div style={styles.tourContent}>
-                <div style={styles.tourDisplayIcon}>🔒</div>
-                <h3>100% Client-Side Vault Privacy</h3>
-                <p>No remote databases store your AI keys or social profile metadata. If hosted, visitors configure their local keys (BYOK). Privacy model keeps credentials secure.</p>
-                <div style={styles.mockCode}>
-                  // Local Vault Encryption Active<br/>
-                  → local_access_key: "Strictly client-side browser storage"
-                </div>
-              </div>
-            )}
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer style={styles.footer}>
-        <p style={styles.footerText}>© 2026 SignalFlow. Built for clarity and privacy-first production.</p>
-        <div style={styles.footerLinks}>
-          <a href="/TERMS.md" style={styles.footerLink}>Terms</a>
-          <span style={styles.footerSeparator}>•</span>
-          <a href="/PRIVACY.md" style={styles.footerLink}>Privacy</a>
+      {/* ─── Privacy ─── */}
+      <section
+        id="privacy"
+        ref={(el) => (sectionRefs.current.privacy = el)}
+        style={{ ...s.section, ...(isVisible("privacy") ? s.sectionVisible : s.sectionHidden) }}
+      >
+        <div style={s.sectionInner}>
+          <span style={s.sectionPill}>Privacy Model</span>
+          <h2 style={s.sectionTitle}>Your keys. Your data. Your machine.</h2>
+          <p style={s.sectionSub}>
+            SignalFlow stores API keys and content exclusively in your browser's local storage. 
+            Nothing is sent to any server we control.
+          </p>
+          <div style={s.privacySplit}>
+            <div style={s.privacyCards}>
+              {[
+                { icon: "🔑", title: "BYOK Architecture", desc: "Bring Your Own Key — credentials are stored in browser localStorage and sent directly to the AI provider." },
+                { icon: "💾", title: "Zero Server Storage", desc: "No databases, no accounts, no analytics. Projects and drafts persist in IndexedDB on your device." },
+                { icon: "🛡️", title: "Self-Host Control", desc: "Clone the repo, run locally, and deploy behind your own firewall. Full source code is MIT licensed." },
+              ].map((item, i) => (
+                <div key={i} style={s.privacyCard}>
+                  <div style={s.privacyIcon}>{item.icon}</div>
+                  <div>
+                    <h3 style={s.privacyTitle}>{item.title}</h3>
+                    <p style={s.privacyDesc}>{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div style={s.privacyPhotoWrap}>
+              <img
+                src="/office-setup.png"
+                alt="Professional home office setup"
+                style={s.privacyPhoto}
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── CTA ─── */}
+      <section
+        id="cta"
+        ref={(el) => (sectionRefs.current.cta = el)}
+        style={{ ...s.ctaSection, ...(isVisible("cta") ? s.sectionVisible : s.sectionHidden) }}
+      >
+        <div style={s.ctaInner}>
+          <h2 style={s.ctaTitle}>Ready to streamline your content?</h2>
+          <p style={s.ctaSub}>
+            Open the workspace and create your first content package in under 5 minutes.
+          </p>
+          <div style={s.ctaBtnRow}>
+            <button onClick={onLaunch} style={s.ctaBtn}>Open Studio Workspace →</button>
+            <a
+              href="https://github.com/Ankit6149/SignalFlow-Studio"
+              target="_blank"
+              rel="noreferrer"
+              style={s.ctaGhBtn}
+            >
+              View Source on GitHub
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── Footer ─── */}
+      <footer style={s.footer}>
+        <div style={s.footerTop}>
+          {/* Brand Column */}
+          <div style={s.footerBrand}>
+            <a onClick={scrollToTop} style={{ ...s.logoGroup, cursor: 'pointer', textDecoration: 'none' }}>
+              <div style={s.logoBadge}>SF</div>
+              <span style={{ ...s.logoText, fontSize: '15px' }}>SignalFlow Studio</span>
+            </a>
+            <p style={s.footerNote}>Open-source content production workspace.<br />Built for creators who value privacy and speed.</p>
+          </div>
+
+          {/* Product Column */}
+          <div style={s.footerCol}>
+            <h4 style={s.footerColTitle}>Product</h4>
+            <a href="#features" style={s.footerLink}>Features</a>
+            <a href="#how" style={s.footerLink}>How It Works</a>
+            <a onClick={onLaunch} style={{ ...s.footerLink, cursor: 'pointer' }}>Open Studio</a>
+          </div>
+
+          {/* Resources Column */}
+          <div style={s.footerCol}>
+            <h4 style={s.footerColTitle}>Resources</h4>
+            <a href="https://github.com/Ankit6149/SignalFlow-Studio" target="_blank" rel="noreferrer" style={s.footerLink}>GitHub Repository</a>
+            <a href="https://github.com/Ankit6149/SignalFlow-Studio#readme" target="_blank" rel="noreferrer" style={s.footerLink}>Documentation</a>
+            <a href="https://github.com/Ankit6149/SignalFlow-Studio/issues" target="_blank" rel="noreferrer" style={s.footerLink}>Report an Issue</a>
+          </div>
+
+          {/* Legal Column */}
+          <div style={s.footerCol}>
+            <h4 style={s.footerColTitle}>Legal</h4>
+            <a href="#privacy" style={s.footerLink}>Privacy Model</a>
+            <a href="https://github.com/Ankit6149/SignalFlow-Studio/blob/master/TERMS.md" target="_blank" rel="noreferrer" style={s.footerLink}>Terms of Use</a>
+            <a href="https://github.com/Ankit6149/SignalFlow-Studio/blob/master/LICENSE" target="_blank" rel="noreferrer" style={s.footerLink}>MIT License</a>
+          </div>
+        </div>
+
+        <div style={s.footerBottom}>
+          <span style={s.footerCopy}>© {new Date().getFullYear()} SignalFlow Studio. Open source under the MIT License.</span>
+          <a onClick={scrollToTop} style={s.backToTop}>↑ Back to top</a>
         </div>
       </footer>
 
-      {/* CSS Animation Injector */}
-      <style dangerouslySetInnerHTML={{ __html: scrollAnimationCss }} />
+      <style dangerouslySetInnerHTML={{ __html: animationCss }} />
     </div>
   );
 }
 
-// Keyframes scroll track
-const scrollAnimationCss = `
-  @keyframes scrollTrack {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(calc(-280px * 5)); }
+const animationCss = `
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(28px); }
+    to { opacity: 1; transform: translateY(0); }
   }
-  @keyframes pulse {
-    0% { transform: scale(0.95); opacity: 0.5; }
-    50% { transform: scale(1.05); opacity: 1; }
-    100% { transform: scale(0.95); opacity: 0.5; }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
   }
+  html { scroll-behavior: smooth; }
 `;
 
-const styles = {
+const s = {
+  /* ── Page ── */
   page: {
     minHeight: "100vh",
-    background: "linear-gradient(135deg, #faf8f2 0%, #f5f1e7 48%, #fbfaf6 100%)",
-    color: "#121612",
-    fontFamily: "'Plus Jakarta Sans', system-ui, -apple-system, sans-serif",
-    position: "relative",
+    background: "#faf9f6",
+    color: "#1a1a1a",
+    fontFamily: "'Inter', 'SF Pro Display', system-ui, -apple-system, sans-serif",
     overflowX: "hidden",
-    paddingBottom: "40px"
   },
-  ambientBlob1: {
-    position: "absolute",
-    top: "-10%",
-    left: "-5%",
-    width: "45vw",
-    height: "45vw",
-    borderRadius: "50%",
-    background: "radial-gradient(circle, rgba(36, 113, 93, 0.05) 0%, transparent 70%)",
-    zIndex: 0,
-    pointerEvents: "none"
-  },
-  ambientBlob2: {
-    position: "absolute",
-    top: "30%",
-    right: "-5%",
-    width: "50vw",
-    height: "50vw",
-    borderRadius: "50%",
-    background: "radial-gradient(circle, rgba(236, 111, 79, 0.06) 0%, transparent 70%)",
-    zIndex: 0,
-    pointerEvents: "none"
-  },
+
+  /* ── Header ── */
   header: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 100,
+    padding: "16px 0",
+    transition: "all 0.3s ease",
+    background: "transparent",
+  },
+  headerScrolled: {
+    background: "rgba(250, 249, 246, 0.92)",
+    backdropFilter: "blur(12px)",
+    borderBottom: "1px solid rgba(0,0,0,0.06)",
+    padding: "12px 0",
+  },
+  headerInner: {
+    maxWidth: "1120px",
+    margin: "0 auto",
+    padding: "0 32px",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: "24px 8%",
-    position: "relative",
-    zIndex: 10
   },
-  logoRow: {
+  logoGroup: {
     display: "flex",
     alignItems: "center",
-    gap: "12px"
+    gap: "10px",
   },
   logoBadge: {
-    width: "36px",
-    height: "36px",
+    width: "32px",
+    height: "32px",
     borderRadius: "8px",
-    background: "linear-gradient(135deg, #24715d 0%, #ec6f4f 100%)",
+    background: "linear-gradient(135deg, #2d6a4f, #52b788)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     color: "#fff",
-    fontWeight: "bold",
-    fontSize: "15px",
-    boxShadow: "0 4px 12px rgba(36, 113, 93, 0.2)"
+    fontWeight: "700",
+    fontSize: "13px",
   },
   logoText: {
-    fontSize: "18px",
-    fontWeight: "800",
-    letterSpacing: "-0.5px"
-  },
-  launchHeaderBtn: {
-    background: "#24715d",
-    color: "#ffffff",
-    border: "none",
-    padding: "10px 20px",
-    borderRadius: "8px",
-    fontWeight: "600",
-    fontSize: "14px",
-    cursor: "pointer",
-    boxShadow: "0 4px 12px rgba(36, 113, 93, 0.15)"
-  },
-  hero: {
-    display: "grid",
-    gridTemplateColumns: "1.2fr 1fr",
-    gap: "60px",
-    padding: "60px 8% 80px 8%",
-    alignItems: "center",
-    position: "relative",
-    zIndex: 10
-  },
-  heroLeft: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-start",
-    gap: "24px"
-  },
-  badge: {
-    background: "rgba(36, 113, 93, 0.08)",
-    color: "#24715d",
-    padding: "6px 14px",
-    borderRadius: "20px",
-    fontSize: "12px",
+    fontSize: "17px",
     fontWeight: "700",
-    letterSpacing: "0.5px",
-    textTransform: "uppercase"
+    letterSpacing: "-0.3px",
+    color: "#1a1a1a",
   },
-  heroTitle: {
-    fontSize: "48px",
-    lineHeight: "1.15",
-    fontWeight: "800",
-    letterSpacing: "-1.5px",
-    margin: 0
-  },
-  accentText: {
-    color: "#ec6f4f"
-  },
-  heroDesc: {
-    fontSize: "16px",
-    lineHeight: "1.6",
-    color: "#59635c",
-    margin: 0,
-    maxWidth: "540px"
-  },
-  ctaGroup: {
+  headerNav: {
     display: "flex",
-    gap: "16px",
     alignItems: "center",
-    marginTop: "8px"
+    gap: "28px",
   },
-  heroCta: {
-    background: "#24715d",
+  navLink: {
+    fontSize: "14px",
+    fontWeight: "500",
+    color: "#6b6b6b",
+    textDecoration: "none",
+    transition: "color 0.2s",
+  },
+  headerCta: {
+    background: "#1a1a1a",
     color: "#fff",
     border: "none",
-    padding: "16px 28px",
-    borderRadius: "12px",
-    fontSize: "15px",
-    fontWeight: "700",
+    padding: "9px 20px",
+    borderRadius: "8px",
+    fontSize: "13px",
+    fontWeight: "600",
     cursor: "pointer",
-    boxShadow: "0 8px 24px rgba(36, 113, 93, 0.25)"
+    transition: "background 0.2s",
   },
-  heroSecondaryCta: {
-    color: "#24715d",
-    fontWeight: "700",
-    fontSize: "15px",
-    padding: "12px 16px"
-  },
-  metricsRow: {
+
+  /* ── Hero ── */
+  hero: {
+    maxWidth: "1120px",
+    margin: "0 auto",
+    padding: "140px 32px 80px",
     display: "grid",
-    gridTemplateColumns: "repeat(3, 1fr)",
+    gridTemplateColumns: "1fr 1fr",
+    gap: "64px",
+    alignItems: "center",
+  },
+  heroContent: {
+    display: "flex",
+    flexDirection: "column",
     gap: "20px",
-    borderTop: "1px solid rgba(18, 22, 18, 0.08)",
-    paddingTop: "32px",
-    width: "100%",
-    marginTop: "16px"
   },
-  metricCard: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "4px"
+  heroPill: {
+    display: "inline-block",
+    alignSelf: "flex-start",
+    background: "rgba(45, 106, 79, 0.08)",
+    color: "#2d6a4f",
+    padding: "6px 14px",
+    borderRadius: "100px",
+    fontSize: "12px",
+    fontWeight: "600",
+    letterSpacing: "0.3px",
   },
-  metricVal: {
-    fontSize: "28px",
+  heroTitle: {
+    fontSize: "46px",
     fontWeight: "800",
-    color: "#24715d"
+    lineHeight: "1.12",
+    letterSpacing: "-1.5px",
+    color: "#1a1a1a",
+    margin: 0,
   },
-  metricLabel: {
-    fontSize: "11px",
-    color: "#59635c",
-    lineHeight: "1.4"
+  heroAccent: {
+    background: "linear-gradient(135deg, #2d6a4f, #52b788)",
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
   },
-  heroRight: {
-    display: "flex",
-    justifyContent: "center"
-  },
-  imageCard: {
-    position: "relative",
-    width: "100%",
+  heroSub: {
+    fontSize: "16px",
+    lineHeight: "1.7",
+    color: "#6b6b6b",
+    margin: 0,
     maxWidth: "480px",
-    borderRadius: "16px",
-    boxShadow: "0 20px 50px rgba(18, 22, 18, 0.08)",
-    border: "1px solid rgba(18, 22, 18, 0.06)",
-    overflow: "visible",
-    background: "#ffffff",
-    padding: "12px"
   },
-  heroImage: {
-    width: "100%",
-    height: "auto",
-    borderRadius: "12px",
-    display: "block"
-  },
-  floatingCard: {
-    position: "absolute",
-    bottom: "-24px",
-    left: "-24px",
-    background: "#ffffff",
-    border: "1px solid rgba(18, 22, 18, 0.08)",
-    borderRadius: "12px",
-    padding: "16px",
-    boxShadow: "0 10px 25px rgba(18, 22, 18, 0.06)",
-    maxWidth: "240px",
+  heroBtnRow: {
     display: "flex",
-    flexDirection: "column",
-    gap: "8px"
+    gap: "12px",
+    marginTop: "8px",
   },
-  floatingIndicator: {
+  heroBtn: {
+    background: "#2d6a4f",
+    color: "#fff",
+    border: "none",
+    padding: "14px 28px",
+    borderRadius: "10px",
+    fontSize: "15px",
+    fontWeight: "600",
+    cursor: "pointer",
+    transition: "transform 0.2s, box-shadow 0.2s",
+    boxShadow: "0 4px 16px rgba(45, 106, 79, 0.25)",
+  },
+  heroGhBtn: {
     display: "flex",
     alignItems: "center",
-    gap: "8px",
-    fontSize: "11px",
-    fontWeight: "700",
-    color: "#24715d",
-    textTransform: "uppercase"
+    padding: "14px 24px",
+    borderRadius: "10px",
+    border: "1px solid rgba(0,0,0,0.12)",
+    background: "#fff",
+    color: "#1a1a1a",
+    fontSize: "15px",
+    fontWeight: "600",
+    textDecoration: "none",
+    cursor: "pointer",
+    transition: "border-color 0.2s",
   },
-  statusPulse: {
-    width: "8px",
-    height: "8px",
-    borderRadius: "50%",
-    background: "#24715d",
-    animation: "pulse 2s infinite"
-  },
-  floatingText: {
-    fontSize: "12px",
-    margin: 0,
-    color: "#59635c",
-    fontStyle: "italic"
-  },
-  feedSection: {
-    padding: "60px 0",
-    background: "rgba(18, 22, 18, 0.02)",
-    borderTop: "1px solid rgba(18, 22, 18, 0.04)",
-    borderBottom: "1px solid rgba(18, 22, 18, 0.04)"
-  },
-  feedHeader: {
-    padding: "0 8%",
-    marginBottom: "24px"
-  },
-  feedTitle: {
-    fontSize: "20px",
-    fontWeight: "800",
-    margin: 0
-  },
-  feedDesc: {
-    fontSize: "14px",
-    color: "#59635c",
-    margin: "4px 0 0 0"
-  },
-  feedScrollWrapper: {
-    overflow: "hidden",
-    width: "100%",
-    display: "flex"
-  },
-  feedTrack: {
+  heroStats: {
     display: "flex",
-    gap: "20px",
-    padding: "10px 20px",
-    animation: "scrollTrack 30s linear infinite",
-    width: "max-content"
+    alignItems: "center",
+    gap: "24px",
+    marginTop: "16px",
+    paddingTop: "24px",
+    borderTop: "1px solid rgba(0,0,0,0.06)",
   },
-  feedItem: {
-    width: "280px",
-    background: "#ffffff",
-    border: "1px solid rgba(18, 22, 18, 0.06)",
+  stat: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "2px",
+  },
+  statNum: {
+    fontSize: "22px",
+    fontWeight: "800",
+    color: "#2d6a4f",
+  },
+  statLabel: {
+    fontSize: "12px",
+    color: "#888",
+    fontWeight: "500",
+  },
+  statDivider: {
+    width: "1px",
+    height: "32px",
+    background: "rgba(0,0,0,0.08)",
+  },
+
+  /* ── Hero Visual (Photo) ── */
+  heroVisual: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  heroImageWrap: {
+    width: "100%",
+    maxWidth: "500px",
+    borderRadius: "16px",
+    overflow: "hidden",
+    boxShadow: "0 24px 48px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04)",
+    animation: "fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1)",
+  },
+  heroPhoto: {
+    width: "100%",
+    height: "auto",
+    display: "block",
+    objectFit: "cover",
+  },
+
+  /* ── Photo Banner ── */
+  photoBanner: {
+    position: "relative",
+    height: "340px",
+    overflow: "hidden",
+  },
+  bannerPhoto: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+    display: "block",
+    filter: "brightness(0.7)",
+  },
+  bannerOverlay: {
+    position: "absolute",
+    inset: 0,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    background: "linear-gradient(135deg, rgba(45,106,79,0.3), rgba(0,0,0,0.4))",
+  },
+  bannerQuote: {
+    color: "#fff",
+    fontSize: "24px",
+    fontWeight: "700",
+    fontStyle: "italic",
+    maxWidth: "600px",
+    textAlign: "center",
+    lineHeight: "1.5",
+    margin: 0,
+    padding: "0 32px",
+    letterSpacing: "-0.3px",
+  },
+
+  /* ── Privacy Split Layout ── */
+  privacySplit: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: "40px",
+    alignItems: "center",
+  },
+  privacyCards: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "16px",
+  },
+  privacyPhotoWrap: {
+    borderRadius: "16px",
+    overflow: "hidden",
+    boxShadow: "0 16px 40px rgba(0,0,0,0.06)",
+  },
+  privacyPhoto: {
+    width: "100%",
+    height: "auto",
+    display: "block",
+    objectFit: "cover",
+  },
+
+  /* ── Sections ── */
+  section: {
+    padding: "100px 0",
+  },
+  sectionAlt: {
+    padding: "100px 0",
+    background: "#f4f3f0",
+  },
+  sectionInner: {
+    maxWidth: "1120px",
+    margin: "0 auto",
+    padding: "0 32px",
+  },
+  sectionPill: {
+    display: "inline-block",
+    background: "rgba(45, 106, 79, 0.08)",
+    color: "#2d6a4f",
+    padding: "5px 12px",
+    borderRadius: "100px",
+    fontSize: "12px",
+    fontWeight: "600",
+    letterSpacing: "0.3px",
+    marginBottom: "12px",
+  },
+  sectionTitle: {
+    fontSize: "36px",
+    fontWeight: "800",
+    letterSpacing: "-1px",
+    color: "#1a1a1a",
+    margin: "0 0 12px 0",
+    lineHeight: "1.2",
+  },
+  sectionSub: {
+    fontSize: "16px",
+    color: "#6b6b6b",
+    margin: "0 0 48px 0",
+    maxWidth: "560px",
+    lineHeight: "1.7",
+  },
+  sectionHidden: {
+    opacity: 0,
+    transform: "translateY(28px)",
+    transition: "all 0.7s cubic-bezier(0.16, 1, 0.3, 1)",
+  },
+  sectionVisible: {
+    opacity: 1,
+    transform: "translateY(0)",
+    transition: "all 0.7s cubic-bezier(0.16, 1, 0.3, 1)",
+  },
+
+  /* ── Feature Cards ── */
+  featureGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(3, 1fr)",
+    gap: "24px",
+  },
+  featureCard: {
+    background: "#fff",
+    border: "1px solid rgba(0,0,0,0.06)",
+    borderRadius: "14px",
+    padding: "28px 24px",
+    transition: "transform 0.2s, box-shadow 0.2s",
+  },
+  featureIcon: {
+    fontSize: "28px",
+    marginBottom: "14px",
+  },
+  featureTitle: {
+    fontSize: "16px",
+    fontWeight: "700",
+    margin: "0 0 8px 0",
+    color: "#1a1a1a",
+  },
+  featureDesc: {
+    fontSize: "14px",
+    lineHeight: "1.6",
+    color: "#6b6b6b",
+    margin: 0,
+  },
+
+  /* ── Steps ── */
+  stepsRow: {
+    display: "grid",
+    gridTemplateColumns: "repeat(3, 1fr)",
+    gap: "32px",
+    position: "relative",
+  },
+  stepCard: {
+    background: "#fff",
+    border: "1px solid rgba(0,0,0,0.06)",
+    borderRadius: "14px",
+    padding: "32px 24px",
+    position: "relative",
+    textAlign: "center",
+  },
+  stepNum: {
+    fontSize: "36px",
+    fontWeight: "800",
+    color: "rgba(45, 106, 79, 0.15)",
+    marginBottom: "12px",
+  },
+  stepTitle: {
+    fontSize: "18px",
+    fontWeight: "700",
+    margin: "0 0 10px 0",
+    color: "#1a1a1a",
+  },
+  stepDesc: {
+    fontSize: "14px",
+    lineHeight: "1.65",
+    color: "#6b6b6b",
+    margin: 0,
+  },
+  stepArrow: {
+    position: "absolute",
+    right: "-22px",
+    top: "50%",
+    transform: "translateY(-50%)",
+    fontSize: "20px",
+    color: "rgba(45, 106, 79, 0.3)",
+    fontWeight: "700",
+    zIndex: 2,
+  },
+
+  /* ── Privacy Cards ── */
+  privacyCard: {
+    display: "flex",
+    gap: "16px",
+    alignItems: "flex-start",
+    background: "#fff",
+    border: "1px solid rgba(0,0,0,0.06)",
     borderRadius: "12px",
-    padding: "16px",
+    padding: "20px",
+    transition: "transform 0.2s ease",
+  },
+  privacyIcon: {
+    fontSize: "24px",
+    flexShrink: 0,
+    marginTop: "2px",
+  },
+  privacyTitle: {
+    fontSize: "15px",
+    fontWeight: "700",
+    margin: "0 0 6px 0",
+    color: "#1a1a1a",
+  },
+  privacyDesc: {
+    fontSize: "13px",
+    lineHeight: "1.6",
+    color: "#6b6b6b",
+    margin: 0,
+  },
+
+  /* ── CTA Section ── */
+  ctaSection: {
+    padding: "80px 0",
+    background: "#1a1a1a",
+  },
+  ctaInner: {
+    maxWidth: "640px",
+    margin: "0 auto",
+    padding: "0 32px",
+    textAlign: "center",
+  },
+  ctaTitle: {
+    fontSize: "32px",
+    fontWeight: "800",
+    color: "#fff",
+    margin: "0 0 12px 0",
+    letterSpacing: "-0.5px",
+  },
+  ctaSub: {
+    fontSize: "16px",
+    color: "rgba(255,255,255,0.6)",
+    margin: "0 0 32px 0",
+    lineHeight: "1.6",
+  },
+  ctaBtnRow: {
+    display: "flex",
+    justifyContent: "center",
+    gap: "14px",
+  },
+  ctaBtn: {
+    background: "#52b788",
+    color: "#fff",
+    border: "none",
+    padding: "14px 32px",
+    borderRadius: "10px",
+    fontSize: "15px",
+    fontWeight: "600",
+    cursor: "pointer",
+    boxShadow: "0 4px 16px rgba(82, 183, 136, 0.3)",
+  },
+  ctaGhBtn: {
+    padding: "14px 24px",
+    borderRadius: "10px",
+    border: "1px solid rgba(255,255,255,0.15)",
+    background: "transparent",
+    color: "#fff",
+    fontSize: "14px",
+    fontWeight: "500",
+    textDecoration: "none",
+  },
+
+  /* ── Footer ── */
+  footer: {
+    borderTop: "1px solid rgba(0,0,0,0.06)",
+    background: "#f4f3f0",
+  },
+  footerTop: {
+    maxWidth: "1120px",
+    margin: "0 auto",
+    padding: "48px 32px 36px",
+    display: "grid",
+    gridTemplateColumns: "2fr 1fr 1fr 1fr",
+    gap: "40px",
+  },
+  footerBrand: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "12px",
+  },
+  footerNote: {
+    fontSize: "13px",
+    color: "#888",
+    margin: 0,
+    lineHeight: "1.6",
+  },
+  footerCol: {
     display: "flex",
     flexDirection: "column",
     gap: "10px",
-    boxShadow: "0 4px 15px rgba(18, 22, 18, 0.02)"
   },
-  feedItemHeader: {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    fontSize: "12px"
-  },
-  feedIcon: {
-    fontSize: "14px"
-  },
-  feedPlatform: {
-    fontWeight: "700",
-    flexGrow: 1
-  },
-  feedLiveBadge: {
-    fontSize: "9px",
-    background: "rgba(36, 113, 93, 0.08)",
-    color: "#24715d",
-    padding: "2px 6px",
-    borderRadius: "4px",
-    fontWeight: "700"
-  },
-  feedItemTitle: {
-    fontSize: "13px",
-    fontWeight: "700",
-    margin: 0,
-    color: "#121612"
-  },
-  feedItemPreview: {
-    fontSize: "11px",
-    color: "#59635c",
-    margin: 0,
-    lineHeight: "1.4",
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis"
-  },
-  tourSection: {
-    padding: "100px 8%",
-    position: "relative",
-    zIndex: 10
-  },
-  tourSectionTitle: {
-    fontSize: "32px",
-    fontWeight: "800",
-    textAlign: "center",
-    margin: 0
-  },
-  tourSectionDesc: {
-    fontSize: "16px",
-    color: "#59635c",
-    textAlign: "center",
-    margin: "8px 0 60px 0"
-  },
-  tourLayout: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1.2fr",
-    gap: "40px",
-    alignItems: "center"
-  },
-  tourTabs: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "16px"
-  },
-  tourTabBtn: {
-    display: "flex",
-    alignItems: "center",
-    gap: "16px",
-    padding: "20px",
-    background: "transparent",
-    border: "1px solid rgba(18, 22, 18, 0.05)",
-    borderRadius: "12px",
-    cursor: "pointer",
-    textAlign: "left",
-    transition: "all 0.2s ease"
-  },
-  tourTabBtnActive: {
-    background: "#ffffff",
-    borderColor: "rgba(18, 22, 18, 0.1)",
-    boxShadow: "0 10px 25px rgba(18, 22, 18, 0.04)"
-  },
-  tourTabNum: {
-    fontSize: "24px",
-    fontWeight: "800",
-    color: "rgba(18, 22, 18, 0.15)"
-  },
-  tourTabTitle: {
-    fontSize: "15px",
-    fontWeight: "700",
-    margin: 0,
-    color: "#121612"
-  },
-  tourTabSubtitle: {
+  footerColTitle: {
     fontSize: "12px",
-    color: "#59635c",
-    margin: "4px 0 0 0",
-    lineHeight: "1.4"
-  },
-  tourDisplay: {
-    background: "#ffffff",
-    border: "1px solid rgba(18, 22, 18, 0.08)",
-    borderRadius: "16px",
-    padding: "40px",
-    boxShadow: "0 15px 40px rgba(18, 22, 18, 0.02)",
-    minHeight: "320px",
-    display: "flex",
-    alignItems: "center"
-  },
-  tourContent: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "16px"
-  },
-  tourDisplayIcon: {
-    fontSize: "36px"
-  },
-  mockCode: {
-    background: "rgba(18, 22, 18, 0.03)",
-    padding: "16px",
-    borderRadius: "8px",
-    fontFamily: "Courier, monospace",
-    fontSize: "12px",
-    color: "#24715d",
-    lineHeight: "1.5",
-    borderLeft: "4px solid #24715d"
-  },
-  footer: {
-    borderTop: "1px solid rgba(18, 22, 18, 0.08)",
-    padding: "40px 8% 0 8%",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    position: "relative",
-    zIndex: 10
-  },
-  footerText: {
-    fontSize: "13px",
-    color: "#59635c",
-    margin: 0
-  },
-  footerLinks: {
-    display: "flex",
-    gap: "12px",
-    alignItems: "center"
+    fontWeight: "700",
+    color: "#1a1a1a",
+    textTransform: "uppercase",
+    letterSpacing: "0.8px",
+    margin: "0 0 4px 0",
   },
   footerLink: {
     fontSize: "13px",
-    color: "#24715d",
-    fontWeight: "600"
+    color: "#6b6b6b",
+    textDecoration: "none",
+    fontWeight: "500",
+    lineHeight: "1.4",
   },
-  footerSeparator: {
-    color: "rgba(18, 22, 18, 0.2)",
-    fontSize: "12px"
-  }
+  footerBottom: {
+    maxWidth: "1120px",
+    margin: "0 auto",
+    padding: "20px 32px",
+    borderTop: "1px solid rgba(0,0,0,0.06)",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  footerCopy: {
+    fontSize: "12px",
+    color: "#aaa",
+  },
+  backToTop: {
+    fontSize: "12px",
+    color: "#2d6a4f",
+    fontWeight: "600",
+    cursor: "pointer",
+    textDecoration: "none",
+  },
 };

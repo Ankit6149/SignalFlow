@@ -3,38 +3,35 @@ import React from "react";
 export default function Sidebar({ view, setView, activeProjectName, aiStatus }) {
   const navItems = [
     { id: "dashboard", label: "Dashboard", icon: "📊" },
-    { id: "create", label: "Create Package", icon: "✨" },
-    { id: "library", label: "Content Library", icon: "📚" },
-    { id: "projects", label: "Brand Profiles", icon: "👤" },
-    { id: "channels", label: "Connected Channels", icon: "🔌" },
+    { id: "create", label: "Create", icon: "✨" },
+    { id: "library", label: "Library", icon: "📚" },
+    { id: "projects", label: "Profiles", icon: "👤" },
+    { id: "channels", label: "Channels", icon: "🔌" },
     { id: "settings", label: "Settings", icon: "⚙️" }
   ];
 
   return (
     <aside style={styles.sidebar}>
-      <div style={styles.brandContainer}>
+      {/* Logo */}
+      <div style={styles.brand}>
         <div style={styles.logoBadge}>SF</div>
-        <div>
-          <h1 style={styles.brandName}>SignalFlow</h1>
-          <span style={styles.brandSubtitle}>Studio v1.0</span>
+        <div style={styles.brandText}>
+          <span style={styles.brandName}>SignalFlow</span>
+          <span style={styles.brandSub}>Studio</span>
         </div>
       </div>
 
-      <div style={styles.activeBrandWidget}>
-        <div style={styles.widgetLabel}>ACTIVE PROFILE</div>
-        <div style={styles.widgetValue}>{activeProjectName || "No Project"}</div>
-      </div>
-
+      {/* Navigation */}
       <nav style={styles.nav}>
         {navItems.map(item => {
-          const isActive = view === item.id || (item.id === "create" && view === "create-flow");
+          const isActive = view === item.id;
           return (
             <button
               key={item.id}
               onClick={() => setView(item.id)}
               style={{
-                ...styles.navButton,
-                ...(isActive ? styles.navButtonActive : {})
+                ...styles.navBtn,
+                ...(isActive ? styles.navBtnActive : {})
               }}
             >
               <span style={styles.navIcon}>{item.icon}</span>
@@ -44,11 +41,17 @@ export default function Sidebar({ view, setView, activeProjectName, aiStatus }) 
         })}
       </nav>
 
-      <div style={styles.footerWidget}>
-        <div style={styles.widgetLabel}>AI ENGINE</div>
-        <div style={{ ...styles.widgetValue, color: "#10b981", display: "flex", alignItems: "center", gap: "6px" }}>
-          <span style={styles.statusDot}></span>
-          {aiStatus || "Demo Mode"}
+      {/* Bottom Info */}
+      <div style={styles.bottomInfo}>
+        <div style={styles.infoItem}>
+          <span style={styles.infoLabel}>Profile</span>
+          <span style={styles.infoValue}>{activeProjectName || "Default"}</span>
+        </div>
+        <div style={styles.infoItem}>
+          <span style={styles.infoLabel}>AI Engine</span>
+          <span style={{ ...styles.infoValue, color: "#2d6a4f" }}>
+            {aiStatus || "Template"}
+          </span>
         </div>
       </div>
     </aside>
@@ -57,116 +60,119 @@ export default function Sidebar({ view, setView, activeProjectName, aiStatus }) 
 
 const styles = {
   sidebar: {
-    width: "260px",
-    background: "#121612",
-    borderRight: "1px solid rgba(255, 255, 255, 0.05)",
+    width: "220px",
+    background: "#fff",
+    borderRight: "1px solid rgba(0,0,0,0.07)",
     display: "flex",
     flexDirection: "column",
-    padding: "24px 16px",
+    padding: "20px 12px",
     flexShrink: 0,
     height: "100vh",
     position: "sticky",
-    top: 0
+    top: 0,
+    fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
   },
-  brandContainer: {
+  brand: {
     display: "flex",
     alignItems: "center",
-    gap: "12px",
-    marginBottom: "32px",
-    paddingLeft: "8px"
+    gap: "10px",
+    padding: "4px 8px",
+    marginBottom: "28px",
   },
   logoBadge: {
-    width: "36px",
-    height: "36px",
+    width: "32px",
+    height: "32px",
     borderRadius: "8px",
-    background: "linear-gradient(135deg, #24715d 0%, #ec6f4f 100%)",
+    background: "linear-gradient(135deg, #2d6a4f, #52b788)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     color: "#fff",
-    fontWeight: "bold",
-    fontSize: "16px",
-    boxShadow: "0 0 15px rgba(36, 113, 93, 0.4)"
+    fontWeight: "700",
+    fontSize: "13px",
+    flexShrink: 0,
+  },
+  brandText: {
+    display: "flex",
+    flexDirection: "column",
   },
   brandName: {
-    fontSize: "18px",
-    fontWeight: "800",
-    color: "#f8fafc",
-    margin: 0,
-    letterSpacing: "0.5px"
-  },
-  brandSubtitle: {
-    fontSize: "11px",
-    color: "#64748b",
-    fontWeight: "500"
-  },
-  activeBrandWidget: {
-    background: "rgba(255, 255, 255, 0.04)",
-    border: "1px solid rgba(255, 255, 255, 0.05)",
-    borderRadius: "12px",
-    padding: "12px",
-    marginBottom: "24px"
-  },
-  widgetLabel: {
-    fontSize: "10px",
-    color: "#808f85",
+    fontSize: "15px",
     fontWeight: "700",
-    letterSpacing: "1px",
-    marginBottom: "4px"
+    color: "#1a1a1a",
+    letterSpacing: "-0.3px",
+    lineHeight: "1.1",
   },
-  widgetValue: {
-    fontSize: "13px",
-    fontWeight: "600",
-    color: "#f8fafc",
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis"
+  brandSub: {
+    fontSize: "11px",
+    color: "#aaa",
+    fontWeight: "500",
   },
   nav: {
     display: "flex",
     flexDirection: "column",
-    gap: "6px",
-    flexGrow: 1
+    gap: "4px",
+    flexGrow: 1,
   },
-  navButton: {
+  navBtn: {
     display: "flex",
     alignItems: "center",
-    gap: "12px",
-    padding: "10px 14px",
+    gap: "10px",
+    padding: "10px 12px",
     borderRadius: "8px",
     background: "transparent",
     border: "none",
-    color: "#94a3b8",
+    color: "#6b6b6b",
     textAlign: "left",
     cursor: "pointer",
-    fontSize: "14px",
+    fontSize: "13px",
     fontWeight: "500",
-    transition: "all 0.2s ease"
+    transition: "all 0.15s ease",
+    fontFamily: "inherit",
   },
-  navButtonActive: {
-    background: "#24715d",
-    color: "#ffffff",
-    fontWeight: "700"
+  navBtnActive: {
+    background: "rgba(45, 106, 79, 0.08)",
+    color: "#2d6a4f",
+    fontWeight: "600",
   },
   navIcon: {
-    fontSize: "16px",
-    width: "20px"
+    fontSize: "15px",
+    width: "20px",
+    textAlign: "center",
+    flexShrink: 0,
   },
   navLabel: {
-    flexGrow: 1
+    flexGrow: 1,
   },
-  footerWidget: {
+  bottomInfo: {
     marginTop: "auto",
+    display: "flex",
+    flexDirection: "column",
+    gap: "8px",
     padding: "12px",
-    background: "rgba(0, 0, 0, 0.2)",
-    border: "1px solid rgba(255, 255, 255, 0.03)",
-    borderRadius: "12px"
+    background: "#faf9f6",
+    borderRadius: "10px",
+    border: "1px solid rgba(0,0,0,0.05)",
   },
-  statusDot: {
-    width: "8px",
-    height: "8px",
-    borderRadius: "50%",
-    background: "#10b981",
-    boxShadow: "0 0 8px #10b981"
-  }
+  infoItem: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  infoLabel: {
+    fontSize: "10px",
+    color: "#aaa",
+    fontWeight: "600",
+    textTransform: "uppercase",
+    letterSpacing: "0.5px",
+  },
+  infoValue: {
+    fontSize: "12px",
+    fontWeight: "600",
+    color: "#1a1a1a",
+    maxWidth: "110px",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+  },
 };

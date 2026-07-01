@@ -670,75 +670,79 @@ const styles = {
     display: "flex",
     width: "100vw",
     height: "100vh",
-    background: "transparent",
-    color: "#121612"
+    background: "#faf9f6",
+    color: "#1a1a1a",
+    fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
   },
   mainContent: {
     flexGrow: 1,
     height: "100%",
     overflowY: "auto",
-    background: "transparent"
+    background: "transparent",
+    animation: "fadeIn 0.3s ease",
   },
   lockPanel: {
     margin: "auto",
-    maxWidth: "400px",
+    maxWidth: "380px",
     background: "#ffffff",
-    border: "1px solid rgba(18, 22, 18, 0.08)",
-    padding: "36px",
+    border: "1px solid rgba(0,0,0,0.08)",
+    padding: "40px",
     borderRadius: "16px",
     display: "flex",
     flexDirection: "column",
     gap: "24px",
     textAlign: "center",
-    boxShadow: "0 20px 40px rgba(18, 22, 18, 0.05)"
+    boxShadow: "0 16px 40px rgba(0,0,0,0.04)",
+    animation: "fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1)",
   },
   lockHeader: {
     display: "flex",
     flexDirection: "column",
-    gap: "10px"
+    gap: "10px",
   },
   lockIcon: {
-    fontSize: "36px"
+    fontSize: "36px",
   },
   lockTitle: {
     fontSize: "18px",
-    fontWeight: "800",
-    color: "#121612",
-    margin: 0
+    fontWeight: "700",
+    color: "#1a1a1a",
+    margin: 0,
   },
   lockDesc: {
     fontSize: "13px",
-    color: "#59635c",
-    lineHeight: "1.5",
-    margin: 0
+    color: "#888",
+    lineHeight: "1.6",
+    margin: 0,
   },
   lockForm: {
     display: "flex",
     flexDirection: "column",
-    gap: "12px"
+    gap: "12px",
   },
   lockInput: {
-    background: "#ffffff",
-    border: "1px solid rgba(18, 22, 18, 0.12)",
-    color: "#121612",
+    background: "#faf9f6",
+    border: "1px solid rgba(0,0,0,0.1)",
+    color: "#1a1a1a",
     padding: "12px",
     borderRadius: "8px",
     outline: "none",
     fontSize: "14px",
-    textAlign: "center"
+    textAlign: "center",
   },
   lockBtn: {
-    background: "#24715d",
+    background: "#2d6a4f",
     color: "#fff",
     border: "none",
     padding: "12px",
     borderRadius: "8px",
     fontWeight: "600",
-    cursor: "pointer"
+    fontSize: "14px",
+    cursor: "pointer",
   },
   lockMsg: {
     fontSize: "12px",
-    color: "#f43f5e",
-    margin: 0
-  }
+    color: "#ef4444",
+    margin: 0,
+  },
 };

@@ -304,15 +304,15 @@ export default function Dashboard({
 function getStatusStyle(status) {
   switch (status) {
     case "posted":
-      return { background: "rgba(16, 185, 129, 0.15)", color: "#10b981" };
+      return { background: "rgba(45, 106, 79, 0.1)", color: "#2d6a4f" };
     case "scheduled":
-      return { background: "rgba(236, 111, 79, 0.12)", color: "#ec6f4f" };
+      return { background: "rgba(245, 158, 11, 0.1)", color: "#d97706" };
     case "ready":
-      return { background: "rgba(56, 189, 248, 0.15)", color: "#38bdf8" };
+      return { background: "rgba(59, 130, 246, 0.1)", color: "#3b82f6" };
     case "failed":
-      return { background: "rgba(244, 63, 94, 0.15)", color: "#f43f5e" };
+      return { background: "rgba(239, 68, 68, 0.1)", color: "#ef4444" };
     default:
-      return { background: "rgba(148, 163, 184, 0.15)", color: "#94a3b8" };
+      return { background: "rgba(0,0,0,0.05)", color: "#888" };
   }
 }
 
@@ -321,256 +321,263 @@ const styles = {
     padding: "32px",
     display: "flex",
     flexDirection: "column",
-    gap: "24px",
+    gap: "20px",
     overflowY: "auto",
-    flexGrow: 1
+    flexGrow: 1,
+    animation: "fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
   },
   header: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: "8px"
+    marginBottom: "4px",
   },
   title: {
-    fontSize: "24px",
-    fontWeight: "800",
-    color: "#121612",
-    margin: 0
+    fontSize: "22px",
+    fontWeight: "700",
+    color: "#1a1a1a",
+    margin: 0,
+    letterSpacing: "-0.3px",
   },
   subtitle: {
     fontSize: "14px",
-    color: "#59635c",
-    margin: "4px 0 0 0"
+    color: "#888",
+    margin: "4px 0 0 0",
   },
   projectSelector: {
     display: "flex",
     flexDirection: "column",
-    gap: "6px"
+    gap: "4px",
   },
   selectorLabel: {
-    fontSize: "11px",
-    color: "#59635c",
-    fontWeight: "700",
-    letterSpacing: "0.5px"
+    fontSize: "10px",
+    color: "#aaa",
+    fontWeight: "600",
+    letterSpacing: "0.5px",
+    textTransform: "uppercase",
   },
   select: {
-    background: "#ffffff",
-    color: "#121612",
-    border: "1px solid rgba(18, 22, 18, 0.12)",
-    padding: "8px 16px",
+    background: "#fff",
+    color: "#1a1a1a",
+    border: "1px solid rgba(0,0,0,0.1)",
+    padding: "8px 14px",
     borderRadius: "8px",
     outline: "none",
     fontWeight: "600",
-    fontSize: "14px",
-    cursor: "pointer"
+    fontSize: "13px",
+    cursor: "pointer",
   },
   statsGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-    gap: "16px"
+    gridTemplateColumns: "repeat(4, 1fr)",
+    gap: "14px",
   },
   statCard: {
-    background: "#ffffff",
-    border: "1px solid rgba(18, 22, 18, 0.08)",
-    padding: "20px",
-    borderRadius: "16px",
+    background: "#fff",
+    border: "1px solid rgba(0,0,0,0.06)",
+    padding: "18px",
+    borderRadius: "12px",
     display: "flex",
     alignItems: "center",
-    gap: "16px",
-    boxShadow: "0 10px 30px rgba(18, 22, 18, 0.02)"
+    gap: "14px",
+    transition: "transform 0.2s ease, box-shadow 0.2s ease",
   },
   statIcon: {
-    fontSize: "28px",
-    width: "48px",
-    height: "48px",
-    borderRadius: "12px",
-    background: "rgba(36, 113, 93, 0.06)",
-    color: "#24715d",
+    fontSize: "22px",
+    width: "42px",
+    height: "42px",
+    borderRadius: "10px",
+    background: "rgba(45, 106, 79, 0.06)",
+    color: "#2d6a4f",
     display: "flex",
     alignItems: "center",
-    justifyContent: "center"
+    justifyContent: "center",
+    flexShrink: 0,
   },
   statLabel: {
-    fontSize: "12px",
-    color: "#59635c",
+    fontSize: "11px",
+    color: "#999",
     fontWeight: "600",
-    marginBottom: "4px"
+    marginBottom: "2px",
   },
   statValue: {
-    fontSize: "24px",
-    fontWeight: "800",
-    color: "#121612"
+    fontSize: "22px",
+    fontWeight: "700",
+    color: "#1a1a1a",
   },
   dashboardBody: {
     display: "grid",
-    gridTemplateColumns: "1.4fr 1fr",
-    gap: "24px",
-    alignItems: "start"
+    gridTemplateColumns: "1.3fr 1fr",
+    gap: "20px",
+    alignItems: "start",
   },
   leftCol: {
     display: "flex",
     flexDirection: "column",
-    gap: "24px"
+    gap: "20px",
   },
   rightCol: {
     display: "flex",
     flexDirection: "column",
-    gap: "24px"
+    gap: "20px",
   },
   card: {
-    background: "#ffffff",
-    border: "1px solid rgba(18, 22, 18, 0.08)",
-    borderRadius: "16px",
-    padding: "24px",
+    background: "#fff",
+    border: "1px solid rgba(0,0,0,0.06)",
+    borderRadius: "14px",
+    padding: "22px",
     display: "flex",
     flexDirection: "column",
-    gap: "16px",
-    boxShadow: "0 10px 30px rgba(18, 22, 18, 0.02)"
+    gap: "14px",
+    transition: "box-shadow 0.2s ease",
   },
   cardHeader: {
     display: "flex",
     justifyContent: "space-between",
-    alignItems: "center"
+    alignItems: "center",
   },
   cardTitle: {
-    fontSize: "16px",
+    fontSize: "15px",
     fontWeight: "700",
-    color: "#121612",
-    margin: 0
+    color: "#1a1a1a",
+    margin: 0,
   },
   textLink: {
     background: "transparent",
     border: "none",
-    color: "#ec6f4f",
+    color: "#2d6a4f",
     fontWeight: "600",
-    fontSize: "13px",
+    fontSize: "12px",
     cursor: "pointer",
-    padding: 0
+    padding: 0,
   },
   actionGrid: {
     display: "grid",
     gridTemplateColumns: "1fr 1fr",
-    gap: "12px"
+    gap: "10px",
   },
   actionBtn: {
     display: "flex",
     alignItems: "center",
-    gap: "14px",
-    padding: "16px",
-    background: "rgba(36, 113, 93, 0.04)",
-    border: "1px solid rgba(18, 22, 18, 0.05)",
-    borderRadius: "12px",
+    gap: "12px",
+    padding: "14px",
+    background: "#faf9f6",
+    border: "1px solid rgba(0,0,0,0.05)",
+    borderRadius: "10px",
     cursor: "pointer",
     textAlign: "left",
-    transition: "all 0.2s ease"
+    transition: "all 0.2s ease",
+    fontFamily: "inherit",
   },
   actionIcon: {
-    fontSize: "22px"
+    fontSize: "20px",
   },
   actionDetails: {
     display: "flex",
-    flexDirection: "column"
+    flexDirection: "column",
   },
   actionLabel: {
-    fontSize: "14px",
+    fontSize: "13px",
     fontWeight: "600",
-    color: "#121612"
+    color: "#1a1a1a",
   },
   actionDesc: {
     fontSize: "11px",
-    color: "#59635c",
-    marginTop: "2px"
+    color: "#999",
+    marginTop: "2px",
   },
   emptyState: {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    padding: "40px 20px",
+    padding: "36px 20px",
     textAlign: "center",
-    color: "#59635c",
-    gap: "12px"
+    color: "#999",
+    gap: "12px",
   },
   primaryBtn: {
-    background: "#24715d",
-    color: "#ffffff",
+    background: "#2d6a4f",
+    color: "#fff",
     border: "none",
     padding: "10px 20px",
     borderRadius: "8px",
     fontWeight: "600",
-    fontSize: "14px",
-    cursor: "pointer"
+    fontSize: "13px",
+    cursor: "pointer",
   },
   list: {
     display: "flex",
     flexDirection: "column",
-    gap: "10px"
+    gap: "8px",
   },
   listItem: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: "14px 18px",
-    background: "rgba(18, 22, 18, 0.02)",
-    border: "1px solid rgba(18, 22, 18, 0.04)",
-    borderRadius: "12px",
+    padding: "12px 16px",
+    background: "#faf9f6",
+    border: "1px solid rgba(0,0,0,0.04)",
+    borderRadius: "10px",
     cursor: "pointer",
-    transition: "all 0.2s ease"
+    transition: "all 0.15s ease",
   },
   listItemNoHover: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: "14px 18px",
-    background: "rgba(18, 22, 18, 0.02)",
-    border: "1px solid rgba(18, 22, 18, 0.04)",
-    borderRadius: "12px"
+    padding: "12px 16px",
+    background: "#faf9f6",
+    border: "1px solid rgba(0,0,0,0.04)",
+    borderRadius: "10px",
   },
   pkgInfo: {
     display: "flex",
     flexDirection: "column",
-    gap: "4px"
+    gap: "3px",
   },
   pkgTitle: {
-    fontSize: "14px",
+    fontSize: "13px",
     fontWeight: "600",
-    color: "#121612"
+    color: "#1a1a1a",
   },
   pkgMeta: {
     fontSize: "11px",
-    color: "#59635c"
+    color: "#999",
   },
   statusBadge: {
-    fontSize: "11px",
+    fontSize: "10px",
     fontWeight: "700",
-    padding: "4px 10px",
+    padding: "3px 8px",
     borderRadius: "20px",
-    textTransform: "uppercase"
+    textTransform: "uppercase",
+    letterSpacing: "0.3px",
   },
   brandDesc: {
-    fontSize: "14px",
-    color: "#59635c",
-    lineHeight: "1.5",
-    margin: 0
+    fontSize: "13px",
+    color: "#888",
+    lineHeight: "1.6",
+    margin: 0,
   },
   brandMetrics: {
     display: "flex",
     gap: "24px",
-    borderTop: "1px solid rgba(18, 22, 18, 0.08)",
-    paddingTop: "16px"
+    borderTop: "1px solid rgba(0,0,0,0.06)",
+    paddingTop: "14px",
   },
   metricLabel: {
-    fontSize: "11px",
-    color: "#59635c",
+    fontSize: "10px",
+    color: "#aaa",
     display: "block",
-    fontWeight: "700",
+    fontWeight: "600",
     textTransform: "uppercase",
-    marginBottom: "4px"
+    letterSpacing: "0.5px",
+    marginBottom: "4px",
   },
   metricVal: {
     fontSize: "13px",
-    color: "#121612",
-    fontWeight: "600"
+    color: "#1a1a1a",
+    fontWeight: "600",
   },
   emptyQueue: {
     display: "flex",
@@ -578,79 +585,79 @@ const styles = {
     alignItems: "center",
     padding: "24px",
     textAlign: "center",
-    background: "rgba(18, 22, 18, 0.02)",
-    borderRadius: "12px"
+    background: "#faf9f6",
+    borderRadius: "10px",
   },
   emptyQueueIcon: {
     fontSize: "24px",
-    marginBottom: "8px"
+    marginBottom: "8px",
   },
   emptyQueueText: {
     fontSize: "13px",
-    color: "#59635c",
-    margin: 0
+    color: "#999",
+    margin: 0,
   },
   queueItemInfo: {
     display: "flex",
     flexDirection: "column",
-    gap: "6px",
-    width: "100%"
+    gap: "4px",
+    width: "100%",
   },
   queueHeader: {
     display: "flex",
     justifyContent: "space-between",
-    alignItems: "center"
+    alignItems: "center",
   },
   queueChannel: {
     fontSize: "13px",
-    fontWeight: "700",
-    color: "#121612"
+    fontWeight: "600",
+    color: "#1a1a1a",
   },
   queueTime: {
     fontSize: "11px",
-    color: "#ec6f4f",
-    fontWeight: "600"
+    color: "#2d6a4f",
+    fontWeight: "600",
   },
   queueSnippet: {
     fontSize: "12px",
-    color: "#59635c",
+    color: "#888",
     margin: 0,
     whiteSpace: "nowrap",
     overflow: "hidden",
-    textOverflow: "ellipsis"
+    textOverflow: "ellipsis",
   },
   failedItem: {
     padding: "12px",
-    background: "rgba(244, 63, 94, 0.03)",
-    border: "1px solid rgba(244, 63, 94, 0.1)",
-    borderRadius: "12px",
+    background: "rgba(239, 68, 68, 0.03)",
+    border: "1px solid rgba(239, 68, 68, 0.1)",
+    borderRadius: "10px",
     display: "flex",
     flexDirection: "column",
-    gap: "10px"
+    gap: "10px",
   },
   failedHeader: {
     display: "flex",
-    justifyContent: "space-between"
+    justifyContent: "space-between",
   },
   failedChannel: {
     fontSize: "11px",
-    fontWeight: "800",
-    color: "#f43f5e"
+    fontWeight: "700",
+    color: "#ef4444",
   },
   failedError: {
     fontSize: "11px",
-    color: "#59635c",
-    textAlign: "right"
+    color: "#888",
+    textAlign: "right",
   },
   retryBtn: {
     alignSelf: "flex-end",
     background: "transparent",
-    border: "1px solid #f43f5e",
-    color: "#f43f5e",
+    border: "1px solid #ef4444",
+    color: "#ef4444",
     padding: "4px 10px",
     borderRadius: "6px",
     fontSize: "11px",
     fontWeight: "600",
-    cursor: "pointer"
-  }
+    cursor: "pointer",
+  },
 };
