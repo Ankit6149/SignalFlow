@@ -380,7 +380,7 @@ export default function ContentPackageCreationFlow({
         {currentStep === 1 && (
           /* Left Column: Context & Input sources */
           <div style={styles.leftCol}>
-            <div style={styles.workspaceCard} className="hand-drawn">
+            <div style={styles.workspaceCard} className="hand-drawn offset-border">
               
               {/* ALWAYS VISIBLE context textarea (Notebook Ruled Sheet) */}
               <div style={styles.formCol}>
@@ -646,7 +646,7 @@ export default function ContentPackageCreationFlow({
         {currentStep === 2 && (
           /* Right Column: Creative brand tuners */
           <div style={styles.rightCol}>
-            <div style={styles.workspaceCard} className="hand-drawn">
+            <div style={styles.workspaceCard} className="hand-drawn offset-border">
               <div style={styles.cardHeader}>
                 <h3 style={styles.cardSectionTitle}>2. Target Settings & Tuning</h3>
                 <span style={styles.stepHint}>Configure voice & platforms</span>

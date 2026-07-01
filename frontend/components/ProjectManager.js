@@ -8,6 +8,7 @@ const GOAL_OPTIONS = ["launch", "feature announcement", "educational", "behind t
 export default function ProjectManager({ projects, activeProjectId, onSave, onDelete, onSelectActive }) {
   const [selectedProj, setSelectedProj] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   // Form states
   const [name, setName] = useState("");
@@ -38,13 +39,26 @@ export default function ProjectManager({ projects, activeProjectId, onSave, onDe
   useEffect(() => {
     const active = projects.find(p => p.id === activeProjectId) || projects[0];
     if (active && !selectedProj) {
-      handleSelectProj(active);
+      setSelectedProj(active);
+      setName(active.name || "");
+      setUrl(active.url || "");
+      setDescription(active.description || "");
+      setAudience(active.audience || "");
+      setBrandVoice(active.brandVoice || "founder-style");
+      setCategory(active.category || "");
+      setCta(active.cta || "");
+      setPlatforms(active.platforms || []);
+      setVisualStyle(active.visualStyle || "");
+      setHashtags(active.hashtags ? (Array.isArray(active.hashtags) ? active.hashtags.join(", ") : active.hashtags) : "");
+      setReferences(active.references ? (Array.isArray(active.references) ? active.references.join(", ") : active.references) : "");
+      setGoals(active.goals || []);
     }
   }, [projects, activeProjectId]);
 
   function handleSelectProj(proj) {
     setSelectedProj(proj);
     setIsEditing(false);
+    setIsDrawerOpen(true);
     
     // Fill form states
     setName(proj.name || "");
@@ -64,6 +78,7 @@ export default function ProjectManager({ projects, activeProjectId, onSave, onDe
   function handleCreateNew() {
     setSelectedProj({ id: `proj-${Date.now()}` });
     setIsEditing(true);
+    setIsDrawerOpen(true);
 
     setName("");
     setUrl("");
@@ -106,12 +121,14 @@ export default function ProjectManager({ projects, activeProjectId, onSave, onDe
     onSave(saved);
     setSelectedProj(saved);
     setIsEditing(false);
+    setIsDrawerOpen(false);
   }
 
   function handleDelete(id) {
     if (confirm("Are you sure you want to delete this brand profile? This action is permanent.")) {
       onDelete(id);
       setSelectedProj(null);
+      setIsDrawerOpen(false);
     }
   }
 
@@ -139,292 +156,357 @@ export default function ProjectManager({ projects, activeProjectId, onSave, onDe
         </button>
       </header>
 
-      <div style={styles.body}>
-        {/* Left Column - List */}
-        <div style={styles.leftCol}>
-          <div style={styles.list}>
-            {projects.map(proj => {
-              const isActive = activeProjectId === proj.id;
-              const isSelected = selectedProj?.id === proj.id;
-              return (
-                <div
-                  key={proj.id}
-                  onClick={() => handleSelectProj(proj)}
-                  style={{
-                    ...styles.listItem,
-                    background: getPastelBg(proj.id),
-                    ...(isSelected ? { borderWidth: "3px", borderColor: "var(--ink-black)" } : {})
-                  }}
-                  className={getBorderClass(proj.id)}
-                >
-                  <div style={styles.listInfo}>
-                    <div style={styles.listNameRow}>
-                      <span style={styles.listName}>{proj.name}</span>
-                      {isActive && <span style={styles.activeBadge} className="hand-drawn">Active</span>}
-                    </div>
-                    <span style={styles.listDesc}>{proj.description?.substring(0, 75)}...</span>
-                  </div>
+      {/* Grid gallery of profiles */}
+      <div style={styles.galleryGrid}>
+        {projects.map(proj => {
+          const isActive = activeProjectId === proj.id;
+          return (
+            <div
+              key={proj.id}
+              onClick={() => handleSelectProj(proj)}
+              style={{
+                ...styles.profileCard,
+                background: getPastelBg(proj.id)
+              }}
+              className={`${getBorderClass(proj.id)} offset-border`}
+            >
+              <div style={styles.cardInfo}>
+                <div style={styles.cardNameRow}>
+                  <h4 style={styles.cardNameText}>{proj.name}</h4>
+                  {isActive && (
+                    <span style={styles.activeBadge} className="hand-drawn">
+                      Active
+                    </span>
+                  )}
                 </div>
-              );
-            })}
-          </div>
+                
+                <p style={styles.cardDescSnippet}>
+                  {proj.description?.substring(0, 85) || "No description brief configured yet."}
+                  {proj.description?.length > 85 ? "..." : ""}
+                </p>
+
+                <div style={styles.cardMetaPills}>
+                  <span style={styles.metaLabelStamp}>{proj.brandVoice || "casual"}</span>
+                  <span style={styles.metaLabelStamp}>{proj.category || "General"}</span>
+                </div>
+
+                <div style={styles.cardFooterPlatforms}>
+                  <div style={{ display: "flex", gap: "6px" }}>
+                    {proj.platforms?.map(plat => {
+                      const info = CHANNELS.find(([key]) => key === plat);
+                      return (
+                        <span key={plat} title={plat} style={{ display: "inline-flex", alignItems: "center" }}>
+                          {info && Icons[plat] ? Icons[plat]({ size: 13, color: "var(--ink-black)" }) : "🔌"}
+                        </span>
+                      );
+                    })}
+                  </div>
+                  <span style={styles.configureLink} className="handwritten">Configure ➜</span>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+
+        {/* "+ New Brand Profile" card */}
+        <div
+          onClick={handleCreateNew}
+          style={{
+            ...styles.profileCard,
+            background: "transparent",
+            border: "2px dashed var(--ink-black)",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexDirection: "column",
+            gap: "10px",
+            minHeight: "180px",
+            borderRadius: "15px"
+          }}
+          className="hand-drawn-wavy"
+        >
+          <span style={{ fontSize: "36px" }}>➕</span>
+          <span style={{ fontWeight: "800", fontSize: "14px" }} className="handwritten">Add Brand Profile</span>
         </div>
+      </div>
 
-        {/* Right Column - Detail/Edit */}
-        <div style={styles.rightCol}>
-          {selectedProj ? (
-            <div style={styles.card} className="hand-drawn">
-              {!isEditing ? (
-                /* VIEW MODE */
+      {/* Drawer Overlay Backdrop */}
+      {isDrawerOpen && (
+        <div className="drawer-overlay" onClick={() => setIsDrawerOpen(false)} />
+      )}
+
+      {/* Slide Drawer Content container */}
+      <div className={`slide-drawer ${isDrawerOpen ? "open" : ""} hand-drawn`}>
+        {selectedProj && (
+          <div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px", borderBottom: "2px solid var(--ink-black)", paddingBottom: "16px" }}>
+              <h3 className="handwritten" style={{ margin: 0, fontSize: "20px" }}>
+                {isEditing ? "✎ Edit Guidelines" : "✦ Brand Details"}
+              </h3>
+              <button
+                onClick={() => setIsDrawerOpen(false)}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  fontSize: "18px",
+                  fontWeight: "800",
+                  cursor: "pointer",
+                  color: "var(--ink-black)"
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {!isEditing ? (
+              /* VIEW MODE */
+              <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
                 <div>
-                  <div style={styles.cardHeader}>
-                    <div>
-                      <h3 style={styles.cardName}>{selectedProj.name}</h3>
-                      {selectedProj.url && <a href={selectedProj.url} target="_blank" rel="noreferrer" style={styles.cardLink}>{selectedProj.url}</a>}
-                    </div>
-                    <div style={styles.btnGroup}>
-                      {activeProjectId !== selectedProj.id && (
-                        <button onClick={() => onSelectActive(selectedProj.id)} style={styles.activateBtn} className="hand-drawn-btn">
-                          Set Active
-                        </button>
-                      )}
-                      <button onClick={() => setIsEditing(true)} style={styles.secondaryBtn} className="hand-drawn-btn">Edit</button>
-                      <button onClick={() => handleDelete(selectedProj.id)} style={styles.deleteBtn} className="hand-drawn-btn">Delete</button>
+                  <h2 style={{ margin: "0 0 6px 0", fontSize: "24px", fontWeight: "800" }}>{selectedProj.name}</h2>
+                  {selectedProj.url && (
+                    <a href={selectedProj.url} target="_blank" rel="noreferrer" style={styles.cardLink}>
+                      {selectedProj.url}
+                    </a>
+                  )}
+                </div>
+
+                <div style={styles.drawerActionsBar}>
+                  {activeProjectId !== selectedProj.id && (
+                    <button onClick={() => { onSelectActive(selectedProj.id); setIsDrawerOpen(false); }} className="hand-drawn-btn">
+                      Set Active ✦
+                    </button>
+                  )}
+                  <button onClick={() => setIsEditing(true)} className="hand-drawn-btn">
+                    Edit Guidelines
+                  </button>
+                  <button onClick={() => handleDelete(selectedProj.id)} className="hand-drawn-btn" style={{ background: "var(--pastel-red)" }}>
+                    Delete ✕
+                  </button>
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "16px", marginTop: "10px" }}>
+                  <div style={styles.drawerMetaGroup}>
+                    <span style={styles.detailLabel}>Elevator pitch / Description</span>
+                    <p style={styles.drawerMetaVal}>{selectedProj.description || "None configured."}</p>
+                  </div>
+                  
+                  <div style={styles.drawerMetaGroup}>
+                    <span style={styles.detailLabel}>Target Audience</span>
+                    <p style={styles.drawerMetaVal}>{selectedProj.audience || "None configured."}</p>
+                  </div>
+
+                  <div style={styles.drawerMetaGroup}>
+                    <span style={styles.detailLabel}>Brand Voice & Category</span>
+                    <div style={{ display: "flex", gap: "8px", marginTop: "4px" }}>
+                      <span style={styles.tag} className="hand-drawn">{selectedProj.brandVoice}</span>
+                      <span style={styles.tag} className="hand-drawn">{selectedProj.category || "General"}</span>
                     </div>
                   </div>
 
-                  <div style={styles.detailsGrid}>
-                    <div style={styles.detailItem}>
-                      <span style={styles.detailLabel}>Description</span>
-                      <p style={styles.detailVal}>{selectedProj.description || "None configured."}</p>
-                    </div>
-                    <div style={styles.detailItem}>
-                      <span style={styles.detailLabel}>Target Audience</span>
-                      <p style={styles.detailVal}>{selectedProj.audience || "None configured."}</p>
-                    </div>
-                    <div style={styles.detailItem}>
-                      <span style={styles.detailLabel}>Brand Voice</span>
-                      <p style={styles.detailVal}><span style={styles.tag}>{selectedProj.brandVoice}</span></p>
-                    </div>
-                    <div style={styles.detailItem}>
-                      <span style={styles.detailLabel}>Category</span>
-                      <p style={styles.detailVal}>{selectedProj.category || "None configured."}</p>
-                    </div>
-                    <div style={styles.detailItem}>
-                      <span style={styles.detailLabel}>Primary Call to Action</span>
-                      <p style={styles.detailVal}>{selectedProj.cta || "None configured."}</p>
-                    </div>
-                    <div style={styles.detailItem}>
-                      <span style={styles.detailLabel}>Target Platforms</span>
-                      <div style={styles.tagGroup}>
-                        {selectedProj.platforms?.map(p => {
-                          const info = CHANNELS.find(([key]) => key === p);
-                          return <span key={p} style={styles.tag}>{info ? info[1] : p}</span>;
-                        })}
-                      </div>
-                    </div>
-                    <div style={styles.detailItem}>
-                      <span style={styles.detailLabel}>Visual Design Heuristics</span>
-                      <p style={styles.detailVal}>{selectedProj.visualStyle || "None configured."}</p>
-                    </div>
-                    <div style={styles.detailItem}>
-                      <span style={styles.detailLabel}>Default Hashtags</span>
-                      <p style={styles.detailVal}>
-                        {selectedProj.hashtags?.length > 0 ? selectedProj.hashtags.map(t => `#${t}`).join(" ") : "None."}
-                      </p>
-                    </div>
-                    <div style={styles.detailItem}>
-                      <span style={styles.detailLabel}>Content Marketing Goals</span>
-                      <div style={styles.tagGroup}>
-                        {selectedProj.goals?.map(g => <span key={g} style={styles.tagGoal}>{g}</span>)}
-                      </div>
+                  <div style={styles.drawerMetaGroup}>
+                    <span style={styles.detailLabel}>Primary Call to Action (CTA)</span>
+                    <p style={styles.drawerMetaVal}>{selectedProj.cta || "None configured."}</p>
+                  </div>
+
+                  <div style={styles.drawerMetaGroup}>
+                    <span style={styles.detailLabel}>Default Hashtags</span>
+                    <p style={styles.drawerMetaVal}>
+                      {selectedProj.hashtags?.length > 0 ? selectedProj.hashtags.map(t => `#${t}`).join(" ") : "None."}
+                    </p>
+                  </div>
+
+                  <div style={styles.drawerMetaGroup}>
+                    <span style={styles.detailLabel}>Visual Heuristics</span>
+                    <p style={styles.drawerMetaVal}>{selectedProj.visualStyle || "None configured."}</p>
+                  </div>
+                  
+                  <div style={styles.drawerMetaGroup}>
+                    <span style={styles.detailLabel}>Social Media Targets</span>
+                    <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginTop: "4px" }}>
+                      {selectedProj.platforms?.map(plat => {
+                        const info = CHANNELS.find(([key]) => key === plat);
+                        return (
+                          <span key={plat} style={styles.tag} className="hand-drawn">
+                            {info ? info[1] : plat}
+                          </span>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
-              ) : (
-                /* EDIT MODE */
-                <form onSubmit={handleSave} style={styles.form}>
-                  <h3 style={styles.formTitle}>
-                    {selectedProj.createdAt ? `Edit Brand: ${selectedProj.name}` : "Create Brand Profile"}
-                  </h3>
-                  
-                  <div style={styles.formRow}>
-                    <div style={styles.formCol}>
-                      <label style={styles.label}>Brand/Project Name *</label>
-                      <input
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        style={styles.input}
-                        placeholder="e.g. Acme SaaS"
-                        required
-                        className="hand-drawn-input"
-                      />
-                    </div>
-                    <div style={styles.formCol}>
-                      <label style={styles.label}>Website / Product URL</label>
-                      <input
-                        type="url"
-                        value={url}
-                        onChange={(e) => setUrl(e.target.value)}
-                        style={styles.input}
-                        placeholder="https://acme.io"
-                        className="hand-drawn-input"
-                      />
-                    </div>
-                  </div>
+              </div>
+            ) : (
+              /* EDIT MODE */
+              <form onSubmit={handleSave} style={styles.form}>
+                <div style={styles.formCol}>
+                  <label style={styles.label}>Brand/Project Name *</label>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    style={styles.input}
+                    placeholder="e.g. Acme SaaS"
+                    required
+                    className="hand-drawn-input"
+                  />
+                </div>
 
-                  <div style={styles.formRow}>
-                    <div style={styles.formCol}>
-                      <label style={styles.label}>Product Category</label>
-                      <input
-                        type="text"
-                        value={category}
-                        onChange={(e) => setCategory(e.target.value)}
-                        style={styles.input}
-                        placeholder="e.g. Developer Tools / Marketing"
-                        className="hand-drawn-input"
-                      />
-                    </div>
-                    <div style={styles.formCol}>
-                      <label style={styles.label}>Brand Voice Tone</label>
-                      <select
-                        value={brandVoice}
-                        onChange={(e) => setBrandVoice(e.target.value)}
-                        style={styles.input}
-                        className="hand-drawn-input"
-                      >
-                        {VOICE_OPTIONS.map(v => (
-                          <option key={v} value={v}>{v.toUpperCase()}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
+                <div style={styles.formCol}>
+                  <label style={styles.label}>Website / Product URL</label>
+                  <input
+                    type="url"
+                    value={url}
+                    onChange={(e) => setUrl(e.target.value)}
+                    style={styles.input}
+                    placeholder="https://acme.io"
+                    className="hand-drawn-input"
+                  />
+                </div>
 
-                  <div style={styles.formCol}>
-                    <label style={styles.label}>Short Description (Elevator Pitch)</label>
-                    <textarea
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      style={styles.textarea}
-                      placeholder="Describe the product value proposition, problem solved, and main benefits."
-                      rows={3}
-                      className="hand-drawn-input"
-                    />
-                  </div>
+                <div style={styles.formCol}>
+                  <label style={styles.label}>Product Category</label>
+                  <input
+                    type="text"
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    style={styles.input}
+                    placeholder="e.g. Developer Tools / Marketing"
+                    className="hand-drawn-input"
+                  />
+                </div>
 
-                  <div style={styles.formRow}>
-                    <div style={styles.formCol}>
-                      <label style={styles.label}>Target Audience Persona</label>
-                      <input
-                        type="text"
-                        value={audience}
-                        onChange={(e) => setAudience(e.target.value)}
-                        style={styles.input}
-                        placeholder="e.g. indie developers, SaaS marketers"
-                        className="hand-drawn-input"
-                      />
-                    </div>
-                    <div style={styles.formCol}>
-                      <label style={styles.label}>Primary Call to Action (CTA)</label>
-                      <input
-                        type="text"
-                        value={cta}
-                        onChange={(e) => setCta(e.target.value)}
-                        style={styles.input}
-                        placeholder="e.g. Sign up free at acme.io/register"
-                        className="hand-drawn-input"
-                      />
-                    </div>
-                  </div>
+                <div style={styles.formCol}>
+                  <label style={styles.label}>Brand Voice Tone</label>
+                  <select
+                    value={brandVoice}
+                    onChange={(e) => setBrandVoice(e.target.value)}
+                    style={styles.input}
+                    className="hand-drawn-input"
+                  >
+                    {VOICE_OPTIONS.map(v => (
+                      <option key={v} value={v}>{v.toUpperCase()}</option>
+                    ))}
+                  </select>
+                </div>
 
-                  <div style={styles.formCol}>
-                    <label style={styles.label}>Target Social Platforms</label>
-                    <div style={styles.checkboxGroup}>
-                      {CHANNELS.map(([key, label, emoji]) => (
-                        <label key={key} style={styles.checkboxLabel}>
-                          <input
-                            type="checkbox"
-                            checked={platforms.includes(key)}
-                            onChange={() => handleTogglePlatform(key)}
-                            style={styles.checkbox}
-                          />
-                          {emoji} {label}
-                        </label>
-                      ))}
-                    </div>
-                  </div>
+                <div style={styles.formCol}>
+                  <label style={styles.label}>Short Description (Elevator Pitch)</label>
+                  <textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    style={styles.textarea}
+                    placeholder="Describe the product value proposition, problem solved, and main benefits."
+                    rows={3}
+                    className="hand-drawn-input"
+                  />
+                </div>
 
-                  <div style={styles.formCol}>
-                    <label style={styles.label}>Brand Marketing Goals</label>
-                    <div style={styles.checkboxGroup}>
-                      {GOAL_OPTIONS.map(goal => (
-                        <label key={goal} style={styles.checkboxLabel}>
-                          <input
-                            type="checkbox"
-                            checked={goals.includes(goal)}
-                            onChange={() => handleToggleGoal(goal)}
-                            style={styles.checkbox}
-                          />
-                          {goal.toUpperCase()}
-                        </label>
-                      ))}
-                    </div>
-                  </div>
+                <div style={styles.formCol}>
+                  <label style={styles.label}>Target Audience Persona</label>
+                  <input
+                    type="text"
+                    value={audience}
+                    onChange={(e) => setAudience(e.target.value)}
+                    style={styles.input}
+                    placeholder="e.g. indie developers, SaaS marketers"
+                    className="hand-drawn-input"
+                  />
+                </div>
 
-                  <div style={styles.formRow}>
-                    <div style={styles.formCol}>
-                      <label style={styles.label}>Visual Style Notes / Aesthetics</label>
-                      <input
-                        type="text"
-                        value={visualStyle}
-                        onChange={(e) => setVisualStyle(e.target.value)}
-                        style={styles.input}
-                        placeholder="e.g. Neon grid borders, bold typography, rich gradients"
-                        className="hand-drawn-input"
-                      />
-                    </div>
-                    <div style={styles.formCol}>
-                      <label style={styles.label}>Default Hashtags (comma separated)</label>
-                      <input
-                        type="text"
-                        value={hashtags}
-                        onChange={(e) => setHashtags(e.target.value)}
-                        style={styles.input}
-                        placeholder="e.g. indiehackers, startup, ai"
-                        className="hand-drawn-input"
-                      />
-                    </div>
-                  </div>
+                <div style={styles.formCol}>
+                  <label style={styles.label}>Primary Call to Action (CTA)</label>
+                  <input
+                    type="text"
+                    value={cta}
+                    onChange={(e) => setCta(e.target.value)}
+                    style={styles.input}
+                    placeholder="e.g. Sign up free at acme.io/register"
+                    className="hand-drawn-input"
+                  />
+                </div>
 
-                  <div style={styles.formCol}>
-                    <label style={styles.label}>Competitor / Reference URL Links (comma separated)</label>
-                    <input
-                      type="text"
-                      value={references}
-                      onChange={(e) => setReferences(e.target.value)}
-                      style={styles.input}
-                      placeholder="e.g. https://linear.app, https://stripe.com"
-                      className="hand-drawn-input"
-                    />
+                <div style={styles.formCol}>
+                  <label style={styles.label}>Target Social Platforms</label>
+                  <div style={styles.checkboxGroup}>
+                    {CHANNELS.map(([key, label, emoji]) => (
+                      <label key={key} style={styles.checkboxLabel}>
+                        <input
+                          type="checkbox"
+                          checked={platforms.includes(key)}
+                          onChange={() => handleTogglePlatform(key)}
+                          style={styles.checkbox}
+                        />
+                        {emoji} {label}
+                      </label>
+                    ))}
                   </div>
+                </div>
 
-                  <div style={styles.formActions}>
-                    <button type="submit" style={styles.primaryBtn} className="hand-drawn-btn">Save Brand Profile</button>
+                <div style={styles.formCol}>
+                  <label style={styles.label}>Brand Marketing Goals</label>
+                  <div style={styles.checkboxGroup}>
+                    {GOAL_OPTIONS.map(goal => (
+                      <label key={goal} style={styles.checkboxLabel}>
+                        <input
+                          type="checkbox"
+                          checked={goals.includes(goal)}
+                          onChange={() => handleToggleGoal(goal)}
+                          style={styles.checkbox}
+                        />
+                        {goal.toUpperCase()}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={styles.formCol}>
+                  <label style={styles.label}>Visual Style Notes / Aesthetics</label>
+                  <input
+                    type="text"
+                    value={visualStyle}
+                    onChange={(e) => setVisualStyle(e.target.value)}
+                    style={styles.input}
+                    placeholder="e.g. Neon grid borders, bold typography, rich gradients"
+                    className="hand-drawn-input"
+                  />
+                </div>
+
+                <div style={styles.formCol}>
+                  <label style={styles.label}>Default Hashtags (comma separated)</label>
+                  <input
+                    type="text"
+                    value={hashtags}
+                    onChange={(e) => setHashtags(e.target.value)}
+                    style={styles.input}
+                    placeholder="e.g. indiehackers, startup, ai"
+                    className="hand-drawn-input"
+                  />
+                </div>
+
+                <div style={styles.formCol}>
+                  <label style={styles.label}>Competitor / Reference URL Links</label>
+                  <input
+                    type="text"
+                    value={references}
+                    onChange={(e) => setReferences(e.target.value)}
+                    style={styles.input}
+                    placeholder="e.g. https://linear.app, https://stripe.com"
+                    className="hand-drawn-input"
+                  />
+                </div>
+
+                <div style={styles.formActions}>
+                  <button type="submit" style={styles.primaryBtn} className="hand-drawn-btn">Save Guidelines</button>
                     <button type="button" onClick={() => setIsEditing(false)} style={styles.cancelBtn} className="hand-drawn-btn">Cancel</button>
                   </div>
                 </form>
-              )}
-            </div>
-          ) : (
-            <div style={styles.noSelection}>
-              <span style={{ fontSize: "36px" }}>👤</span>
-              <p>Select a brand profile or click "+ New Brand Profile" to create one.</p>
-            </div>
-          )}
+            )
+          }
         </div>
-      </div>
+      )}
     </div>
+  </div>
   );
 }
 
@@ -730,5 +812,101 @@ const styles = {
     marginTop: "12px",
     borderTop: "1px solid rgba(18, 22, 18, 0.08)",
     paddingTop: "20px"
+  },
+  galleryGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+    gap: "28px",
+    padding: "12px 0 32px 0",
+    alignItems: "start"
+  },
+  profileCard: {
+    border: "2px solid var(--ink-black)",
+    borderRadius: "15px",
+    padding: "24px 20px",
+    position: "relative",
+    transition: "all 0.2s ease-in-out",
+    boxShadow: "3px 4px 0px var(--ink-black)",
+    minHeight: "180px",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between"
+  },
+  cardInfo: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "12px",
+    height: "100%",
+    justifyContent: "space-between"
+  },
+  cardNameRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center"
+  },
+  cardNameText: {
+    fontSize: "18px",
+    fontWeight: "800",
+    color: "var(--ink-black)",
+    margin: 0,
+    fontFamily: "'Space Grotesk', sans-serif"
+  },
+  cardDescSnippet: {
+    fontSize: "13px",
+    color: "#59635c",
+    lineHeight: "1.45",
+    margin: 0
+  },
+  cardMetaPills: {
+    display: "flex",
+    gap: "6px",
+    flexWrap: "wrap",
+    marginTop: "4px"
+  },
+  metaLabelStamp: {
+    fontSize: "10px",
+    background: "#fff",
+    border: "1.5px solid var(--ink-black)",
+    color: "var(--ink-black)",
+    padding: "2px 8px",
+    borderRadius: "20px",
+    fontWeight: "700",
+    textTransform: "uppercase"
+  },
+  cardFooterPlatforms: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderTop: "1.5px solid var(--ink-black)",
+    paddingTop: "12px",
+    marginTop: "8px"
+  },
+  configureLink: {
+    fontSize: "12px",
+    fontWeight: "800",
+    color: "var(--ink-black)"
+  },
+  drawerActionsBar: {
+    display: "flex",
+    gap: "8px",
+    flexWrap: "wrap",
+    borderBottom: "1.5px solid var(--ink-black)",
+    paddingBottom: "18px",
+    marginBottom: "10px"
+  },
+  drawerMetaGroup: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "4px"
+  },
+  drawerMetaVal: {
+    fontSize: "13.5px",
+    color: "var(--ink-black)",
+    lineHeight: "1.5",
+    margin: 0,
+    background: "#fff",
+    padding: "10px 14px",
+    border: "1.5px solid var(--ink-black)",
+    borderRadius: "8px"
   }
 };

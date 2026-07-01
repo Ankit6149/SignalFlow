@@ -33,13 +33,21 @@ export default function ChannelsConnector({
           const isConnected = status.connected;
           
           return (
-            <div key={key} style={styles.card}>
+            <div
+              key={key}
+              style={{
+                ...styles.card,
+                background: isConnected ? "var(--pastel-green)" : "#fff",
+                padding: "24px"
+              }}
+              className="hand-drawn offset-border neo-shadow"
+            >
               <div style={styles.cardHeader}>
                 <div style={styles.platformMeta}>
                   <span style={{ ...styles.platformIcon, background: color }}>{emoji}</span>
                   <div>
                     <h4 style={styles.platformLabel}>{label}</h4>
-                    <span style={styles.badgeApi}>API Connection</span>
+                    <span style={styles.badgeApi} className="hand-drawn">API Connection</span>
                   </div>
                 </div>
                 
@@ -50,9 +58,10 @@ export default function ChannelsConnector({
                 ) : (
                   <span style={{
                     ...styles.statusBadge,
-                    background: isConnected ? "rgba(16, 185, 129, 0.15)" : "rgba(244, 63, 94, 0.15)",
-                    color: isConnected ? "#10b981" : "#f43f5e"
-                  }}>
+                    background: isConnected ? "var(--pastel-green-border)" : "var(--pastel-red-border)",
+                    color: "var(--ink-black)",
+                    border: "1.5px solid var(--ink-black)"
+                  }} className="hand-drawn">
                     {isConnected ? "Connected" : "Disconnected"}
                   </span>
                 )}
@@ -77,14 +86,16 @@ export default function ChannelsConnector({
                 ) : isConnected ? (
                   <button
                     onClick={() => onDisconnectPlatform(key)}
-                    style={styles.disconnectBtn}
+                    style={{ ...styles.disconnectBtn, width: "100%" }}
+                    className="hand-drawn-btn"
                   >
                     Disconnect Profile
                   </button>
                 ) : (
                   <button
                     onClick={() => onConnectPlatform(key)}
-                    style={styles.connectBtn}
+                    style={{ ...styles.connectBtn, width: "100%" }}
+                    className="hand-drawn-btn-wavy"
                   >
                     Link Account
                   </button>
@@ -100,13 +111,21 @@ export default function ChannelsConnector({
       <div style={styles.grid}>
         {manualChannels.map(([key, label, emoji, color]) => {
           return (
-            <div key={key} style={styles.cardManual}>
+            <div
+              key={key}
+              style={{
+                ...styles.cardManual,
+                background: "var(--pastel-yellow)",
+                padding: "24px"
+              }}
+              className="hand-drawn-wavy offset-border neo-shadow"
+            >
               <div style={styles.cardHeader}>
                 <div style={styles.platformMeta}>
                   <span style={{ ...styles.platformIcon, background: color }}>{emoji}</span>
                   <div>
                     <h4 style={styles.platformLabel}>{label}</h4>
-                    <span style={styles.badgeManual}>Handoff/Markdown</span>
+                    <span style={styles.badgeManual} className="hand-drawn">Handoff / Copy</span>
                   </div>
                 </div>
               </div>
@@ -122,7 +141,7 @@ export default function ChannelsConnector({
               </div>
 
               <div style={styles.cardFooter}>
-                <span style={styles.manualActionText}>Copy & Export Supported</span>
+                <span style={styles.manualActionText} className="handwritten">✏️ Copy & Export Supported</span>
               </div>
             </div>
           );
@@ -152,17 +171,31 @@ export default function ChannelsConnector({
               const emoji = channelInfo ? channelInfo[2] : "🔌";
               
               return (
-                <div key={log.id} style={styles.tableRow} onClick={() => setActiveLog(log)}>
+                <div
+                  key={log.id}
+                  style={{
+                    ...styles.tableRow,
+                    background: "#fff",
+                    border: "2px solid var(--ink-black)",
+                    borderRadius: "12px",
+                    marginBottom: "12px",
+                    boxShadow: "2.5px 3px 0px var(--ink-black)",
+                    cursor: "pointer"
+                  }}
+                  className="hand-drawn-wavy"
+                  onClick={() => setActiveLog(log)}
+                >
                   <span style={styles.td}><strong>{emoji} {label}</strong></span>
                   <span style={styles.tdSnippet}>{log.contentSnippet}</span>
                   <span style={styles.td}>
                     <span style={{
                       ...styles.logBadge,
-                      background: log.status === "posted" ? "rgba(16, 185, 129, 0.15)" : "rgba(244, 63, 94, 0.15)",
-                      color: log.status === "posted" ? "#10b981" : "#f43f5e"
-                    }}>
+                      background: log.status === "posted" ? "var(--pastel-green-border)" : "var(--pastel-red-border)",
+                      color: "var(--ink-black)",
+                      border: "1.5px solid var(--ink-black)"
+                    }} className="hand-drawn">
                       {log.status === "posted" 
-                        ? (log.postUrl ? "SUCCESS" : (log.connectorType === "Simulated Scheduler Runner" ? "Simulated schedule" : "Mock post")) 
+                        ? (log.postUrl ? "SUCCESS" : (log.connectorType === "Simulated Scheduler Runner" ? "SIMULATED" : "MOCK POST")) 
                         : "FAILED"
                       }
                     </span>
@@ -170,11 +203,11 @@ export default function ChannelsConnector({
                   <span style={styles.td}>{new Date(log.timestamp).toLocaleString()}</span>
                   <span style={styles.td}>
                     {log.postUrl ? (
-                      <a href={log.postUrl} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} style={styles.logLink}>
+                      <a href={log.postUrl} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} style={styles.logLink} className="handwritten">
                         View Live 🔗
                       </a>
                     ) : (
-                      <span style={styles.simulatedText}>Demo connector</span>
+                      <span style={styles.simulatedText} className="handwritten">Demo connector</span>
                     )}
                   </span>
                 </div>

@@ -149,7 +149,7 @@ export default function ContentLibrary({
                 key={pkg.id}
                 onClick={() => setSelectedPkg(pkg)}
                 style={{ ...styles.card, background: getCardBg(pkg.id) }}
-                className={getCardClass(pkg.id)}
+                className={`${getCardClass(pkg.id)} offset-border`}
               >
                 <div style={styles.cardMain}>
                   <div style={styles.cardHeader}>

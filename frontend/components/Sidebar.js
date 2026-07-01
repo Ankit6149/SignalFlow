@@ -11,13 +11,17 @@ export default function Sidebar({ view, setView, activeProjectName, aiStatus }) 
   ];
 
   return (
-    <aside style={styles.sidebar}>
+    <aside style={{ ...styles.sidebar, borderRight: "3.5px solid var(--ink-black)", background: "#fffdfa" }}>
       {/* Logo */}
       <div style={styles.brand}>
-        <div style={styles.logoBadge}>SF</div>
+        <div style={{
+          ...styles.logoBadge,
+          border: "2px solid var(--ink-black)",
+          boxShadow: "2px 2px 0px var(--ink-black)"
+        }}>SF</div>
         <div style={styles.brandText}>
-          <span style={styles.brandName}>SignalFlow</span>
-          <span style={styles.brandSub}>Studio</span>
+          <span style={{ ...styles.brandName, fontFamily: "'Space Grotesk', sans-serif", fontSize: "16px", fontWeight: "850" }}>SignalFlow</span>
+          <span style={styles.brandSub} className="handwritten">Studio Edition</span>
         </div>
       </div>
 
@@ -25,18 +29,29 @@ export default function Sidebar({ view, setView, activeProjectName, aiStatus }) 
       <nav style={styles.nav}>
         {navItems.map(item => {
           const isActive = view === item.id;
-          const activeColor = isActive ? "#2d6a4f" : "#6b6b6b";
+          const activeColor = "var(--ink-black)";
           return (
             <button
               key={item.id}
               onClick={() => setView(item.id)}
               style={{
                 ...styles.navBtn,
-                ...(isActive ? styles.navBtnActive : {})
+                ...(isActive ? {
+                  background: "var(--pastel-green)",
+                  borderColor: "var(--ink-black)",
+                  borderWidth: "2px",
+                  borderStyle: "solid",
+                  boxShadow: "2.5px 3px 0px var(--ink-black)",
+                  fontWeight: "800",
+                  color: "var(--ink-black)"
+                } : {
+                  border: "2px solid transparent"
+                })
               }}
+              className="hand-drawn-btn"
             >
               <span style={styles.navIcon}>{item.icon(activeColor)}</span>
-              <span style={styles.navLabel}>{item.label}</span>
+              <span style={{ ...styles.navLabel, fontWeight: isActive ? "800" : "500" }}>{item.label}</span>
             </button>
           );
         })}
@@ -122,13 +137,13 @@ const styles = {
     padding: "10px 12px",
     borderRadius: "8px",
     background: "transparent",
-    border: "none",
+    border: "2px solid transparent",
     color: "#6b6b6b",
     textAlign: "left",
     cursor: "pointer",
     fontSize: "13px",
     fontWeight: "500",
-    transition: "all 0.15s ease",
+    transition: "all 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.15)",
     fontFamily: "inherit",
   },
   navBtnActive: {

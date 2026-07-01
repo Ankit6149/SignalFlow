@@ -119,29 +119,29 @@ export default function Dashboard({
 
       {/* Grid of stats */}
       <section style={styles.statsGrid}>
-        <div style={styles.statCard}>
+        <div style={{ ...styles.statCard, background: "var(--pastel-yellow)" }} className="hand-drawn offset-border neo-shadow">
           <div style={styles.statIcon}>📦</div>
           <div>
             <div style={styles.statLabel}>Total Packages</div>
             <div style={styles.statValue}>{packages.length}</div>
           </div>
         </div>
-        <div style={styles.statCard}>
-          <div style={styles.statIcon}><span style={{ color: "#818cf8" }}>🔌</span></div>
+        <div style={{ ...styles.statCard, background: "var(--pastel-blue)" }} className="hand-drawn offset-border neo-shadow">
+          <div style={styles.statIcon}><span style={{ color: "var(--ink-black)" }}>🔌</span></div>
           <div>
             <div style={styles.statLabel}>Connected Accounts</div>
             <div style={styles.statValue}>{connectedCount}</div>
           </div>
         </div>
-        <div style={styles.statCard}>
-          <div style={styles.statIcon}><span style={{ color: "#10b981" }}>📅</span></div>
+        <div style={{ ...styles.statCard, background: "var(--pastel-green)" }} className="hand-drawn offset-border neo-shadow">
+          <div style={styles.statIcon}><span style={{ color: "var(--ink-black)" }}>📅</span></div>
           <div>
             <div style={styles.statLabel}>Scheduled Posts</div>
             <div style={styles.statValue}>{activeScheduled.length}</div>
           </div>
         </div>
-        <div style={styles.statCard}>
-          <div style={styles.statIcon}><span style={{ color: "#f43f5e" }}>⚠️</span></div>
+        <div style={{ ...styles.statCard, background: "var(--pastel-red)" }} className="hand-drawn offset-border neo-shadow">
+          <div style={styles.statIcon}><span style={{ color: "var(--ink-black)" }}>⚠️</span></div>
           <div>
             <div style={styles.statLabel}>Action Required</div>
             <div style={styles.statValue}>{failedPosts.length}</div>
@@ -154,8 +154,8 @@ export default function Dashboard({
         {/* Left Column: Quick Actions + Recents */}
         <div style={styles.leftCol}>
           {/* Quick Actions */}
-          <div style={styles.card}>
-            <h3 style={styles.cardTitle}>Quick Actions</h3>
+          <div style={styles.card} className="hand-drawn offset-border neo-shadow">
+            <h3 style={styles.cardTitle} className="handwritten">⚡ Quick Actions</h3>
             <div style={styles.actionGrid}>
               {quickActions.map((act, i) => (
                 <button
@@ -166,7 +166,8 @@ export default function Dashboard({
                     }
                     setView(act.view);
                   }}
-                  style={styles.actionBtn}
+                  style={{ ...styles.actionBtn, border: "2px solid var(--ink-black)" }}
+                  className="hand-drawn-btn"
                 >
                   <span style={styles.actionIcon}>{act.icon}</span>
                   <div style={styles.actionDetails}>
@@ -179,15 +180,15 @@ export default function Dashboard({
           </div>
 
           {/* Recent Packages */}
-          <div style={styles.card}>
+          <div style={styles.card} className="hand-drawn offset-border neo-shadow">
             <div style={styles.cardHeader}>
-              <h3 style={styles.cardTitle}>Recent Packages</h3>
-              <button onClick={() => setView("library")} style={styles.textLink}>View All</button>
+              <h3 style={styles.cardTitle} className="handwritten"> Recent Packages</h3>
+              <button onClick={() => setView("library")} style={styles.textLink} className="handwritten">View All ➜</button>
             </div>
             {recentPackages.length === 0 ? (
               <div style={styles.emptyState}>
                 <p>No content packages created yet.</p>
-                <button onClick={() => { setCreationSource("manual"); setView("create"); }} style={styles.primaryBtn}>
+                <button onClick={() => { setCreationSource("manual"); setView("create"); }} style={styles.primaryBtn} className="hand-drawn-btn-wavy">
                   Create Your First Package
                 </button>
               </div>
@@ -197,7 +198,8 @@ export default function Dashboard({
                   <div
                     key={pkg.id}
                     onClick={() => onSelectPackage(pkg)}
-                    style={styles.listItem}
+                    style={{ ...styles.listItem, border: "2px solid var(--ink-black)", borderRadius: "10px", marginBottom: "4px" }}
+                    className="hand-drawn-wavy"
                   >
                     <div style={styles.pkgInfo}>
                       <span style={styles.pkgTitle}>{pkg.title || "Untitled Package"}</span>
@@ -207,8 +209,10 @@ export default function Dashboard({
                     </div>
                     <span style={{
                       ...styles.statusBadge,
-                      ...getStatusStyle(pkg.status)
-                    }}>
+                      ...getStatusStyle(pkg.status),
+                      border: "1.5px solid var(--ink-black)",
+                      color: "var(--ink-black)"
+                    }} className="hand-drawn">
                       {pkg.status}
                     </span>
                   </div>
@@ -222,19 +226,19 @@ export default function Dashboard({
         <div style={styles.rightCol}>
           {/* Brand Quick Peek */}
           {activeProject && (
-            <div style={{ ...styles.card, background: "linear-gradient(135deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.6) 100%)" }}>
+            <div style={{ ...styles.card, background: "var(--pastel-lavender)", color: "var(--ink-black)" }} className="hand-drawn offset-border neo-shadow">
               <div style={styles.cardHeader}>
-                <h3 style={styles.cardTitle}>Brand Profile: {activeProject.name}</h3>
-                <button onClick={() => setView("projects")} style={styles.textLink}>Edit</button>
+                <h3 style={styles.cardTitle} className="handwritten">👤 Brand Profile: {activeProject.name}</h3>
+                <button onClick={() => setView("projects")} style={styles.textLink} className="handwritten">Edit ➜</button>
               </div>
-              <p style={styles.brandDesc}>{activeProject.description}</p>
-              <div style={styles.brandMetrics}>
+              <p style={{ ...styles.brandDesc, color: "var(--ink-black)" }}>{activeProject.description}</p>
+              <div style={{ ...styles.brandMetrics, borderTop: "2px solid var(--ink-black)" }}>
                 <div>
-                  <span style={styles.metricLabel}>Audience</span>
-                  <span style={styles.metricVal}>{activeProject.audience}</span>
+                  <span style={{ ...styles.metricLabel, color: "rgba(18, 22, 18, 0.6)" }}>Audience</span>
+                  <span style={styles.metricVal}>{activeProject.audience || "General"}</span>
                 </div>
                 <div>
-                  <span style={styles.metricLabel}>Voice</span>
+                  <span style={{ ...styles.metricLabel, color: "rgba(18, 22, 18, 0.6)" }}>Voice</span>
                   <span style={styles.metricVal}>{activeProject.brandVoice}</span>
                 </div>
               </div>
@@ -242,10 +246,10 @@ export default function Dashboard({
           )}
 
           {/* Scheduled Posts */}
-          <div style={styles.card}>
-            <h3 style={styles.cardTitle}>Scheduled Publishing Queue</h3>
+          <div style={styles.card} className="hand-drawn offset-border neo-shadow">
+            <h3 style={styles.cardTitle} className="handwritten">📅 Scheduled Queue</h3>
             {activeScheduled.length === 0 ? (
-              <div style={styles.emptyQueue}>
+              <div style={{ ...styles.emptyQueue, border: "2px solid var(--ink-black)" }} className="hand-drawn-wavy">
                 <span style={styles.emptyQueueIcon}>📅</span>
                 <p style={styles.emptyQueueText}>No posts scheduled for publishing.</p>
               </div>

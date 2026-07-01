@@ -538,7 +538,7 @@ export default function Home() {
   }
 
   return (
-    <div style={styles.appContainer}>
+    <div style={styles.appContainer} className="grid-paper-bg">
       {accessLocked && !accessToken && !publicHosted ? (
         <section style={styles.lockPanel}>
           <div style={styles.lockHeader}>

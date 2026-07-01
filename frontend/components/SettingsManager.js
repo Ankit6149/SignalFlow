@@ -94,7 +94,7 @@ export default function SettingsManager({
         </div>
 
         {/* Content Panels */}
-        <div style={styles.panel} className="hand-drawn-rough">
+        <div style={styles.panel} className="hand-drawn-rough offset-border neo-shadow">
           {/* AI SETTINGS */}
           {activeSubTab === "ai" && (
             <div style={styles.form}>
