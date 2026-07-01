@@ -60,11 +60,11 @@ export default function LandingPage({ onLaunch }) {
             <span style={s.logoText}>SignalFlow Studio</span>
           </a>
           <nav style={s.headerNav}>
-            <a href="#features" style={s.navLink}>Features</a>
-            <a href="#how" style={s.navLink}>How It Works</a>
-            <a href="#privacy" style={s.navLink}>Privacy</a>
-            <a href="https://github.com/Ankit6149/SignalFlow-Studio" target="_blank" rel="noreferrer" style={s.navLink}>GitHub</a>
-            <button onClick={onLaunch} style={s.headerCta}>
+            <a href="#features" className="nav-link-item">Features</a>
+            <a href="#how" className="nav-link-item">How It Works</a>
+            <a href="#privacy" className="nav-link-item">Privacy</a>
+            <a href="https://github.com/Ankit6149/SignalFlow-Studio" target="_blank" rel="noreferrer" className="nav-link-item">GitHub</a>
+            <button onClick={onLaunch} style={s.headerCta} className="btn-premium">
               Open Studio →
             </button>
           </nav>
@@ -85,10 +85,10 @@ export default function LandingPage({ onLaunch }) {
             on your machine.
           </p>
           <div style={s.heroBtnRow}>
-            <button onClick={onLaunch} style={s.heroBtn}>
+            <button onClick={onLaunch} style={s.heroBtn} className="btn-premium">
               Launch Workspace
             </button>
-            <a href="https://github.com/Ankit6149/SignalFlow-Studio" target="_blank" rel="noreferrer" style={s.heroGhBtn}>
+            <a href="https://github.com/Ankit6149/SignalFlow-Studio" target="_blank" rel="noreferrer" style={s.heroGhBtn} className="btn-premium-dark">
               ★ Star on GitHub
             </a>
           </div>
@@ -143,7 +143,7 @@ export default function LandingPage({ onLaunch }) {
               { icon: "📦", title: "Content Library", desc: "Every generated package is saved with full context. Search, edit, re-export, or republish from your local archive." },
               { icon: "🔒", title: "Self-Host Ready", desc: "Run on your machine with npm. No accounts, no databases, no cloud dependencies. Your data stays yours." },
             ].map((f, i) => (
-              <div key={i} style={s.featureCard}>
+              <div key={i} style={s.featureCard} className="hover-lift">
                 <div style={s.featureIcon}>{f.icon}</div>
                 <h3 style={s.featureTitle}>{f.title}</h3>
                 <p style={s.featureDesc}>{f.desc}</p>
@@ -184,11 +184,11 @@ export default function LandingPage({ onLaunch }) {
               { num: "02", title: "Set Your Voice", desc: "Pick a tone, select target platforms, and let the AI engine draft platform-native posts for each channel." },
               { num: "03", title: "Review & Publish", desc: "Edit the generated drafts inline, preview how they look on each platform, then export or publish directly." },
             ].map((step, i) => (
-              <div key={i} style={s.stepCard}>
+              <div key={i} style={s.stepCard} className="hover-lift">
                 <div style={s.stepNum}>{step.num}</div>
                 <h3 style={s.stepTitle}>{step.title}</h3>
                 <p style={s.stepDesc}>{step.desc}</p>
-                {i < 2 && <div style={s.stepArrow}>→</div>}
+                {i < 2 && <div style={s.stepArrow} className="arrow-bounce">→</div>}
               </div>
             ))}
           </div>
@@ -215,7 +215,7 @@ export default function LandingPage({ onLaunch }) {
                 { icon: "💾", title: "Zero Server Storage", desc: "No databases, no accounts, no analytics. Projects and drafts persist in IndexedDB on your device." },
                 { icon: "🛡️", title: "Self-Host Control", desc: "Clone the repo, run locally, and deploy behind your own firewall. Full source code is MIT licensed." },
               ].map((item, i) => (
-                <div key={i} style={s.privacyCard}>
+                <div key={i} style={s.privacyCard} className="hover-lift">
                   <div style={s.privacyIcon}>{item.icon}</div>
                   <div>
                     <h3 style={s.privacyTitle}>{item.title}</h3>
@@ -247,7 +247,7 @@ export default function LandingPage({ onLaunch }) {
             Open the workspace and create your first content package in under 5 minutes.
           </p>
           <div style={s.ctaBtnRow}>
-            <button onClick={onLaunch} style={s.ctaBtn}>Open Studio Workspace →</button>
+            <button onClick={onLaunch} style={s.ctaBtn} className="btn-premium">Open Studio Workspace →</button>
             <a
               href="https://github.com/Ankit6149/SignalFlow-Studio"
               target="_blank"
@@ -318,6 +318,69 @@ const animationCss = `
     50% { transform: translateY(-8px); }
   }
   html { scroll-behavior: smooth; }
+  
+  .hover-lift {
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+  .hover-lift:hover {
+    transform: translateY(-6px) scale(1.01) !important;
+    box-shadow: 0 20px 38px rgba(45, 106, 79, 0.08) !important;
+  }
+  
+  .nav-link-item {
+    position: relative;
+    color: #6b6b6b;
+    text-decoration: none;
+    transition: color 0.25s ease;
+  }
+  .nav-link-item::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    transform: scaleX(0);
+    height: 2px;
+    bottom: -4px;
+    left: 0;
+    background-color: #2d6a4f;
+    transform-origin: bottom right;
+    transition: transform 0.25s ease-out;
+  }
+  .nav-link-item:hover {
+    color: #2d6a4f !important;
+  }
+  .nav-link-item:hover::after {
+    transform: scaleX(1);
+    transform-origin: bottom left;
+  }
+  
+  .arrow-bounce {
+    display: inline-block;
+    animation: bounceRight 2.2s infinite;
+  }
+  @keyframes bounceRight {
+    0%, 100%, 20%, 50%, 80% { transform: translateX(0); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(3px); }
+  }
+  
+  .btn-premium {
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+  .btn-premium:hover {
+    transform: translateY(-2px) scale(1.02) !important;
+    filter: brightness(1.15);
+    box-shadow: 0 8px 20px rgba(45, 106, 79, 0.15) !important;
+  }
+  
+  .btn-premium-dark {
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+  .btn-premium-dark:hover {
+    transform: translateY(-2px) scale(1.02) !important;
+    background: #1a1a1a !important;
+    color: #fff !important;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1) !important;
+  }
 `;
 
 const s = {
