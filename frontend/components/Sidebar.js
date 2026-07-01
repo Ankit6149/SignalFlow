@@ -1,12 +1,13 @@
 import React from "react";
+import { Icons } from "./Icons";
 
 export default function Sidebar({ view, setView, activeProjectName, aiStatus }) {
   const navItems = [
-    { id: "create", label: "Studio Workspace", icon: "✨" },
-    { id: "library", label: "Library", icon: "📚" },
-    { id: "projects", label: "Profiles", icon: "👤" },
-    { id: "channels", label: "Channels", icon: "🔌" },
-    { id: "settings", label: "Settings", icon: "⚙️" }
+    { id: "create", label: "Studio Workspace", icon: (color) => <Icons.workspace size={16} color={color} /> },
+    { id: "library", label: "Library", icon: (color) => <Icons.library size={16} color={color} /> },
+    { id: "projects", label: "Profiles", icon: (color) => <Icons.profiles size={16} color={color} /> },
+    { id: "channels", label: "Channels", icon: (color) => <Icons.channels size={16} color={color} /> },
+    { id: "settings", label: "Settings", icon: (color) => <Icons.settings size={16} color={color} /> }
   ];
 
   return (
@@ -24,6 +25,7 @@ export default function Sidebar({ view, setView, activeProjectName, aiStatus }) 
       <nav style={styles.nav}>
         {navItems.map(item => {
           const isActive = view === item.id;
+          const activeColor = isActive ? "#2d6a4f" : "#6b6b6b";
           return (
             <button
               key={item.id}
@@ -33,7 +35,7 @@ export default function Sidebar({ view, setView, activeProjectName, aiStatus }) 
                 ...(isActive ? styles.navBtnActive : {})
               }}
             >
-              <span style={styles.navIcon}>{item.icon}</span>
+              <span style={styles.navIcon}>{item.icon(activeColor)}</span>
               <span style={styles.navLabel}>{item.label}</span>
             </button>
           );

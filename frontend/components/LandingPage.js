@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { Icons } from "./Icons";
 
 export default function LandingPage({ onLaunch }) {
   const [scrolled, setScrolled] = useState(false);
@@ -56,7 +57,7 @@ export default function LandingPage({ onLaunch }) {
       <header style={{ ...s.header, ...(scrolled ? s.headerScrolled : {}) }}>
         <div style={s.headerInner}>
           <a onClick={scrollToTop} style={{ ...s.logoGroup, cursor: 'pointer', textDecoration: 'none' }}>
-            <div style={s.logoBadge}>SF</div>
+            <div style={s.logoBadge} className="hand-drawn">SF</div>
             <span style={s.logoText}>SignalFlow Studio</span>
           </a>
           <nav style={s.headerNav}>
@@ -64,7 +65,7 @@ export default function LandingPage({ onLaunch }) {
             <a href="#how" className="nav-link-item">How It Works</a>
             <a href="#privacy" className="nav-link-item">Privacy</a>
             <a href="https://github.com/Ankit6149/SignalFlow-Studio" target="_blank" rel="noreferrer" className="nav-link-item">GitHub</a>
-            <button onClick={onLaunch} style={s.headerCta} className="btn-premium">
+            <button onClick={onLaunch} style={s.headerCta} className="hand-drawn-btn">
               Open Studio →
             </button>
           </nav>
@@ -74,7 +75,7 @@ export default function LandingPage({ onLaunch }) {
       {/* ─── Hero ─── */}
       <section style={s.hero}>
         <div style={s.heroContent}>
-          <span style={s.heroPill}>✦ Open Source · Local First · Privacy Native</span>
+          <span style={s.heroPill} className="hand-drawn">✦ Open Source · Local First · Privacy Native</span>
           <h1 style={s.heroTitle}>
             Turn raw ideas into<br />
             <span style={s.heroAccent}>publish‑ready content</span>
@@ -85,11 +86,12 @@ export default function LandingPage({ onLaunch }) {
             on your machine.
           </p>
           <div style={s.heroBtnRow}>
-            <button onClick={onLaunch} style={s.heroBtn} className="btn-premium">
+            <button onClick={onLaunch} style={s.heroBtn} className="hand-drawn-btn">
               Launch Workspace
             </button>
-            <a href="https://github.com/Ankit6149/SignalFlow-Studio" target="_blank" rel="noreferrer" style={s.heroGhBtn} className="btn-premium-dark">
-              ★ Star on GitHub
+            <a href="https://github.com/Ankit6149/SignalFlow-Studio" target="_blank" rel="noreferrer" style={s.heroGhBtn} className="hand-drawn-btn">
+              <span style={{ marginRight: "6px", display: "inline-flex", alignItems: "center" }}><Icons.star size={14} color="var(--ink-black)" /></span>
+              <span>Star on GitHub</span>
             </a>
           </div>
           <div style={s.heroStats}>
@@ -112,7 +114,7 @@ export default function LandingPage({ onLaunch }) {
 
         {/* Hero Visual — real photo */}
         <div style={s.heroVisual}>
-          <div style={s.heroImageWrap}>
+          <div style={s.heroImageWrap} className="hand-drawn float-effect">
             <img
               src="/hero-workspace.png"
               alt="Clean content creation workspace"
@@ -136,19 +138,22 @@ export default function LandingPage({ onLaunch }) {
           </p>
           <div style={s.featureGrid}>
             {[
-              { icon: "✍️", title: "Multi-Source Input", desc: "Write manually, record your screen, paste URLs, upload images, scan GitHub repos, or paste changelogs. Six input types, one unified flow." },
-              { icon: "🤖", title: "AI-Powered Drafts", desc: "Route through Gemini, OpenAI, Claude, Ollama, or offline templates. Bring your own API key — it never leaves your browser." },
-              { icon: "📱", title: "Platform-Native Output", desc: "Generate content tailored for LinkedIn, X/Twitter, Instagram, Reddit, newsletters, and dev blogs simultaneously." },
-              { icon: "🎯", title: "Brand Profiles", desc: "Save multiple brand voices with audience targeting, tone presets, and platform preferences per project." },
-              { icon: "📦", title: "Content Library", desc: "Every generated package is saved with full context. Search, edit, re-export, or republish from your local archive." },
-              { icon: "🔒", title: "Self-Host Ready", desc: "Run on your machine with npm. No accounts, no databases, no cloud dependencies. Your data stays yours." },
-            ].map((f, i) => (
-              <div key={i} style={s.featureCard} className="hover-lift">
-                <div style={s.featureIcon}>{f.icon}</div>
-                <h3 style={s.featureTitle}>{f.title}</h3>
-                <p style={s.featureDesc}>{f.desc}</p>
-              </div>
-            ))}
+              { icon: <Icons.manual size={24} color="var(--pastel-green-border)" />, title: "Multi-Source Input", desc: "Write manually, record your screen, paste URLs, upload images, scan GitHub repos, or paste changelogs. Six input types, one unified flow." },
+              { icon: <Icons.sparkle size={24} color="var(--pastel-yellow-border)" />, title: "AI-Powered Drafts", desc: "Route through Gemini, OpenAI, Claude, Ollama, or offline templates. Bring your own API key — it never leaves your browser." },
+              { icon: <Icons.channels size={24} color="var(--pastel-blue-border)" />, title: "Platform-Native Output", desc: "Generate content tailored for LinkedIn, X/Twitter, Instagram, Reddit, newsletters, and dev blogs simultaneously." },
+              { icon: <Icons.profiles size={24} color="var(--pastel-lavender-border)" />, title: "Brand Profiles", desc: "Save multiple brand voices with audience targeting, tone presets, and platform preferences per project." },
+              { icon: <Icons.library size={24} color="var(--pastel-red-border)" />, title: "Content Library", desc: "Every generated package is saved with full context. Search, edit, re-export, or republish from your local archive." },
+              { icon: <Icons.workspace size={24} color="var(--ink-black)" />, title: "Self-Host Ready", desc: "Run on your machine with npm. No accounts, no databases, no cloud dependencies. Your data stays yours." },
+            ].map((f, i) => {
+              const pastelColors = ["var(--pastel-green)", "var(--pastel-yellow)", "var(--pastel-blue)", "var(--pastel-lavender)", "var(--pastel-red)", "#f1f5f9"];
+              return (
+                <div key={i} style={{ ...s.featureCard, background: pastelColors[i % pastelColors.length] }} className="hand-drawn hover-lift">
+                  <div style={s.featureIcon}>{f.icon}</div>
+                  <h3 style={s.featureTitle}>{f.title}</h3>
+                  <p style={s.featureDesc}>{f.desc}</p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -161,7 +166,7 @@ export default function LandingPage({ onLaunch }) {
           style={s.bannerPhoto}
         />
         <div style={s.bannerOverlay}>
-          <p style={s.bannerQuote}>
+          <p style={s.bannerQuote} className="handwritten">
             "Built for creators who'd rather spend time building than writing about it."
           </p>
         </div>
@@ -174,7 +179,7 @@ export default function LandingPage({ onLaunch }) {
         style={{ ...s.sectionAlt, ...(isVisible("how") ? s.sectionVisible : s.sectionHidden) }}
       >
         <div style={s.sectionInner}>
-          <span style={s.sectionPill}>How It Works</span>
+          <span style={s.sectionPill} className="hand-drawn">How It Works</span>
           <h2 style={s.sectionTitle}>Three steps from idea to publish</h2>
           <p style={s.sectionSub}>No complex setup. No learning curve. Just follow the steps.</p>
 
@@ -183,14 +188,17 @@ export default function LandingPage({ onLaunch }) {
               { num: "01", title: "Add Your Context", desc: "Drop in screenshots, paste a URL, record a walkthrough, or type raw notes. SignalFlow understands what you built." },
               { num: "02", title: "Set Your Voice", desc: "Pick a tone, select target platforms, and let the AI engine draft platform-native posts for each channel." },
               { num: "03", title: "Review & Publish", desc: "Edit the generated drafts inline, preview how they look on each platform, then export or publish directly." },
-            ].map((step, i) => (
-              <div key={i} style={s.stepCard} className="hover-lift">
-                <div style={s.stepNum}>{step.num}</div>
-                <h3 style={s.stepTitle}>{step.title}</h3>
-                <p style={s.stepDesc}>{step.desc}</p>
-                {i < 2 && <div style={s.stepArrow} className="arrow-bounce">→</div>}
-              </div>
-            ))}
+            ].map((step, i) => {
+              const stepPastels = ["var(--pastel-yellow)", "var(--pastel-green)", "var(--pastel-blue)"];
+              return (
+                <div key={i} style={{ ...s.stepCard, background: stepPastels[i % stepPastels.length] }} className="hand-drawn hover-lift">
+                  <div style={s.stepNum}>{step.num}</div>
+                  <h3 style={s.stepTitle}>{step.title}</h3>
+                  <p style={s.stepDesc}>{step.desc}</p>
+                  {i < 2 && <div style={s.stepArrow} className="arrow-bounce">→</div>}
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -202,7 +210,7 @@ export default function LandingPage({ onLaunch }) {
         style={{ ...s.section, ...(isVisible("privacy") ? s.sectionVisible : s.sectionHidden) }}
       >
         <div style={s.sectionInner}>
-          <span style={s.sectionPill}>Privacy Model</span>
+          <span style={s.sectionPill} className="hand-drawn">Privacy Model</span>
           <h2 style={s.sectionTitle}>Your keys. Your data. Your machine.</h2>
           <p style={s.sectionSub}>
             SignalFlow stores API keys and content exclusively in your browser's local storage. 
@@ -211,20 +219,23 @@ export default function LandingPage({ onLaunch }) {
           <div style={s.privacySplit}>
             <div style={s.privacyCards}>
               {[
-                { icon: "🔑", title: "BYOK Architecture", desc: "Bring Your Own Key — credentials are stored in browser localStorage and sent directly to the AI provider." },
-                { icon: "💾", title: "Zero Server Storage", desc: "No databases, no accounts, no analytics. Projects and drafts persist in IndexedDB on your device." },
-                { icon: "🛡️", title: "Self-Host Control", desc: "Clone the repo, run locally, and deploy behind your own firewall. Full source code is MIT licensed." },
-              ].map((item, i) => (
-                <div key={i} style={s.privacyCard} className="hover-lift">
-                  <div style={s.privacyIcon}>{item.icon}</div>
-                  <div>
-                    <h3 style={s.privacyTitle}>{item.title}</h3>
-                    <p style={s.privacyDesc}>{item.desc}</p>
+                { icon: <Icons.key size={24} color="var(--pastel-yellow-border)" />, title: "BYOK Architecture", desc: "Bring Your Own Key — credentials are stored in browser localStorage and sent directly to the AI provider." },
+                { icon: <Icons.database size={24} color="var(--pastel-blue-border)" />, title: "Zero Server Storage", desc: "No databases, no accounts, no analytics. Projects and drafts persist in IndexedDB on your device." },
+                { icon: <Icons.security size={24} color="var(--pastel-green-border)" />, title: "Self-Host Control", desc: "Clone the repo, run locally, and deploy behind your own firewall. Full source code is MIT licensed." },
+              ].map((item, i) => {
+                const privacyPastels = ["var(--pastel-yellow)", "var(--pastel-blue)", "var(--pastel-green)"];
+                return (
+                  <div key={i} style={{ ...s.privacyCard, background: privacyPastels[i % privacyPastels.length] }} className="hand-drawn hover-lift">
+                    <div style={s.privacyIcon}>{item.icon}</div>
+                    <div>
+                      <h3 style={s.privacyTitle}>{item.title}</h3>
+                      <p style={s.privacyDesc}>{item.desc}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
-            <div style={s.privacyPhotoWrap}>
+            <div style={s.privacyPhotoWrap} className="hand-drawn">
               <img
                 src="/office-setup.png"
                 alt="Professional home office setup"
@@ -247,12 +258,13 @@ export default function LandingPage({ onLaunch }) {
             Open the workspace and create your first content package in under 5 minutes.
           </p>
           <div style={s.ctaBtnRow}>
-            <button onClick={onLaunch} style={s.ctaBtn} className="btn-premium">Open Studio Workspace →</button>
+            <button onClick={onLaunch} style={s.ctaBtn} className="hand-drawn-btn">Open Studio Workspace →</button>
             <a
               href="https://github.com/Ankit6149/SignalFlow-Studio"
               target="_blank"
               rel="noreferrer"
               style={s.ctaGhBtn}
+              className="hand-drawn-btn"
             >
               View Source on GitHub
             </a>

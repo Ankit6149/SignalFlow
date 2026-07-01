@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useRecorder } from "../hooks/useRecorder";
 import { CHANNELS, OUTPUT_TYPES, MODEL_ROUTES_META } from "../lib/config";
 import PlatformPreviews from "./PlatformPreviews";
+import { Icons } from "./Icons";
 
 const TONE_OPTIONS = ["professional", "founder-style", "technical", "educational", "casual", "launch-style"];
 const OUTPUT_PRESET_OPTIONS = [
@@ -130,6 +131,18 @@ export default function ContentPackageCreationFlow({
 
   function handleRemoveFile(id) {
     setUploadedFiles(prev => prev.filter(f => f.id !== id));
+  }
+
+  function getTabIcon(id, color) {
+    switch (id) {
+      case "manual": return <Icons.manual size={14} color={color} />;
+      case "notes": return <Icons.notes size={14} color={color} />;
+      case "url": return <Icons.url size={14} color={color} />;
+      case "record": return <Icons.record size={14} color={color} />;
+      case "screenshot": return <Icons.screenshot size={14} color={color} />;
+      case "repo": return <Icons.repo size={14} color={color} />;
+      default: return null;
+    }
   }
 
   async function triggerGeneration() {
@@ -269,7 +282,7 @@ export default function ContentPackageCreationFlow({
         
         <div style={styles.headerActions}>
           {providerMeta && (
-            <div style={styles.activeModelBadge}>
+            <div style={styles.activeModelBadge} className="hand-drawn">
               <span style={styles.modelDot} />
               <span>AI Engine: <strong>{providerMeta.title}</strong></span>
             </div>
@@ -281,6 +294,7 @@ export default function ContentPackageCreationFlow({
               ...styles.primaryGenerateBtn,
               ...((isGenerating || !notes.trim()) ? styles.primaryGenerateBtnDisabled : {})
             }}
+            className="hand-drawn-btn"
           >
             {isGenerating ? "🤖 Synthesizing..." : "Synthesize Drafts ✦"}
           </button>
@@ -288,7 +302,7 @@ export default function ContentPackageCreationFlow({
       </div>
 
       {generationError && (
-        <div style={styles.errorAlert}>
+        <div style={styles.errorAlert} className="hand-drawn">
           <strong>Generation Error:</strong> {generationError}
           <p style={{ margin: "4px 0 0 0", fontSize: "12px" }}>
             Verify API key configs in the Settings panel or try the offline fallback model.
@@ -301,7 +315,7 @@ export default function ContentPackageCreationFlow({
         
         {/* Left Column: Context & Input sources */}
         <div style={styles.leftCol}>
-          <div style={styles.workspaceCard}>
+          <div style={styles.workspaceCard} className="hand-drawn">
             <div style={styles.cardHeader}>
               <h3 style={styles.cardSectionTitle}>1. Choose Context Source</h3>
               <span style={styles.stepHint}>Combine notes, code, or links</span>
@@ -310,14 +324,15 @@ export default function ContentPackageCreationFlow({
             {/* Row-based tabs switcher */}
             <div style={styles.tabBar}>
               {[
-                { id: "manual", label: "Manual Brief", icon: "✍" },
-                { id: "notes", label: "Changelog / Code", icon: "📝" },
-                { id: "url", label: "Website Link", icon: "🔗" },
-                { id: "record", label: "Screen Recorder", icon: "🎥" },
-                { id: "screenshot", label: "Upload Images", icon: "🖼" },
-                { id: "repo", label: "Scan Codebase", icon: "💻" }
+                { id: "manual", label: "Manual Brief" },
+                { id: "notes", label: "Changelog / Code" },
+                { id: "url", label: "Website Link" },
+                { id: "record", label: "Screen Recorder" },
+                { id: "screenshot", label: "Upload Images" },
+                { id: "repo", label: "Scan Codebase" }
               ].map(tab => {
                 const isActive = sourceType === tab.id;
+                const activeColor = isActive ? "#2d6a4f" : "#6b6b6b";
                 return (
                   <button
                     key={tab.id}
@@ -327,7 +342,7 @@ export default function ContentPackageCreationFlow({
                       ...(isActive ? styles.tabBtnActive : {})
                     }}
                   >
-                    <span style={styles.tabIcon}>{tab.icon}</span>
+                    <span style={styles.tabIcon}>{getTabIcon(tab.id, activeColor)}</span>
                     <span>{tab.label}</span>
                   </button>
                 );
@@ -338,7 +353,7 @@ export default function ContentPackageCreationFlow({
             <div style={styles.tabContentPanel}>
               {sourceType === "manual" && (
                 <div style={styles.emptyBriefState}>
-                  <span>✍</span>
+                  <Icons.manual size={24} color="#aaa" />
                   <p>Describe your update in the description block below. No external logs or links attached.</p>
                 </div>
               )}
@@ -352,6 +367,7 @@ export default function ContentPackageCreationFlow({
                     style={styles.textarea}
                     placeholder="Paste feature details, markdown readme files, logs or package files..."
                     rows={6}
+                    className="hand-drawn-input"
                   />
                 </div>
               )}
@@ -365,6 +381,7 @@ export default function ContentPackageCreationFlow({
                     onChange={(e) => setScrapeUrl(e.target.value)}
                     style={styles.input}
                     placeholder="https://myproduct.com/docs"
+                    className="hand-drawn-input"
                   />
                   <p style={styles.panelTip}>🔗 SignalFlow will scan and extract core positioning text from public web URL links.</p>
                 </div>
@@ -375,7 +392,7 @@ export default function ContentPackageCreationFlow({
                   <div style={styles.recordControls}>
                     <div style={styles.btnGroup}>
                       {captureStatus === "Recording" ? (
-                        <button onClick={stopRecording} style={styles.stopBtn}>
+                        <button onClick={stopRecording} style={styles.stopBtn} className="hand-drawn-btn">
                           🛑 Stop Recording
                         </button>
                       ) : (
@@ -383,6 +400,7 @@ export default function ContentPackageCreationFlow({
                           onClick={() => startRecording(videoPreviewRef.current)}
                           disabled={captureStatus === "Starting..."}
                           style={styles.recordBtn}
+                          className="hand-drawn-btn"
                         >
                           🎥 Start Walkthrough Capture
                         </button>
@@ -392,6 +410,7 @@ export default function ContentPackageCreationFlow({
                         onClick={() => captureFrame(videoPreviewRef.current)}
                         disabled={captureStatus !== "Recording"}
                         style={styles.screenshotBtn}
+                        className="hand-drawn-btn"
                       >
                         📸 Take Screenshot Frame
                       </button>
@@ -413,7 +432,7 @@ export default function ContentPackageCreationFlow({
                     {recorderError && <p style={styles.errorText}>Error: {recorderError}</p>}
                   </div>
 
-                  <div style={styles.previewBox}>
+                  <div style={styles.previewBox} className="hand-drawn">
                     <video
                       ref={videoPreviewRef}
                       style={styles.videoPreview}
@@ -433,6 +452,7 @@ export default function ContentPackageCreationFlow({
                           style={styles.textarea}
                           placeholder="e.g. I showed the database dashboard sync button and configuration keys setup."
                           rows={3}
+                          className="hand-drawn-input"
                         />
                       </div>
                     </div>
@@ -441,7 +461,7 @@ export default function ContentPackageCreationFlow({
               )}
 
               {sourceType === "screenshot" && (
-                <div style={styles.fileUploadBox}>
+                <div style={styles.fileUploadBox} className="hand-drawn">
                   <label style={styles.uploadLabel}>
                     <span style={{ fontSize: "32px" }}>📁</span>
                     <span>Click or drag mockups to upload screenshots/videos</span>
@@ -465,6 +485,7 @@ export default function ContentPackageCreationFlow({
                     onChange={(e) => setRepoUrl(e.target.value)}
                     style={styles.input}
                     placeholder="e.g. https://github.com/Ankit6149/SignalFlow-Studio or C:\workspace\app"
+                    className="hand-drawn-input"
                   />
                   <div style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "6px" }}>
                     <label style={styles.label}>GitHub Access Token (Optional, for private repos)</label>
@@ -474,6 +495,7 @@ export default function ContentPackageCreationFlow({
                       onChange={(e) => setGithubToken(e.target.value)}
                       style={styles.input}
                       placeholder="ghp_..."
+                      className="hand-drawn-input"
                     />
                   </div>
                   <p style={styles.panelTip}>💻 Local directories read and filter structural source files from your disk. GitHub URLs pull files securely via their public/authorized API tree.</p>
@@ -487,7 +509,7 @@ export default function ContentPackageCreationFlow({
                 <h4 style={styles.assetsListTitle}>Ingested Assets ({uploadedFiles.length})</h4>
                 <div style={styles.assetsGrid}>
                   {uploadedFiles.map(file => (
-                    <div key={file.id} style={styles.assetItem}>
+                    <div key={file.id} style={styles.assetItem} className="hand-drawn">
                       <span style={styles.assetCategoryIcon}>
                         {file.category === "screenshot" ? "🖼️" : "🎥"}
                       </span>
@@ -511,6 +533,7 @@ export default function ContentPackageCreationFlow({
                 style={{ ...styles.textarea, minHeight: "150px" }}
                 placeholder="Type release details, key updates, or what this version accomplishes. This context is used to generate all outlet drafts."
                 required
+                className="hand-drawn-input"
               />
             </div>
           </div>
@@ -518,7 +541,7 @@ export default function ContentPackageCreationFlow({
 
         {/* Right Column: Creative brand tuners */}
         <div style={styles.rightCol}>
-          <div style={styles.workspaceCard}>
+          <div style={styles.workspaceCard} className="hand-drawn">
             <div style={styles.cardHeader}>
               <h3 style={styles.cardSectionTitle}>2. Target Settings & Tuning</h3>
               <span style={styles.stepHint}>Configure voice & platforms</span>
@@ -533,6 +556,7 @@ export default function ContentPackageCreationFlow({
                   onChange={(e) => setTitle(e.target.value)}
                   style={styles.input}
                   placeholder="e.g. Launch Kit v1.0"
+                  className="hand-drawn-input"
                 />
               </div>
 
@@ -542,6 +566,7 @@ export default function ContentPackageCreationFlow({
                   value={tone}
                   onChange={(e) => setTone(e.target.value)}
                   style={styles.select}
+                  className="hand-drawn-input"
                 >
                   {TONE_OPTIONS.map(t => (
                     <option key={t} value={t}>{t.toUpperCase()}</option>
@@ -557,6 +582,7 @@ export default function ContentPackageCreationFlow({
                   onChange={(e) => setAppUrl(e.target.value)}
                   style={styles.input}
                   placeholder="https://acme.io"
+                  className="hand-drawn-input"
                 />
               </div>
 
@@ -568,6 +594,7 @@ export default function ContentPackageCreationFlow({
                   onChange={(e) => setMainValue(e.target.value)}
                   style={styles.input}
                   placeholder="e.g. Saves developers 10 hours a week"
+                  className="hand-drawn-input"
                 />
               </div>
 
@@ -579,6 +606,7 @@ export default function ContentPackageCreationFlow({
                   onChange={(e) => setAudienceUnderstand(e.target.value)}
                   style={styles.input}
                   placeholder="e.g. It is completely client-side and private"
+                  className="hand-drawn-input"
                 />
               </div>
 
@@ -601,14 +629,18 @@ export default function ContentPackageCreationFlow({
                           ...styles.channelPill,
                           ...(isSelected ? {
                             background: color ? `${color}12` : "rgba(45, 106, 79, 0.08)",
-                            borderColor: color || "#2d6a4f",
+                            borderColor: "var(--ink-black)",
                             color: color || "#2d6a4f",
                             fontWeight: "600",
-                            transform: "scale(1.02)"
+                            transform: "scale(1.02)",
+                            borderWidth: "2px"
                           } : {})
                         }}
+                        className={isSelected ? "hand-drawn" : ""}
                       >
-                        <span style={{ marginRight: "4px" }}>{emoji}</span>
+                        <span style={{ marginRight: "6px", display: "inline-flex", alignItems: "center" }}>
+                          {Icons[key] ? Icons[key]({ size: 13, color: isSelected ? color : "#6b6b6b" }) : emoji}
+                        </span>
                         <span>{label}</span>
                       </button>
                     );
@@ -633,8 +665,13 @@ export default function ContentPackageCreationFlow({
                         }}
                         style={{
                           ...styles.formatPill,
-                          ...(isSelected ? styles.formatPillActive : {})
+                          ...(isSelected ? {
+                            ...styles.formatPillActive,
+                            borderColor: "var(--ink-black)",
+                            borderWidth: "2px"
+                          } : {})
                         }}
+                        className={isSelected ? "hand-drawn" : ""}
                       >
                         {label}
                       </button>
