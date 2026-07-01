@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { CHANNELS } from "../lib/config";
+import { Icons } from "./Icons";
 
 const VOICE_OPTIONS = ["professional", "founder-style", "technical", "educational", "casual", "launch-style"];
 const GOAL_OPTIONS = ["launch", "feature announcement", "educational", "behind the scenes", "demo", "update", "case study", "personal builder post"];
@@ -21,6 +22,18 @@ export default function ProjectManager({ projects, activeProjectId, onSave, onDe
   const [hashtags, setHashtags] = useState("");
   const [references, setReferences] = useState("");
   const [goals, setGoals] = useState(["launch"]);
+
+  const getBorderClass = (id) => {
+    const borders = ["hand-drawn", "hand-drawn-wavy", "hand-drawn-rough", "hand-drawn-skew"];
+    const codeSum = id.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return borders[codeSum % borders.length];
+  };
+
+  const getPastelBg = (id) => {
+    const colors = ["var(--pastel-green)", "var(--pastel-yellow)", "var(--pastel-blue)", "var(--pastel-lavender)", "var(--pastel-red)"];
+    const codeSum = id.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return colors[codeSum % colors.length];
+  };
 
   useEffect(() => {
     const active = projects.find(p => p.id === activeProjectId) || projects[0];
@@ -121,7 +134,7 @@ export default function ProjectManager({ projects, activeProjectId, onSave, onDe
           <h2 style={styles.title}>Brand Profiles & Projects</h2>
           <p style={styles.subtitle}>Setup guidelines, audience personas, and voices for automatic package alignment.</p>
         </div>
-        <button onClick={handleCreateNew} style={styles.primaryBtn}>
+        <button onClick={handleCreateNew} style={styles.primaryBtn} className="hand-drawn-btn-wavy">
           + New Brand Profile
         </button>
       </header>
@@ -139,13 +152,15 @@ export default function ProjectManager({ projects, activeProjectId, onSave, onDe
                   onClick={() => handleSelectProj(proj)}
                   style={{
                     ...styles.listItem,
-                    ...(isSelected ? styles.listItemSelected : {})
+                    background: getPastelBg(proj.id),
+                    ...(isSelected ? { borderWidth: "3px", borderColor: "var(--ink-black)" } : {})
                   }}
+                  className={getBorderClass(proj.id)}
                 >
                   <div style={styles.listInfo}>
                     <div style={styles.listNameRow}>
                       <span style={styles.listName}>{proj.name}</span>
-                      {isActive && <span style={styles.activeBadge}>Active</span>}
+                      {isActive && <span style={styles.activeBadge} className="hand-drawn">Active</span>}
                     </div>
                     <span style={styles.listDesc}>{proj.description?.substring(0, 75)}...</span>
                   </div>
@@ -158,7 +173,7 @@ export default function ProjectManager({ projects, activeProjectId, onSave, onDe
         {/* Right Column - Detail/Edit */}
         <div style={styles.rightCol}>
           {selectedProj ? (
-            <div style={styles.card}>
+            <div style={styles.card} className="hand-drawn">
               {!isEditing ? (
                 /* VIEW MODE */
                 <div>
@@ -169,12 +184,12 @@ export default function ProjectManager({ projects, activeProjectId, onSave, onDe
                     </div>
                     <div style={styles.btnGroup}>
                       {activeProjectId !== selectedProj.id && (
-                        <button onClick={() => onSelectActive(selectedProj.id)} style={styles.activateBtn}>
+                        <button onClick={() => onSelectActive(selectedProj.id)} style={styles.activateBtn} className="hand-drawn-btn">
                           Set Active
                         </button>
                       )}
-                      <button onClick={() => setIsEditing(true)} style={styles.secondaryBtn}>Edit</button>
-                      <button onClick={() => handleDelete(selectedProj.id)} style={styles.deleteBtn}>Delete</button>
+                      <button onClick={() => setIsEditing(true)} style={styles.secondaryBtn} className="hand-drawn-btn">Edit</button>
+                      <button onClick={() => handleDelete(selectedProj.id)} style={styles.deleteBtn} className="hand-drawn-btn">Delete</button>
                     </div>
                   </div>
 
@@ -243,6 +258,7 @@ export default function ProjectManager({ projects, activeProjectId, onSave, onDe
                         style={styles.input}
                         placeholder="e.g. Acme SaaS"
                         required
+                        className="hand-drawn-input"
                       />
                     </div>
                     <div style={styles.formCol}>
@@ -253,6 +269,7 @@ export default function ProjectManager({ projects, activeProjectId, onSave, onDe
                         onChange={(e) => setUrl(e.target.value)}
                         style={styles.input}
                         placeholder="https://acme.io"
+                        className="hand-drawn-input"
                       />
                     </div>
                   </div>
@@ -266,6 +283,7 @@ export default function ProjectManager({ projects, activeProjectId, onSave, onDe
                         onChange={(e) => setCategory(e.target.value)}
                         style={styles.input}
                         placeholder="e.g. Developer Tools / Marketing"
+                        className="hand-drawn-input"
                       />
                     </div>
                     <div style={styles.formCol}>
@@ -274,6 +292,7 @@ export default function ProjectManager({ projects, activeProjectId, onSave, onDe
                         value={brandVoice}
                         onChange={(e) => setBrandVoice(e.target.value)}
                         style={styles.input}
+                        className="hand-drawn-input"
                       >
                         {VOICE_OPTIONS.map(v => (
                           <option key={v} value={v}>{v.toUpperCase()}</option>
@@ -290,6 +309,7 @@ export default function ProjectManager({ projects, activeProjectId, onSave, onDe
                       style={styles.textarea}
                       placeholder="Describe the product value proposition, problem solved, and main benefits."
                       rows={3}
+                      className="hand-drawn-input"
                     />
                   </div>
 
@@ -302,6 +322,7 @@ export default function ProjectManager({ projects, activeProjectId, onSave, onDe
                         onChange={(e) => setAudience(e.target.value)}
                         style={styles.input}
                         placeholder="e.g. indie developers, SaaS marketers"
+                        className="hand-drawn-input"
                       />
                     </div>
                     <div style={styles.formCol}>
@@ -312,6 +333,7 @@ export default function ProjectManager({ projects, activeProjectId, onSave, onDe
                         onChange={(e) => setCta(e.target.value)}
                         style={styles.input}
                         placeholder="e.g. Sign up free at acme.io/register"
+                        className="hand-drawn-input"
                       />
                     </div>
                   </div>
@@ -359,6 +381,7 @@ export default function ProjectManager({ projects, activeProjectId, onSave, onDe
                         onChange={(e) => setVisualStyle(e.target.value)}
                         style={styles.input}
                         placeholder="e.g. Neon grid borders, bold typography, rich gradients"
+                        className="hand-drawn-input"
                       />
                     </div>
                     <div style={styles.formCol}>
@@ -369,6 +392,7 @@ export default function ProjectManager({ projects, activeProjectId, onSave, onDe
                         onChange={(e) => setHashtags(e.target.value)}
                         style={styles.input}
                         placeholder="e.g. indiehackers, startup, ai"
+                        className="hand-drawn-input"
                       />
                     </div>
                   </div>
@@ -381,12 +405,13 @@ export default function ProjectManager({ projects, activeProjectId, onSave, onDe
                       onChange={(e) => setReferences(e.target.value)}
                       style={styles.input}
                       placeholder="e.g. https://linear.app, https://stripe.com"
+                      className="hand-drawn-input"
                     />
                   </div>
 
                   <div style={styles.formActions}>
-                    <button type="submit" style={styles.primaryBtn}>Save Brand Profile</button>
-                    <button type="button" onClick={() => setIsEditing(false)} style={styles.cancelBtn}>Cancel</button>
+                    <button type="submit" style={styles.primaryBtn} className="hand-drawn-btn">Save Brand Profile</button>
+                    <button type="button" onClick={() => setIsEditing(false)} style={styles.cancelBtn} className="hand-drawn-btn">Cancel</button>
                   </div>
                 </form>
               )}

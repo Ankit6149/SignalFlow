@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { CHANNELS } from "../lib/config";
 import PlatformPreviews from "./PlatformPreviews";
+import { Icons } from "./Icons";
 
 export default function ContentLibrary({
   projects,
@@ -10,6 +11,18 @@ export default function ContentLibrary({
   onSchedulePost,
   setView
 }) {
+  const getCardClass = (id) => {
+    const cardStyles = ["hand-drawn", "hand-drawn-wavy", "hand-drawn-rough", "hand-drawn-skew"];
+    const codeSum = id.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return cardStyles[codeSum % cardStyles.length];
+  };
+
+  const getCardBg = (id) => {
+    const cardBgs = ["var(--pastel-green)", "var(--pastel-yellow)", "var(--pastel-blue)", "var(--pastel-lavender)", "var(--pastel-red)"];
+    const codeSum = id.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return cardBgs[codeSum % cardBgs.length];
+  };
+
   const [search, setSearch] = useState("");
   const [filterProject, setFilterProject] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -93,12 +106,14 @@ export default function ContentLibrary({
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by title or description content..."
           style={styles.searchBar}
+          className="hand-drawn-input"
         />
         
         <select
           value={filterProject}
           onChange={(e) => setFilterProject(e.target.value)}
           style={styles.select}
+          className="hand-drawn-input"
         >
           <option value="all">All Brand Profiles</option>
           {projects.map(p => (
@@ -110,6 +125,7 @@ export default function ContentLibrary({
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
           style={styles.select}
+          className="hand-drawn-input"
         >
           <option value="all">All Statuses</option>
           <option value="draft">Drafts</option>
@@ -132,7 +148,8 @@ export default function ContentLibrary({
               <div
                 key={pkg.id}
                 onClick={() => setSelectedPkg(pkg)}
-                style={styles.card}
+                style={{ ...styles.card, background: getCardBg(pkg.id) }}
+                className={getCardClass(pkg.id)}
               >
                 <div style={styles.cardMain}>
                   <div style={styles.cardHeader}>
@@ -144,8 +161,10 @@ export default function ContentLibrary({
                     </div>
                     <span style={{
                       ...styles.statusBadge,
-                      ...getStatusStyle(pkg.status)
-                    }}>
+                      ...getStatusStyle(pkg.status),
+                      borderColor: "var(--ink-black)",
+                      borderWidth: "1.5px"
+                    }} className="hand-drawn">
                       {pkg.status}
                     </span>
                   </div>
@@ -158,13 +177,17 @@ export default function ContentLibrary({
                     <div style={styles.channelRow}>
                       {pkg.platforms?.map(p => {
                         const info = CHANNELS.find(([key]) => key === p);
-                        return <span key={p} style={{ marginRight: "4px" }}>{info ? info[2] : "🔌"}</span>;
+                        return (
+                          <span key={p} style={{ marginRight: "6px", display: "inline-flex", alignItems: "center" }}>
+                            {info && Icons[p] ? Icons[p]({ size: 14, color: "var(--ink-black)" }) : "🔌"}
+                          </span>
+                        );
                       })}
                     </div>
                     <div style={styles.cardActions}>
-                      <button onClick={(e) => openSchedulingModal(pkg, e)} style={styles.actionBtn}>📅 Schedule</button>
-                      <button onClick={(e) => handleDuplicate(pkg, e)} style={styles.actionBtn}>📋 Duplicate</button>
-                      <button onClick={(e) => handleDelete(pkg.id, e)} style={styles.deleteBtn}>✕ Delete</button>
+                      <button onClick={(e) => openSchedulingModal(pkg, e)} style={styles.actionBtn} className="hand-drawn-btn">Schedule</button>
+                      <button onClick={(e) => handleDuplicate(pkg, e)} style={styles.actionBtn} className="hand-drawn-btn">Duplicate</button>
+                      <button onClick={(e) => handleDelete(pkg.id, e)} style={styles.deleteBtn} className="hand-drawn-btn">Delete</button>
                     </div>
                   </div>
                 </div>
@@ -177,8 +200,8 @@ export default function ContentLibrary({
       {/* Detail Modal Overlay */}
       {selectedPkg && (
         <div style={styles.modalOverlay} onClick={() => setSelectedPkg(null)}>
-          <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <button onClick={() => setSelectedPkg(null)} style={styles.closeModalBtn}>✕ Close</button>
+          <div style={styles.modalContent} onClick={(e) => e.stopPropagation()} className="hand-drawn">
+            <button onClick={() => setSelectedPkg(null)} style={styles.closeModalBtn} className="hand-drawn-btn">✕ Close</button>
             <div style={{ marginTop: "16px" }}>
               <PlatformPreviews
                 generationResult={selectedPkg}

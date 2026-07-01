@@ -25,7 +25,7 @@ export default function ContentPackageCreationFlow({
   onSchedulePost,
   onExport
 }) {
-  const [sourceType, setSourceType] = useState(initialSource); // "manual", "record", "screenshot", "url", "notes", "repo"
+  const [sourceType, setSourceType] = useState(initialSource === "manual" ? null : initialSource); // null, "record", "screenshot", "url", "notes", "repo"
   
   // Form values
   const [title, setTitle] = useState("");
@@ -38,6 +38,7 @@ export default function ContentPackageCreationFlow({
   const [appUrl, setAppUrl] = useState("");
   const [pastedText, setPastedText] = useState(""); // For changelog/notes code
   const [currentStep, setCurrentStep] = useState(1); // 1: Context brief, 2: Target tuning & output generation
+  const [showAdvancedTuning, setShowAdvancedTuning] = useState(false);
 
   // Scraping URL
   const [scrapeUrl, setScrapeUrl] = useState("");
@@ -376,197 +377,227 @@ export default function ContentPackageCreationFlow({
 
       {/* 2-Step Creative Pipeline */}
       <div style={{ ...styles.workspaceBody, gridTemplateColumns: "1fr" }}>
-        
         {currentStep === 1 && (
           /* Left Column: Context & Input sources */
           <div style={styles.leftCol}>
             <div style={styles.workspaceCard} className="hand-drawn">
-              <div style={styles.cardHeader}>
-                <h3 style={styles.cardSectionTitle}>1. Choose Context Source</h3>
-                <span style={styles.stepHint}>Combine notes, code, or links</span>
+              
+              {/* ALWAYS VISIBLE context textarea (Notebook Ruled Sheet) */}
+              <div style={styles.formCol}>
+                <label style={styles.label} className="handwritten">✍️ Tell us what you built / released *</label>
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  style={{
+                    ...styles.textarea,
+                    minHeight: "220px",
+                    backgroundImage: "linear-gradient(rgba(36, 113, 93, 0.07) 1px, transparent 1px)",
+                    backgroundSize: "100% 28px",
+                    lineHeight: "28px",
+                    backgroundAttachment: "local",
+                    padding: "14px 20px",
+                    fontSize: "15px",
+                    backgroundColor: "#fffdf9"
+                  }}
+                  placeholder="Draft release updates, list key features, or write down raw launch details here..."
+                  required
+                  className="hand-drawn-input"
+                />
               </div>
 
-              {/* Row-based tabs switcher */}
-              <div style={styles.tabBar}>
-                {[
-                  { id: "manual", label: "Manual Brief" },
-                  { id: "notes", label: "Changelog / Code" },
-                  { id: "url", label: "Website Link" },
-                  { id: "record", label: "Screen Recorder" },
-                  { id: "screenshot", label: "Upload Images" },
-                  { id: "repo", label: "Scan Codebase" }
-                ].map(tab => {
-                  const isActive = sourceType === tab.id;
-                  const activeColor = isActive ? "#2d6a4f" : "#6b6b6b";
-                  return (
-                    <button
-                      key={tab.id}
-                      onClick={() => setSourceType(tab.id)}
-                      style={{
-                        ...styles.tabBtn,
-                        ...(isActive ? styles.tabBtnActive : {})
-                      }}
-                    >
-                      <span style={styles.tabIcon}>{getTabIcon(tab.id, activeColor)}</span>
-                      <span>{tab.label}</span>
-                    </button>
-                  );
-                })}
+              {/* Attachment Tray */}
+              <div style={{ marginTop: "20px" }}>
+                <span style={{ fontSize: "12px", fontWeight: "700", color: "var(--ink-black)", display: "block", marginBottom: "8px" }} className="handwritten">
+                  📎 Attach optional context material:
+                </span>
+                
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                  {[
+                    { id: "notes", label: "Changelog / Code", icon: "notes" },
+                    { id: "url", label: "Website Link", icon: "url" },
+                    { id: "record", label: "Record Screen", icon: "record" },
+                    { id: "screenshot", label: "Upload Mockups", icon: "screenshot" },
+                    { id: "repo", label: "Scan Repo", icon: "repo" }
+                  ].map(tab => {
+                    const isActive = sourceType === tab.id;
+                    return (
+                      <button
+                        key={tab.id}
+                        type="button"
+                        onClick={() => setSourceType(sourceType === tab.id ? null : tab.id)}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "6px",
+                          padding: "6px 12px",
+                          fontSize: "12px",
+                          background: isActive ? "var(--pastel-yellow)" : "#fff",
+                          border: "2px solid var(--ink-black)",
+                          cursor: "pointer",
+                          fontWeight: "700"
+                        }}
+                        className="hand-drawn-btn"
+                      >
+                        {getTabIcon(tab.id, "var(--ink-black)")}
+                        <span>{tab.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Dynamic input panels based on selection */}
-              <div style={styles.tabContentPanel}>
-                {sourceType === "manual" && (
-                  <div style={styles.emptyBriefState}>
-                    <Icons.manual size={24} color="#aaa" />
-                    <p>Describe your update in the description block below. No external logs or links attached.</p>
+              {sourceType && (
+                <div style={{
+                  marginTop: "16px",
+                  padding: "16px",
+                  background: "#faf9f6",
+                  border: "2px dashed var(--ink-black)",
+                  borderRadius: "10px"
+                }} className="hand-drawn-wavy">
+                  
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                    <h4 style={{ margin: 0, fontSize: "13px", fontWeight: "800" }} className="handwritten">
+                      Attachment Config: {sourceType.toUpperCase()}
+                    </h4>
+                    <button
+                      type="button"
+                      onClick={() => setSourceType(null)}
+                      style={{ background: "transparent", border: "none", cursor: "pointer", fontSize: "12px", fontWeight: "700" }}
+                    >
+                      ✕ Clear
+                    </button>
                   </div>
-                )}
 
-                {sourceType === "notes" && (
-                  <div style={styles.formCol}>
-                    <label style={styles.label}>Paste Notes, Raw Code or Changelog Text</label>
-                    <textarea
-                      value={pastedText}
-                      onChange={(e) => setPastedText(e.target.value)}
-                      style={styles.textarea}
-                      placeholder="Paste feature details, markdown readme files, logs or package files..."
-                      rows={6}
-                      className="hand-drawn-input"
-                    />
-                  </div>
-                )}
+                  {sourceType === "notes" && (
+                    <div style={styles.formCol}>
+                      <label style={styles.label}>Paste Notes, Raw Code or Changelog Text</label>
+                      <textarea
+                        value={pastedText}
+                        onChange={(e) => setPastedText(e.target.value)}
+                        style={{ ...styles.textarea, minHeight: "120px" }}
+                        placeholder="Paste feature details, markdown readme files, logs or package files..."
+                        rows={4}
+                        className="hand-drawn-input"
+                      />
+                    </div>
+                  )}
 
-                {sourceType === "url" && (
-                  <div style={styles.formCol}>
-                    <label style={styles.label}>Website App or Documentation Links (comma separated)</label>
-                    <input
-                      type="url"
-                      value={scrapeUrl}
-                      onChange={(e) => setScrapeUrl(e.target.value)}
-                      style={styles.input}
-                      placeholder="https://myproduct.com/docs"
-                      className="hand-drawn-input"
-                    />
-                    <p style={styles.panelTip}>🔗 SignalFlow will scan and extract core positioning text from public web URL links.</p>
-                  </div>
-                )}
+                  {sourceType === "url" && (
+                    <div style={styles.formCol}>
+                      <label style={styles.label}>Website App or Documentation Link</label>
+                      <input
+                        type="url"
+                        value={scrapeUrl}
+                        onChange={(e) => setScrapeUrl(e.target.value)}
+                        style={styles.input}
+                        placeholder="https://myproduct.com/docs"
+                        className="hand-drawn-input"
+                      />
+                    </div>
+                  )}
 
-                {sourceType === "record" && (
-                  <div style={styles.recorderWrapper}>
-                    <div style={styles.recordControls}>
-                      <div style={styles.btnGroup}>
-                        {captureStatus === "Recording" ? (
-                          <button onClick={stopRecording} style={styles.stopBtn} className="hand-drawn-btn">
-                            🛑 Stop Recording
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => startRecording(videoPreviewRef.current)}
-                            disabled={captureStatus === "Starting..."}
-                            style={styles.recordBtn}
-                            className="hand-drawn-btn"
-                          >
-                            🎥 Start Walkthrough Capture
+                  {sourceType === "record" && (
+                    <div style={styles.recordingSection}>
+                      <label style={styles.label}>🎙️ Capture Interactive Screencast Demo</label>
+                      <p style={styles.panelTip}>Use clean resolution tabs. Toggle the microphone button if you want to transcribe feature voice overs directly into generator prompts.</p>
+                      
+                      <div style={styles.recorderControls}>
+                        {captureStatus === "idle" && (
+                          <button type="button" onClick={startRecording} style={styles.recordStartBtn} className="hand-drawn-btn">
+                            🔴 Record Walkthrough Screen
                           </button>
                         )}
                         
-                        <button
-                          onClick={() => captureFrame(videoPreviewRef.current)}
-                          disabled={captureStatus !== "Recording"}
-                          style={styles.screenshotBtn}
-                          className="hand-drawn-btn"
-                        >
-                          📸 Take Screenshot Frame
-                        </button>
+                        {captureStatus === "recording" && (
+                          <div style={{ display: "flex", gap: "10px" }}>
+                            <button type="button" onClick={stopRecording} style={styles.recordStopBtn} className="hand-drawn-btn">
+                              ⏹️ Stop Screen Record
+                            </button>
+                            <button type="button" onClick={captureFrame} style={styles.frameCaptureBtn} className="hand-drawn-btn">
+                              📸 Capture Frame
+                            </button>
+                          </div>
+                        )}
                       </div>
 
-                      <label style={styles.micToggle}>
-                        <input
-                          type="checkbox"
-                          checked={micEnabled}
-                          onChange={(e) => setMicEnabled(e.target.checked)}
-                        />
-                        🎤 Include Microphone Voiceover
-                      </label>
-
-                      <div style={styles.statusRow}>
-                        Status: <span style={styles.statusText}>{captureStatus}</span>
+                      <div style={{ marginTop: "12px" }}>
+                        <label style={{ ...styles.checkboxLabel, cursor: "pointer" }}>
+                          <input
+                            type="checkbox"
+                            checked={micEnabled}
+                            onChange={(e) => setMicEnabled(e.target.checked)}
+                            disabled={captureStatus === "recording"}
+                            style={{ cursor: "pointer" }}
+                          />
+                          Enable Audio Voice Transcription (Microphone input)
+                        </label>
                       </div>
 
-                      {recorderError && <p style={styles.errorText}>Error: {recorderError}</p>}
-                    </div>
-
-                    <div style={styles.previewBox} className="hand-drawn">
-                      <video
-                        ref={videoPreviewRef}
-                        style={styles.videoPreview}
-                        muted
-                        playsInline
-                      />
-                    </div>
-
-                    {showRecordingNotesForm && (
-                      <div style={styles.recordingNotesBox}>
-                        <h4 style={styles.recordingNotesTitle}>📝 Describe your Walkthrough</h4>
-                        <div style={styles.formCol}>
-                          <label style={styles.label}>What features did you showcase in this recording?</label>
+                      {showRecordingNotesForm && (
+                        <div style={styles.recordingNotesBox}>
+                          <label style={styles.label}>Walkthrough Design Notes & Insights</label>
                           <textarea
                             value={recordingNotes}
                             onChange={(e) => setRecordingNotes(e.target.value)}
                             style={styles.textarea}
-                            placeholder="e.g. I showed the database dashboard sync button and configuration keys setup."
-                            rows={3}
+                            placeholder="What makes this walkthrough cool? Mention highlights (e.g. key interactions, colors, animations) to steer social caption designs."
+                            rows={2}
                             className="hand-drawn-input"
                           />
                         </div>
+                      )}
+                    </div>
+                  )}
+
+                  {sourceType === "screenshot" && (
+                    <div style={styles.formCol}>
+                      <label style={styles.label}>Drop Interactive Mockups, Wireframes or Screenshots</label>
+                      <div style={styles.fileUploadBox} className="hand-drawn-wavy" onClick={() => document.getElementById("file-upload-input").click()}>
+                        <input
+                          id="file-upload-input"
+                          type="file"
+                          multiple
+                          accept="image/*,video/*"
+                          onChange={handleFileChange}
+                          style={{ display: "none" }}
+                        />
+                        <div style={styles.uploadLabel}>
+                          <Icons.screenshot size={32} color="var(--ink-black)" />
+                          <span>Click to upload mockup screenshots or walkthrough videos</span>
+                          <span style={{ fontSize: "10px", color: "#aaa" }}>PNG, JPG, WebP, MP4 up to 15MB</span>
+                        </div>
                       </div>
-                    )}
-                  </div>
-                )}
+                    </div>
+                  )}
 
-                {sourceType === "screenshot" && (
-                  <div style={styles.fileUploadBox} className="hand-drawn">
-                    <label style={styles.uploadLabel}>
-                      <span style={{ fontSize: "32px" }}>📁</span>
-                      <span>Click or drag mockups to upload screenshots/videos</span>
+                  {sourceType === "repo" && (
+                    <div style={styles.formCol}>
+                      <label style={styles.label}>Scan Repository Directory Path / GitHub URL</label>
                       <input
-                        type="file"
-                        multiple
-                        accept="image/*,video/*"
-                        onChange={handleFileChange}
-                        style={{ display: "none" }}
-                      />
-                    </label>
-                  </div>
-                )}
-
-                {sourceType === "repo" && (
-                  <div style={styles.formCol}>
-                    <label style={styles.label}>Repository GitHub URL or Local Workspace Folder Path</label>
-                    <input
-                      type="text"
-                      value={repoUrl}
-                      onChange={(e) => setRepoUrl(e.target.value)}
-                      style={styles.input}
-                      placeholder="e.g. https://github.com/Ankit6149/SignalFlow-Studio or C:\workspace\app"
-                      className="hand-drawn-input"
-                    />
-                    <div style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "6px" }}>
-                      <label style={styles.label}>GitHub Access Token (Optional, for private repos)</label>
-                      <input
-                        type="password"
-                        value={githubToken}
-                        onChange={(e) => setGithubToken(e.target.value)}
+                        type="text"
+                        value={repoUrl}
+                        onChange={(e) => setRepoUrl(e.target.value)}
                         style={styles.input}
-                        placeholder="ghp_..."
+                        placeholder="e.g. https://github.com/Ankit6149/SignalFlow-Studio or C:\workspace\app"
                         className="hand-drawn-input"
                       />
+                      <div style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "6px" }}>
+                        <label style={styles.label}>GitHub Access Token (Optional, for private repos)</label>
+                        <input
+                          type="password"
+                          value={githubToken}
+                          onChange={(e) => setGithubToken(e.target.value)}
+                          style={styles.input}
+                          placeholder="ghp_..."
+                          className="hand-drawn-input"
+                        />
+                      </div>
+                      <p style={styles.panelTip}>💻 Local directories read and filter structural source files from your disk. GitHub URLs pull files securely via their public/authorized API tree.</p>
                     </div>
-                    <p style={styles.panelTip}>💻 Local directories read and filter structural source files from your disk. GitHub URLs pull files securely via their public/authorized API tree.</p>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+              )}
 
               {/* Ingested assets display */}
               {uploadedFiles.length > 0 && (
@@ -588,19 +619,6 @@ export default function ContentPackageCreationFlow({
                   </div>
                 </div>
               )}
-
-              {/* ALWAYS VISIBLE context textarea */}
-              <div style={{ ...styles.formCol, marginTop: "24px" }}>
-                <label style={styles.label}>What did you build? (Description of updates/release) *</label>
-                <textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  style={{ ...styles.textarea, minHeight: "150px" }}
-                  placeholder="Type release details, key updates, or what this version accomplishes. This context is used to generate all outlet drafts."
-                  required
-                  className="hand-drawn-input"
-                />
-              </div>
 
               <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "24px" }}>
                 <button
@@ -661,41 +679,67 @@ export default function ContentPackageCreationFlow({
                   </select>
                 </div>
 
-                <div style={styles.formCol}>
-                  <label style={styles.label}>Application URL (optional)</label>
-                  <input
-                    type="url"
-                    value={appUrl}
-                    onChange={(e) => setAppUrl(e.target.value)}
-                    style={styles.input}
-                    placeholder="https://acme.io"
-                    className="hand-drawn-input"
-                  />
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowAdvancedTuning(!showAdvancedTuning)}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "var(--ink-black)",
+                    textDecoration: "underline",
+                    cursor: "pointer",
+                    fontSize: "12px",
+                    fontWeight: "600",
+                    textAlign: "left",
+                    padding: "4px 0",
+                    margin: "8px 0",
+                    display: "block",
+                    fontFamily: "inherit"
+                  }}
+                  className="handwritten"
+                >
+                  {showAdvancedTuning ? "✦ Hide Advanced Details" : "✦ Add advanced details (optional)"}
+                </button>
 
-                <div style={styles.formCol}>
-                  <label style={styles.label}>Primary Value Proposition (Value Hook)</label>
-                  <input
-                    type="text"
-                    value={mainValue}
-                    onChange={(e) => setMainValue(e.target.value)}
-                    style={styles.input}
-                    placeholder="e.g. Saves developers 10 hours a week"
-                    className="hand-drawn-input"
-                  />
-                </div>
+                {showAdvancedTuning && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "16px", padding: "14px", border: "2px solid var(--ink-black)", background: "var(--bg-cream)", borderRadius: "8px" }}>
+                    <div style={styles.formCol}>
+                      <label style={styles.label}>Application URL (optional)</label>
+                      <input
+                        type="url"
+                        value={appUrl}
+                        onChange={(e) => setAppUrl(e.target.value)}
+                        style={styles.input}
+                        placeholder="https://acme.io"
+                        className="hand-drawn-input"
+                      />
+                    </div>
 
-                <div style={styles.formCol}>
-                  <label style={styles.label}>Key Target Audience Message</label>
-                  <input
-                    type="text"
-                    value={audienceUnderstand}
-                    onChange={(e) => setAudienceUnderstand(e.target.value)}
-                    style={styles.input}
-                    placeholder="e.g. It is completely client-side and private"
-                    className="hand-drawn-input"
-                  />
-                </div>
+                    <div style={styles.formCol}>
+                      <label style={styles.label}>Primary Value Proposition (Value Hook)</label>
+                      <input
+                        type="text"
+                        value={mainValue}
+                        onChange={(e) => setMainValue(e.target.value)}
+                        style={styles.input}
+                        placeholder="e.g. Saves developers 10 hours a week"
+                        className="hand-drawn-input"
+                      />
+                    </div>
+
+                    <div style={styles.formCol}>
+                      <label style={styles.label}>Key Target Audience Message</label>
+                      <input
+                        type="text"
+                        value={audienceUnderstand}
+                        onChange={(e) => setAudienceUnderstand(e.target.value)}
+                        style={styles.input}
+                        placeholder="e.g. It is completely client-side and private"
+                        className="hand-drawn-input"
+                      />
+                    </div>
+                  </div>
+                )}
 
                 {/* Target Channels Visual Pills */}
                 <div style={styles.formCol}>

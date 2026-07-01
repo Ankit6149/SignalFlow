@@ -64,7 +64,7 @@ export default function SettingsManager({
           <h2 style={styles.title}>System Settings</h2>
           <p style={styles.subtitle}>Configure AI provider credentials, recording preferences, and developer debug flags.</p>
         </div>
-        <button onClick={handleSave} style={styles.saveBtn}>Save All Settings</button>
+        <button onClick={handleSave} style={styles.saveBtn} className="hand-drawn-btn-wavy">Save All Settings</button>
       </header>
 
       <div style={styles.body}>
@@ -73,39 +73,42 @@ export default function SettingsManager({
           <button
             onClick={() => setActiveSubTab("ai")}
             style={{ ...styles.subTabBtn, ...(activeSubTab === "ai" ? styles.subTabBtnActive : {}) }}
+            className={activeSubTab === "ai" ? "hand-drawn-skew" : ""}
           >
             🤖 AI Model Provider
           </button>
           <button
             onClick={() => setActiveSubTab("recording")}
             style={{ ...styles.subTabBtn, ...(activeSubTab === "recording" ? styles.subTabBtnActive : {}) }}
+            className={activeSubTab === "recording" ? "hand-drawn-skew" : ""}
           >
             🎥 Recording Preferences
           </button>
           <button
             onClick={() => setActiveSubTab("advanced")}
             style={{ ...styles.subTabBtn, ...(activeSubTab === "advanced" ? styles.subTabBtnActive : {}) }}
+            className={activeSubTab === "advanced" ? "hand-drawn-skew" : ""}
           >
             ⚙️ Advanced / Data Admin
           </button>
         </div>
 
         {/* Content Panels */}
-        <div style={styles.panel}>
+        <div style={styles.panel} className="hand-drawn-rough">
           {/* AI SETTINGS */}
           {activeSubTab === "ai" && (
             <div style={styles.form}>
               {publicHosted && !isOwnerAuthenticated ? (
                 <div style={{
                   background: "rgba(245, 158, 11, 0.06)",
-                  border: "1px solid rgba(245, 158, 11, 0.2)",
+                  border: "2px solid var(--ink-black)",
                   borderRadius: "8px",
                   padding: "12px 16px",
                   marginBottom: "20px",
                   display: "flex",
                   alignItems: "center",
                   gap: "12px"
-                }}>
+                }} className="hand-drawn-skew">
                   <span style={{ fontSize: "20px" }}>🌐</span>
                   <div>
                     <h4 style={{ margin: 0, color: "#b45309", fontSize: "14px", fontWeight: "600" }}>Public demo mode</h4>
@@ -117,14 +120,14 @@ export default function SettingsManager({
               ) : accessLocked && !isOwnerAuthenticated ? (
                 <div style={{
                   background: "rgba(239, 68, 68, 0.06)",
-                  border: "1px solid rgba(239, 68, 68, 0.2)",
+                  border: "2px solid var(--ink-black)",
                   borderRadius: "8px",
                   padding: "12px 16px",
                   marginBottom: "20px",
                   display: "flex",
                   alignItems: "center",
                   gap: "12px"
-                }}>
+                }} className="hand-drawn-skew">
                   <span style={{ fontSize: "20px" }}>🔒</span>
                   <div>
                     <h4 style={{ margin: 0, color: "#b91c1c", fontSize: "14px", fontWeight: "600" }}>Private hosted workspace</h4>
@@ -136,19 +139,19 @@ export default function SettingsManager({
               ) : accessLocked && isOwnerAuthenticated ? (
                 <div style={{
                   background: "rgba(36, 113, 93, 0.08)",
-                  border: "1px solid rgba(36, 113, 93, 0.25)",
+                  border: "2px solid var(--ink-black)",
                   borderRadius: "8px",
                   padding: "12px 16px",
                   marginBottom: "20px",
                   display: "flex",
                   alignItems: "center",
                   gap: "12px"
-                }}>
+                }} className="hand-drawn-skew">
                   <span style={{ fontSize: "20px" }}>🔑</span>
                   <div>
                     <h4 style={{ margin: 0, color: "#24715d", fontSize: "14px", fontWeight: "600" }}>Owner session active</h4>
                     <p style={{ margin: "2px 0 0 0", color: "#59635c", fontSize: "12px", lineHeight: "1.4" }}>
-                      Protected generation and connected-channel status are available in this browser session.
+                      You are authenticated as owner. All credentials and publishing flows are unlocked.
                     </p>
                   </div>
                 </div>
@@ -189,14 +192,15 @@ export default function SettingsManager({
               )}
 
               <div style={styles.formCol}>
-                <label style={styles.label}>Default AI Generation Route</label>
+                <label style={styles.label}>Default AI Content Generator</label>
                 <select
                   value={provider}
                   onChange={(e) => {
                     setProvider(e.target.value);
                     clearTestData();
                   }}
-                  style={styles.select}
+                  style={styles.input}
+                  className="hand-drawn-input"
                 >
                   {MODEL_ROUTES_META.map(m => (
                     <option key={m.key} value={m.key}>
@@ -209,7 +213,7 @@ export default function SettingsManager({
 
               {/* Warnings for cloud keys */}
               {!currentMeta?.isLocal && (
-                <div style={styles.warningBox}>
+                <div style={styles.warningBox} className="hand-drawn-wavy">
                   ⚠️ <strong>Security Notice:</strong> Stored keys are kept only in this browser session. If you are on a public deployment, these keys remain strictly local to your device and are never shared or uploaded to any owner workspace.
                 </div>
               )}
@@ -228,6 +232,7 @@ export default function SettingsManager({
                         onChange={(e) => handleProviderConfigChange(provider, "apiKey", e.target.value)}
                         style={styles.input}
                         placeholder={`Paste your ${currentMeta?.title} key`}
+                        className="hand-drawn-input"
                       />
                       <p style={{ margin: "4px 0 0 0", color: "#cbd5e1", fontSize: "11px" }}>
                         🔒 Stored only in this browser.
@@ -244,6 +249,7 @@ export default function SettingsManager({
                         onChange={(e) => handleProviderConfigChange("custom", "baseUrl", e.target.value)}
                         style={styles.input}
                         placeholder="https://mygateway.com/v1"
+                        className="hand-drawn-input"
                       />
                     </div>
                   )}
@@ -256,6 +262,7 @@ export default function SettingsManager({
                         value={settings.ollama?.baseUrl || "http://localhost:11434"}
                         onChange={(e) => handleProviderConfigChange("ollama", "baseUrl", e.target.value)}
                         style={styles.input}
+                        className="hand-drawn-input"
                       />
                     </div>
                   )}
@@ -268,6 +275,7 @@ export default function SettingsManager({
                         value={settings.lmstudio?.baseUrl || "http://localhost:1234"}
                         onChange={(e) => handleProviderConfigChange("lmstudio", "baseUrl", e.target.value)}
                         style={styles.input}
+                        className="hand-drawn-input"
                       />
                     </div>
                   )}
@@ -280,6 +288,7 @@ export default function SettingsManager({
                       onChange={(e) => handleProviderConfigChange(provider, "model", e.target.value)}
                       style={styles.input}
                       placeholder={`e.g. ${currentMeta?.defaultModel}`}
+                      className="hand-drawn-input"
                     />
                   </div>
 
@@ -290,8 +299,9 @@ export default function SettingsManager({
                         onClick={handleTest}
                         disabled={isTesting}
                         style={styles.testBtn}
+                        className="hand-drawn-btn"
                       >
-                        {isTesting ? "Testing..." : "Test Connection Connection"}
+                        {isTesting ? "Testing..." : "Test Connection"}
                       </button>
 
                       {testResult && (
@@ -322,6 +332,7 @@ export default function SettingsManager({
                   value={recordQuality}
                   onChange={(e) => setRecordQuality(e.target.value)}
                   style={styles.select}
+                  className="hand-drawn-input"
                 >
                   <option value="1080p">High Definition (1080p / 30fps)</option>
                   <option value="720p">Standard (720p / 30fps)</option>
@@ -341,7 +352,7 @@ export default function SettingsManager({
               </div>
 
               {showTips && (
-                <div style={styles.tipsWidget}>
+                <div style={styles.tipsWidget} className="hand-drawn-skew">
                   <h4 style={styles.tipsTitle}>💡 Screencast Walkthrough Tips</h4>
                   <ul style={styles.tipsList}>
                     <li>Select <strong>"Share this Tab"</strong> for clean resolution frames without desktop panels.</li>
@@ -373,7 +384,7 @@ export default function SettingsManager({
                 <p style={styles.metaDesc}>Export or clear your browser's offline database configuration packages.</p>
 
                 <div style={styles.btnRow}>
-                  <button onClick={onExportData} style={styles.exportBtn}>Export JSON Backup</button>
+                  <button onClick={onExportData} style={styles.exportBtn} className="hand-drawn-btn">Export JSON Backup</button>
                   <button
                     onClick={() => {
                       const file = document.createElement("input");
@@ -395,10 +406,11 @@ export default function SettingsManager({
                       file.click();
                     }}
                     style={styles.importBtn}
+                    className="hand-drawn-btn"
                   >
                     Import JSON Backup
                   </button>
-                  <button onClick={onClearAllData} style={styles.clearBtn}>Clear Local Database</button>
+                  <button onClick={onClearAllData} style={styles.clearBtn} className="hand-drawn-btn">Clear Local Database</button>
                 </div>
               </div>
 
@@ -412,7 +424,7 @@ export default function SettingsManager({
                       <div style={{ color: "#10b981", fontSize: "13px", fontWeight: "700", display: "flex", alignItems: "center", gap: "6px" }}>
                         <span>🔑</span> Owner Session Active (Authenticated)
                       </div>
-                      <button onClick={onLockWorkspace} style={{ ...styles.clearBtn, width: "auto" }}>
+                      <button onClick={onLockWorkspace} style={{ ...styles.clearBtn, width: "auto" }} className="hand-drawn-btn">
                         Close Owner Session
                       </button>
                     </div>
@@ -437,8 +449,9 @@ export default function SettingsManager({
                         placeholder="Enter owner access key"
                         style={styles.input}
                         required
+                        className="hand-drawn-input"
                       />
-                      <button type="submit" style={styles.saveBtn}>Unlock Session</button>
+                      <button type="submit" style={styles.saveBtn} className="hand-drawn-btn">Unlock Session</button>
                     </form>
                   )}
                   {accessMessage && <p style={{ color: "#f43f5e", fontSize: "12px", marginTop: "8px" }}>{accessMessage}</p>}
