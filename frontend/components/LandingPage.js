@@ -24,7 +24,7 @@ export default function LandingPage({ onLaunch }) {
           }
         });
       },
-      { threshold: 0.15 }
+      { threshold: 0.05 }
     );
 
     Object.values(sectionRefs.current).forEach((el) => {
@@ -32,6 +32,18 @@ export default function LandingPage({ onLaunch }) {
     });
 
     return () => observer.disconnect();
+  }, []);
+
+  // Fallback to reveal all sections in case IntersectionObserver is delayed or blocked
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setVisibleSections((prev) => {
+        const next = new Set(prev);
+        ["features", "how", "privacy", "cta"].forEach(id => next.add(id));
+        return next;
+      });
+    }, 1000);
+    return () => clearTimeout(timer);
   }, []);
 
   const isVisible = (id) => visibleSections.has(id);

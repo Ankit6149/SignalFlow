@@ -8,8 +8,6 @@ body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   background: #faf9f6;
   color: #1a1a1a;
-  overflow: hidden;
-  height: 100vh;
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

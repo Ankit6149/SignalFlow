@@ -16,7 +16,7 @@ const API_BASE = "/api";
 const ACCESS_TOKEN_STORAGE_KEY = "signalflow_owner_token";
 
 export default function Home() {
-  const [view, setView] = useState("dashboard");
+  const [view, setView] = useState("create");
   const [creationSource, setCreationSource] = useState("manual");
 
   // Core Data States
@@ -529,7 +529,7 @@ export default function Home() {
       setScheduledPosts([]);
       setPostingLogs([]);
       setAiSettings(storageService.getAISettings());
-      setView("dashboard");
+      setView("create");
     }
   }
 
@@ -673,6 +673,7 @@ const styles = {
     background: "#faf9f6",
     color: "#1a1a1a",
     fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
+    overflow: "hidden",
   },
   mainContent: {
     flexGrow: 1,

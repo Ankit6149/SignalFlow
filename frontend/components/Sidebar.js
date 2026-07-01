@@ -2,8 +2,7 @@ import React from "react";
 
 export default function Sidebar({ view, setView, activeProjectName, aiStatus }) {
   const navItems = [
-    { id: "dashboard", label: "Dashboard", icon: "📊" },
-    { id: "create", label: "Create", icon: "✨" },
+    { id: "create", label: "Studio Workspace", icon: "✨" },
     { id: "library", label: "Library", icon: "📚" },
     { id: "projects", label: "Profiles", icon: "👤" },
     { id: "channels", label: "Channels", icon: "🔌" },
