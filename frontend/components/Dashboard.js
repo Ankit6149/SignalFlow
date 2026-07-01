@@ -119,29 +119,29 @@ export default function Dashboard({
 
       {/* Grid of stats */}
       <section style={styles.statsGrid}>
-        <div style={{ ...styles.statCard, background: "var(--pastel-yellow)" }} className="hand-drawn offset-border neo-shadow">
-          <div style={styles.statIcon}>📦</div>
+        <div style={{ ...styles.statCard, background: "#ffffff" }} className="hand-drawn offset-border neo-shadow">
+          <div style={{ ...styles.statIcon, background: "var(--pastel-yellow)", width: "36px", height: "36px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", border: "1.5px solid var(--ink-black)" }}>📦</div>
           <div>
             <div style={styles.statLabel}>Total Packages</div>
             <div style={styles.statValue}>{packages.length}</div>
           </div>
         </div>
-        <div style={{ ...styles.statCard, background: "var(--pastel-blue)" }} className="hand-drawn offset-border neo-shadow">
-          <div style={styles.statIcon}><span style={{ color: "var(--ink-black)" }}>🔌</span></div>
+        <div style={{ ...styles.statCard, background: "#ffffff" }} className="hand-drawn offset-border neo-shadow">
+          <div style={{ ...styles.statIcon, background: "var(--pastel-blue)", width: "36px", height: "36px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", border: "1.5px solid var(--ink-black)" }}><span style={{ color: "var(--ink-black)", fontSize: "14px" }}>🔌</span></div>
           <div>
             <div style={styles.statLabel}>Connected Accounts</div>
             <div style={styles.statValue}>{connectedCount}</div>
           </div>
         </div>
-        <div style={{ ...styles.statCard, background: "var(--pastel-green)" }} className="hand-drawn offset-border neo-shadow">
-          <div style={styles.statIcon}><span style={{ color: "var(--ink-black)" }}>📅</span></div>
+        <div style={{ ...styles.statCard, background: "#ffffff" }} className="hand-drawn offset-border neo-shadow">
+          <div style={{ ...styles.statIcon, background: "var(--pastel-green)", width: "36px", height: "36px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", border: "1.5px solid var(--ink-black)" }}><span style={{ color: "var(--ink-black)", fontSize: "14px" }}>📅</span></div>
           <div>
             <div style={styles.statLabel}>Scheduled Posts</div>
             <div style={styles.statValue}>{activeScheduled.length}</div>
           </div>
         </div>
-        <div style={{ ...styles.statCard, background: "var(--pastel-red)" }} className="hand-drawn offset-border neo-shadow">
-          <div style={styles.statIcon}><span style={{ color: "var(--ink-black)" }}>⚠️</span></div>
+        <div style={{ ...styles.statCard, background: "#ffffff" }} className="hand-drawn offset-border neo-shadow">
+          <div style={{ ...styles.statIcon, background: "var(--pastel-red)", width: "36px", height: "36px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", border: "1.5px solid var(--ink-black)" }}><span style={{ color: "var(--ink-black)", fontSize: "14px" }}>⚠️</span></div>
           <div>
             <div style={styles.statLabel}>Action Required</div>
             <div style={styles.statValue}>{failedPosts.length}</div>
@@ -155,7 +155,7 @@ export default function Dashboard({
         <div style={styles.leftCol}>
           {/* Quick Actions */}
           <div style={styles.card} className="hand-drawn offset-border neo-shadow">
-            <h3 style={styles.cardTitle} className="handwritten">⚡ Quick Actions</h3>
+            <h3 style={styles.cardTitle}>⚡ Quick Actions</h3>
             <div style={styles.actionGrid}>
               {quickActions.map((act, i) => (
                 <button
@@ -166,7 +166,7 @@ export default function Dashboard({
                     }
                     setView(act.view);
                   }}
-                  style={{ ...styles.actionBtn, border: "2px solid var(--ink-black)" }}
+                  style={{ ...styles.actionBtn, border: "2px solid var(--ink-black)", background: "#ffffff" }}
                   className="hand-drawn-btn"
                 >
                   <span style={styles.actionIcon}>{act.icon}</span>
@@ -182,8 +182,8 @@ export default function Dashboard({
           {/* Recent Packages */}
           <div style={styles.card} className="hand-drawn offset-border neo-shadow">
             <div style={styles.cardHeader}>
-              <h3 style={styles.cardTitle} className="handwritten"> Recent Packages</h3>
-              <button onClick={() => setView("library")} style={styles.textLink} className="handwritten">View All ➜</button>
+              <h3 style={styles.cardTitle}> Recent Packages</h3>
+              <button onClick={() => setView("library")} style={styles.textLink}>View All ➜</button>
             </div>
             {recentPackages.length === 0 ? (
               <div style={styles.emptyState}>
@@ -198,7 +198,7 @@ export default function Dashboard({
                   <div
                     key={pkg.id}
                     onClick={() => onSelectPackage(pkg)}
-                    style={{ ...styles.listItem, border: "2px solid var(--ink-black)", borderRadius: "10px", marginBottom: "4px" }}
+                    style={{ ...styles.listItem, border: "2px solid var(--ink-black)", borderRadius: "10px", marginBottom: "4px", background: "#ffffff" }}
                     className="hand-drawn-wavy"
                   >
                     <div style={styles.pkgInfo}>
@@ -226,12 +226,12 @@ export default function Dashboard({
         <div style={styles.rightCol}>
           {/* Brand Quick Peek */}
           {activeProject && (
-            <div style={{ ...styles.card, background: "var(--pastel-lavender)", color: "var(--ink-black)" }} className="hand-drawn offset-border neo-shadow">
+            <div style={{ ...styles.card, background: "#ffffff", color: "var(--ink-black)" }} className="hand-drawn offset-border neo-shadow">
               <div style={styles.cardHeader}>
-                <h3 style={styles.cardTitle} className="handwritten">👤 Brand Profile: {activeProject.name}</h3>
-                <button onClick={() => setView("projects")} style={styles.textLink} className="handwritten">Edit ➜</button>
+                <h3 style={styles.cardTitle}>👤 Brand Profile: {activeProject.name}</h3>
+                <button onClick={() => setView("projects")} style={styles.textLink}>Edit ➜</button>
               </div>
-              <p style={{ ...styles.brandDesc, color: "var(--ink-black)" }}>{activeProject.description}</p>
+              <p style={{ ...styles.brandDesc, color: "#59635c" }}>{activeProject.description}</p>
               <div style={{ ...styles.brandMetrics, borderTop: "2px solid var(--ink-black)" }}>
                 <div>
                   <span style={{ ...styles.metricLabel, color: "rgba(18, 22, 18, 0.6)" }}>Audience</span>

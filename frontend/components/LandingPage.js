@@ -115,7 +115,7 @@ export default function LandingPage({ onLaunch }) {
         {/* Tilted Sticker Collage (Daisy/Super Hello visual) */}
         <div style={s.collageContainer} className="float-effect">
           {/* Card 1: Polaroid Card */}
-          <div style={{ ...s.collageCard, background: "var(--pastel-yellow)", transform: "rotate(-6deg) translate(-20px, 0px)", zIndex: 3 }} className="hand-drawn offset-border neo-shadow">
+          <div style={{ ...s.collageCard, background: "var(--pastel-yellow)", transform: "rotate(-5deg) translate(-10px, 0px)", zIndex: 3 }} className="hand-drawn offset-border neo-shadow">
             <div style={s.polaroidTop}>
               <span style={{ fontSize: "28px" }}>📦</span>
               <span style={{ fontSize: "10px", background: "var(--ink-black)", color: "#fff", padding: "2px 6px", borderRadius: "4px" }} className="handwritten">LAUNCH KIT</span>
@@ -127,7 +127,7 @@ export default function LandingPage({ onLaunch }) {
           </div>
 
           {/* Card 2: Sticker Badge */}
-          <div style={{ ...s.collageCard, background: "var(--pastel-red)", transform: "rotate(8deg) translate(80px, -40px)", zIndex: 4 }} className="hand-drawn offset-border neo-shadow">
+          <div style={{ ...s.collageCard, background: "var(--pastel-red)", transform: "rotate(6deg) translate(50px, -25px)", zIndex: 4 }} className="hand-drawn offset-border neo-shadow">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <span style={{ fontWeight: "800", color: "#fff", fontSize: "11px" }}>LINK SCANNER</span>
               <span style={{ fontSize: "16px" }}>🔗</span>
@@ -138,7 +138,7 @@ export default function LandingPage({ onLaunch }) {
           </div>
 
           {/* Card 3: Flower Art Badge */}
-          <div style={{ ...s.collageCard, background: "var(--pastel-green)", transform: "rotate(-2deg) translate(30px, 90px)", zIndex: 2, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", minHeight: "130px" }} className="hand-drawn offset-border neo-shadow">
+          <div style={{ ...s.collageCard, background: "var(--pastel-green)", transform: "rotate(-2deg) translate(20px, 50px)", zIndex: 2, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", minHeight: "130px" }} className="hand-drawn offset-border neo-shadow">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--ink-black)" strokeWidth="2">
               <path d="M12 12m-3 0a3 3 0 1 0 6 0 3 3 0 1 0 -6 0" fill="#fee440" />
               <path d="M12 2a3 3 0 0 1 3 3v1a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3zM12 18a3 3 0 0 1 3 3v1a3 3 0 0 1-6 0v-1a3 3 0 0 1 3-3zM2 12a3 3 0 0 1 3-3h1a3 3 0 0 1 0 6H5a3 3 0 0 1-3-3zM18 12a3 3 0 0 1 3-3h1a3 3 0 0 1 0 6h-1a3 3 0 0 1-3-3z" />
@@ -147,7 +147,7 @@ export default function LandingPage({ onLaunch }) {
           </div>
 
           {/* Card 4: LinkedIn Tape Tag */}
-          <div style={{ ...s.collageCard, background: "var(--pastel-blue)", transform: "rotate(4deg) translate(-90px, 70px)", zIndex: 1, padding: "10px 14px" }} className="hand-drawn offset-border neo-shadow">
+          <div style={{ ...s.collageCard, background: "var(--pastel-blue)", transform: "rotate(4deg) translate(-50px, 40px)", zIndex: 1, padding: "10px 14px" }} className="hand-drawn offset-border neo-shadow">
             <span style={{ fontSize: "10px", fontWeight: "800", color: "#fff", background: "var(--ink-black)", padding: "2px 6px", borderRadius: "3px" }}>INSPECT PREVIEW</span>
             <p style={{ margin: "6px 0 0 0", fontSize: "10px", lineHeight: "1.4" }}>Tailored drafts for X & LinkedIn channels.</p>
           </div>

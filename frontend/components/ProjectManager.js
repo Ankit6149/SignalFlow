@@ -166,7 +166,7 @@ export default function ProjectManager({ projects, activeProjectId, onSave, onDe
               onClick={() => handleSelectProj(proj)}
               style={{
                 ...styles.profileCard,
-                background: getPastelBg(proj.id)
+                background: "#ffffff"
               }}
               className={`${getBorderClass(proj.id)} offset-border`}
             >
