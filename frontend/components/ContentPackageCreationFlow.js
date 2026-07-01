@@ -37,6 +37,7 @@ export default function ContentPackageCreationFlow({
   const [selectedOutputs, setSelectedOutputs] = useState(["caption", "text", "image", "video", "carousel", "doc"]);
   const [appUrl, setAppUrl] = useState("");
   const [pastedText, setPastedText] = useState(""); // For changelog/notes code
+  const [currentStep, setCurrentStep] = useState(1); // 1: Context brief, 2: Target tuning & output generation
 
   // Scraping URL
   const [scrapeUrl, setScrapeUrl] = useState("");
@@ -52,6 +53,27 @@ export default function ContentPackageCreationFlow({
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationError, setGenerationError] = useState("");
   const [generationResult, setGenerationResult] = useState(null);
+  const [loadingStatus, setLoadingStatus] = useState("Ingesting release assets...");
+
+  useEffect(() => {
+    if (!isGenerating) return;
+    const statuses = [
+      "Scanning input material details...",
+      "Analyzing core value hooks...",
+      "Drafting LinkedIn post outlines...",
+      "Writing native X/Twitter developer thread...",
+      "Formatting release notes & documentation summaries...",
+      "Polishing tone presets and audience alignments...",
+      "Assembling final creative package..."
+    ];
+    let index = 0;
+    setLoadingStatus(statuses[0]);
+    const interval = setInterval(() => {
+      index = (index + 1) % statuses.length;
+      setLoadingStatus(statuses[index]);
+    }, 1600);
+    return () => clearInterval(interval);
+  }, [isGenerating]);
 
   // Screen recorder setup
   const videoPreviewRef = useRef(null);
@@ -273,6 +295,48 @@ export default function ContentPackageCreationFlow({
 
   return (
     <div style={styles.container}>
+      {/* Hand-Drawn Animated Loader */}
+      {isGenerating && (
+        <div style={styles.loaderOverlay}>
+          <div style={styles.loaderCard} className="hand-drawn fade-in-up">
+            {/* Drifting paper icons in background */}
+            <div className="falling-paper-item" style={{ top: "-30px", left: "10%", animationDelay: "0s" }}>
+              <Icons.notes size={20} color="var(--pastel-blue-border)" />
+            </div>
+            <div className="falling-paper-item" style={{ top: "-30px", left: "75%", animationDelay: "1.5s" }}>
+              <Icons.manual size={18} color="var(--pastel-green-border)" />
+            </div>
+            <div className="falling-paper-item" style={{ top: "-30px", left: "45%", animationDelay: "2.8s" }}>
+              <Icons.library size={22} color="var(--pastel-yellow-border)" />
+            </div>
+
+            {/* Drawing Animation */}
+            <div style={styles.sketchContainer}>
+              <svg viewBox="0 0 100 100" style={styles.sketchSvg}>
+                {/* Clipboard */}
+                <rect x="25" y="15" width="50" height="70" rx="4" fill="#fff" stroke="var(--ink-black)" strokeWidth="3" />
+                <rect x="40" y="8" width="20" height="8" rx="2" fill="var(--pastel-yellow)" stroke="var(--ink-black)" strokeWidth="2.5" />
+                
+                {/* Sketch lines */}
+                <line x1="35" y1="35" x2="65" y2="35" stroke="var(--ink-black)" strokeWidth="2.5" strokeLinecap="round" strokeDasharray="30" strokeDashoffset="30" style={{ animation: "lineDraw 1.2s forwards 0.3s" }} />
+                <line x1="35" y1="48" x2="60" y2="48" stroke="var(--ink-black)" strokeWidth="2.5" strokeLinecap="round" strokeDasharray="25" strokeDashoffset="25" style={{ animation: "lineDraw 1s forwards 1.2s" }} />
+                <line x1="35" y1="61" x2="65" y2="61" stroke="var(--ink-black)" strokeWidth="2.5" strokeLinecap="round" strokeDasharray="30" strokeDashoffset="30" style={{ animation: "lineDraw 1.2s forwards 2s" }} />
+              </svg>
+
+              {/* Writing Pencil */}
+              <div style={styles.animatedPencil}>
+                <svg viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" style={{ width: "32px", height: "32px", fill: "none", stroke: "var(--ink-black)", strokeWidth: 2.5 }}>
+                  <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+                </svg>
+              </div>
+            </div>
+
+            <h3 style={styles.loaderTitle} className="handwritten">Drafting launch packages...</h3>
+            <p style={styles.loaderStatus}>{loadingStatus}</p>
+          </div>
+        </div>
+      )}
+
       {/* Dynamic Header */}
       <div style={styles.headerRow}>
         <div>
@@ -288,15 +352,15 @@ export default function ContentPackageCreationFlow({
             </div>
           )}
           <button
-            onClick={triggerGeneration}
-            disabled={isGenerating || !notes.trim()}
+            onClick={currentStep === 1 ? () => setCurrentStep(2) : triggerGeneration}
+            disabled={currentStep === 1 ? !notes.trim() : (isGenerating || !notes.trim())}
             style={{
               ...styles.primaryGenerateBtn,
-              ...((isGenerating || !notes.trim()) ? styles.primaryGenerateBtnDisabled : {})
+              ...((currentStep === 1 ? !notes.trim() : (isGenerating || !notes.trim())) ? styles.primaryGenerateBtnDisabled : {})
             }}
             className="hand-drawn-btn"
           >
-            {isGenerating ? "🤖 Synthesizing..." : "Synthesize Drafts ✦"}
+            {currentStep === 1 ? "Next: Tune Settings ➜" : (isGenerating ? "🤖 Synthesizing..." : "Synthesize Drafts ✦")}
           </button>
         </div>
       </div>
@@ -310,378 +374,433 @@ export default function ContentPackageCreationFlow({
         </div>
       )}
 
-      {/* 2-Column Creative Grid */}
-      <div style={styles.workspaceBody}>
+      {/* 2-Step Creative Pipeline */}
+      <div style={{ ...styles.workspaceBody, gridTemplateColumns: "1fr" }}>
         
-        {/* Left Column: Context & Input sources */}
-        <div style={styles.leftCol}>
-          <div style={styles.workspaceCard} className="hand-drawn">
-            <div style={styles.cardHeader}>
-              <h3 style={styles.cardSectionTitle}>1. Choose Context Source</h3>
-              <span style={styles.stepHint}>Combine notes, code, or links</span>
-            </div>
+        {currentStep === 1 && (
+          /* Left Column: Context & Input sources */
+          <div style={styles.leftCol}>
+            <div style={styles.workspaceCard} className="hand-drawn">
+              <div style={styles.cardHeader}>
+                <h3 style={styles.cardSectionTitle}>1. Choose Context Source</h3>
+                <span style={styles.stepHint}>Combine notes, code, or links</span>
+              </div>
 
-            {/* Row-based tabs switcher */}
-            <div style={styles.tabBar}>
-              {[
-                { id: "manual", label: "Manual Brief" },
-                { id: "notes", label: "Changelog / Code" },
-                { id: "url", label: "Website Link" },
-                { id: "record", label: "Screen Recorder" },
-                { id: "screenshot", label: "Upload Images" },
-                { id: "repo", label: "Scan Codebase" }
-              ].map(tab => {
-                const isActive = sourceType === tab.id;
-                const activeColor = isActive ? "#2d6a4f" : "#6b6b6b";
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setSourceType(tab.id)}
-                    style={{
-                      ...styles.tabBtn,
-                      ...(isActive ? styles.tabBtnActive : {})
-                    }}
-                  >
-                    <span style={styles.tabIcon}>{getTabIcon(tab.id, activeColor)}</span>
-                    <span>{tab.label}</span>
-                  </button>
-                );
-              })}
-            </div>
+              {/* Row-based tabs switcher */}
+              <div style={styles.tabBar}>
+                {[
+                  { id: "manual", label: "Manual Brief" },
+                  { id: "notes", label: "Changelog / Code" },
+                  { id: "url", label: "Website Link" },
+                  { id: "record", label: "Screen Recorder" },
+                  { id: "screenshot", label: "Upload Images" },
+                  { id: "repo", label: "Scan Codebase" }
+                ].map(tab => {
+                  const isActive = sourceType === tab.id;
+                  const activeColor = isActive ? "#2d6a4f" : "#6b6b6b";
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setSourceType(tab.id)}
+                      style={{
+                        ...styles.tabBtn,
+                        ...(isActive ? styles.tabBtnActive : {})
+                      }}
+                    >
+                      <span style={styles.tabIcon}>{getTabIcon(tab.id, activeColor)}</span>
+                      <span>{tab.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
 
-            {/* Dynamic input panels based on selection */}
-            <div style={styles.tabContentPanel}>
-              {sourceType === "manual" && (
-                <div style={styles.emptyBriefState}>
-                  <Icons.manual size={24} color="#aaa" />
-                  <p>Describe your update in the description block below. No external logs or links attached.</p>
-                </div>
-              )}
-
-              {sourceType === "notes" && (
-                <div style={styles.formCol}>
-                  <label style={styles.label}>Paste Notes, Raw Code or Changelog Text</label>
-                  <textarea
-                    value={pastedText}
-                    onChange={(e) => setPastedText(e.target.value)}
-                    style={styles.textarea}
-                    placeholder="Paste feature details, markdown readme files, logs or package files..."
-                    rows={6}
-                    className="hand-drawn-input"
-                  />
-                </div>
-              )}
-
-              {sourceType === "url" && (
-                <div style={styles.formCol}>
-                  <label style={styles.label}>Website App or Documentation Links (comma separated)</label>
-                  <input
-                    type="url"
-                    value={scrapeUrl}
-                    onChange={(e) => setScrapeUrl(e.target.value)}
-                    style={styles.input}
-                    placeholder="https://myproduct.com/docs"
-                    className="hand-drawn-input"
-                  />
-                  <p style={styles.panelTip}>🔗 SignalFlow will scan and extract core positioning text from public web URL links.</p>
-                </div>
-              )}
-
-              {sourceType === "record" && (
-                <div style={styles.recorderWrapper}>
-                  <div style={styles.recordControls}>
-                    <div style={styles.btnGroup}>
-                      {captureStatus === "Recording" ? (
-                        <button onClick={stopRecording} style={styles.stopBtn} className="hand-drawn-btn">
-                          🛑 Stop Recording
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => startRecording(videoPreviewRef.current)}
-                          disabled={captureStatus === "Starting..."}
-                          style={styles.recordBtn}
-                          className="hand-drawn-btn"
-                        >
-                          🎥 Start Walkthrough Capture
-                        </button>
-                      )}
-                      
-                      <button
-                        onClick={() => captureFrame(videoPreviewRef.current)}
-                        disabled={captureStatus !== "Recording"}
-                        style={styles.screenshotBtn}
-                        className="hand-drawn-btn"
-                      >
-                        📸 Take Screenshot Frame
-                      </button>
-                    </div>
-
-                    <label style={styles.micToggle}>
-                      <input
-                        type="checkbox"
-                        checked={micEnabled}
-                        onChange={(e) => setMicEnabled(e.target.checked)}
-                      />
-                      🎤 Include Microphone Voiceover
-                    </label>
-
-                    <div style={styles.statusRow}>
-                      Status: <span style={styles.statusText}>{captureStatus}</span>
-                    </div>
-
-                    {recorderError && <p style={styles.errorText}>Error: {recorderError}</p>}
+              {/* Dynamic input panels based on selection */}
+              <div style={styles.tabContentPanel}>
+                {sourceType === "manual" && (
+                  <div style={styles.emptyBriefState}>
+                    <Icons.manual size={24} color="#aaa" />
+                    <p>Describe your update in the description block below. No external logs or links attached.</p>
                   </div>
+                )}
 
-                  <div style={styles.previewBox} className="hand-drawn">
-                    <video
-                      ref={videoPreviewRef}
-                      style={styles.videoPreview}
-                      muted
-                      playsInline
-                    />
-                  </div>
-
-                  {showRecordingNotesForm && (
-                    <div style={styles.recordingNotesBox}>
-                      <h4 style={styles.recordingNotesTitle}>📝 Describe your Walkthrough</h4>
-                      <div style={styles.formCol}>
-                        <label style={styles.label}>What features did you showcase in this recording?</label>
-                        <textarea
-                          value={recordingNotes}
-                          onChange={(e) => setRecordingNotes(e.target.value)}
-                          style={styles.textarea}
-                          placeholder="e.g. I showed the database dashboard sync button and configuration keys setup."
-                          rows={3}
-                          className="hand-drawn-input"
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {sourceType === "screenshot" && (
-                <div style={styles.fileUploadBox} className="hand-drawn">
-                  <label style={styles.uploadLabel}>
-                    <span style={{ fontSize: "32px" }}>📁</span>
-                    <span>Click or drag mockups to upload screenshots/videos</span>
-                    <input
-                      type="file"
-                      multiple
-                      accept="image/*,video/*"
-                      onChange={handleFileChange}
-                      style={{ display: "none" }}
-                    />
-                  </label>
-                </div>
-              )}
-
-              {sourceType === "repo" && (
-                <div style={styles.formCol}>
-                  <label style={styles.label}>Repository GitHub URL or Local Workspace Folder Path</label>
-                  <input
-                    type="text"
-                    value={repoUrl}
-                    onChange={(e) => setRepoUrl(e.target.value)}
-                    style={styles.input}
-                    placeholder="e.g. https://github.com/Ankit6149/SignalFlow-Studio or C:\workspace\app"
-                    className="hand-drawn-input"
-                  />
-                  <div style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "6px" }}>
-                    <label style={styles.label}>GitHub Access Token (Optional, for private repos)</label>
-                    <input
-                      type="password"
-                      value={githubToken}
-                      onChange={(e) => setGithubToken(e.target.value)}
-                      style={styles.input}
-                      placeholder="ghp_..."
+                {sourceType === "notes" && (
+                  <div style={styles.formCol}>
+                    <label style={styles.label}>Paste Notes, Raw Code or Changelog Text</label>
+                    <textarea
+                      value={pastedText}
+                      onChange={(e) => setPastedText(e.target.value)}
+                      style={styles.textarea}
+                      placeholder="Paste feature details, markdown readme files, logs or package files..."
+                      rows={6}
                       className="hand-drawn-input"
                     />
                   </div>
-                  <p style={styles.panelTip}>💻 Local directories read and filter structural source files from your disk. GitHub URLs pull files securely via their public/authorized API tree.</p>
+                )}
+
+                {sourceType === "url" && (
+                  <div style={styles.formCol}>
+                    <label style={styles.label}>Website App or Documentation Links (comma separated)</label>
+                    <input
+                      type="url"
+                      value={scrapeUrl}
+                      onChange={(e) => setScrapeUrl(e.target.value)}
+                      style={styles.input}
+                      placeholder="https://myproduct.com/docs"
+                      className="hand-drawn-input"
+                    />
+                    <p style={styles.panelTip}>🔗 SignalFlow will scan and extract core positioning text from public web URL links.</p>
+                  </div>
+                )}
+
+                {sourceType === "record" && (
+                  <div style={styles.recorderWrapper}>
+                    <div style={styles.recordControls}>
+                      <div style={styles.btnGroup}>
+                        {captureStatus === "Recording" ? (
+                          <button onClick={stopRecording} style={styles.stopBtn} className="hand-drawn-btn">
+                            🛑 Stop Recording
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => startRecording(videoPreviewRef.current)}
+                            disabled={captureStatus === "Starting..."}
+                            style={styles.recordBtn}
+                            className="hand-drawn-btn"
+                          >
+                            🎥 Start Walkthrough Capture
+                          </button>
+                        )}
+                        
+                        <button
+                          onClick={() => captureFrame(videoPreviewRef.current)}
+                          disabled={captureStatus !== "Recording"}
+                          style={styles.screenshotBtn}
+                          className="hand-drawn-btn"
+                        >
+                          📸 Take Screenshot Frame
+                        </button>
+                      </div>
+
+                      <label style={styles.micToggle}>
+                        <input
+                          type="checkbox"
+                          checked={micEnabled}
+                          onChange={(e) => setMicEnabled(e.target.checked)}
+                        />
+                        🎤 Include Microphone Voiceover
+                      </label>
+
+                      <div style={styles.statusRow}>
+                        Status: <span style={styles.statusText}>{captureStatus}</span>
+                      </div>
+
+                      {recorderError && <p style={styles.errorText}>Error: {recorderError}</p>}
+                    </div>
+
+                    <div style={styles.previewBox} className="hand-drawn">
+                      <video
+                        ref={videoPreviewRef}
+                        style={styles.videoPreview}
+                        muted
+                        playsInline
+                      />
+                    </div>
+
+                    {showRecordingNotesForm && (
+                      <div style={styles.recordingNotesBox}>
+                        <h4 style={styles.recordingNotesTitle}>📝 Describe your Walkthrough</h4>
+                        <div style={styles.formCol}>
+                          <label style={styles.label}>What features did you showcase in this recording?</label>
+                          <textarea
+                            value={recordingNotes}
+                            onChange={(e) => setRecordingNotes(e.target.value)}
+                            style={styles.textarea}
+                            placeholder="e.g. I showed the database dashboard sync button and configuration keys setup."
+                            rows={3}
+                            className="hand-drawn-input"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {sourceType === "screenshot" && (
+                  <div style={styles.fileUploadBox} className="hand-drawn">
+                    <label style={styles.uploadLabel}>
+                      <span style={{ fontSize: "32px" }}>📁</span>
+                      <span>Click or drag mockups to upload screenshots/videos</span>
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*,video/*"
+                        onChange={handleFileChange}
+                        style={{ display: "none" }}
+                      />
+                    </label>
+                  </div>
+                )}
+
+                {sourceType === "repo" && (
+                  <div style={styles.formCol}>
+                    <label style={styles.label}>Repository GitHub URL or Local Workspace Folder Path</label>
+                    <input
+                      type="text"
+                      value={repoUrl}
+                      onChange={(e) => setRepoUrl(e.target.value)}
+                      style={styles.input}
+                      placeholder="e.g. https://github.com/Ankit6149/SignalFlow-Studio or C:\workspace\app"
+                      className="hand-drawn-input"
+                    />
+                    <div style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "6px" }}>
+                      <label style={styles.label}>GitHub Access Token (Optional, for private repos)</label>
+                      <input
+                        type="password"
+                        value={githubToken}
+                        onChange={(e) => setGithubToken(e.target.value)}
+                        style={styles.input}
+                        placeholder="ghp_..."
+                        className="hand-drawn-input"
+                      />
+                    </div>
+                    <p style={styles.panelTip}>💻 Local directories read and filter structural source files from your disk. GitHub URLs pull files securely via their public/authorized API tree.</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Ingested assets display */}
+              {uploadedFiles.length > 0 && (
+                <div style={styles.assetsList}>
+                  <h4 style={styles.assetsListTitle}>Ingested Assets ({uploadedFiles.length})</h4>
+                  <div style={styles.assetsGrid}>
+                    {uploadedFiles.map(file => (
+                      <div key={file.id} style={styles.assetItem} className="hand-drawn">
+                        <span style={styles.assetCategoryIcon}>
+                          {file.category === "screenshot" ? "🖼️" : "🎥"}
+                        </span>
+                        <div style={styles.assetDetails}>
+                          <span style={styles.assetName}>{file.name}</span>
+                          <span style={styles.assetSize}>{(file.size / 1024 / 1024).toFixed(2)} MB</span>
+                        </div>
+                        <button onClick={() => handleRemoveFile(file.id)} style={styles.removeAssetBtn}>✕</button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
-            </div>
 
-            {/* Ingested assets display */}
-            {uploadedFiles.length > 0 && (
-              <div style={styles.assetsList}>
-                <h4 style={styles.assetsListTitle}>Ingested Assets ({uploadedFiles.length})</h4>
-                <div style={styles.assetsGrid}>
-                  {uploadedFiles.map(file => (
-                    <div key={file.id} style={styles.assetItem} className="hand-drawn">
-                      <span style={styles.assetCategoryIcon}>
-                        {file.category === "screenshot" ? "🖼️" : "🎥"}
-                      </span>
-                      <div style={styles.assetDetails}>
-                        <span style={styles.assetName}>{file.name}</span>
-                        <span style={styles.assetSize}>{(file.size / 1024 / 1024).toFixed(2)} MB</span>
-                      </div>
-                      <button onClick={() => handleRemoveFile(file.id)} style={styles.removeAssetBtn}>✕</button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* ALWAYS VISIBLE context textarea */}
-            <div style={{ ...styles.formCol, marginTop: "24px" }}>
-              <label style={styles.label}>What did you build? (Description of updates/release) *</label>
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                style={{ ...styles.textarea, minHeight: "150px" }}
-                placeholder="Type release details, key updates, or what this version accomplishes. This context is used to generate all outlet drafts."
-                required
-                className="hand-drawn-input"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column: Creative brand tuners */}
-        <div style={styles.rightCol}>
-          <div style={styles.workspaceCard} className="hand-drawn">
-            <div style={styles.cardHeader}>
-              <h3 style={styles.cardSectionTitle}>2. Target Settings & Tuning</h3>
-              <span style={styles.stepHint}>Configure voice & platforms</span>
-            </div>
-
-            <div style={styles.form}>
-              <div style={styles.formCol}>
-                <label style={styles.label}>Draft Package Title</label>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  style={styles.input}
-                  placeholder="e.g. Launch Kit v1.0"
+              {/* ALWAYS VISIBLE context textarea */}
+              <div style={{ ...styles.formCol, marginTop: "24px" }}>
+                <label style={styles.label}>What did you build? (Description of updates/release) *</label>
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  style={{ ...styles.textarea, minHeight: "150px" }}
+                  placeholder="Type release details, key updates, or what this version accomplishes. This context is used to generate all outlet drafts."
+                  required
                   className="hand-drawn-input"
                 />
               </div>
 
-              <div style={styles.formCol}>
-                <label style={styles.label}>Brand Voice Tone</label>
-                <select
-                  value={tone}
-                  onChange={(e) => setTone(e.target.value)}
-                  style={styles.select}
-                  className="hand-drawn-input"
+              <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "24px" }}>
+                <button
+                  type="button"
+                  onClick={() => setCurrentStep(2)}
+                  disabled={!notes.trim()}
+                  style={{
+                    padding: "12px 28px",
+                    borderRadius: "10px",
+                    background: notes.trim() ? "var(--pastel-yellow)" : "#e5e5e0",
+                    color: notes.trim() ? "var(--ink-black)" : "#aaa",
+                    fontWeight: "600",
+                    cursor: notes.trim() ? "pointer" : "not-allowed",
+                    opacity: notes.trim() ? 1 : 0.6
+                  }}
+                  className="hand-drawn-btn"
                 >
-                  {TONE_OPTIONS.map(t => (
-                    <option key={t} value={t}>{t.toUpperCase()}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div style={styles.formCol}>
-                <label style={styles.label}>Application URL (optional)</label>
-                <input
-                  type="url"
-                  value={appUrl}
-                  onChange={(e) => setAppUrl(e.target.value)}
-                  style={styles.input}
-                  placeholder="https://acme.io"
-                  className="hand-drawn-input"
-                />
-              </div>
-
-              <div style={styles.formCol}>
-                <label style={styles.label}>Primary Value Proposition (Value Hook)</label>
-                <input
-                  type="text"
-                  value={mainValue}
-                  onChange={(e) => setMainValue(e.target.value)}
-                  style={styles.input}
-                  placeholder="e.g. Saves developers 10 hours a week"
-                  className="hand-drawn-input"
-                />
-              </div>
-
-              <div style={styles.formCol}>
-                <label style={styles.label}>Key Target Audience Message</label>
-                <input
-                  type="text"
-                  value={audienceUnderstand}
-                  onChange={(e) => setAudienceUnderstand(e.target.value)}
-                  style={styles.input}
-                  placeholder="e.g. It is completely client-side and private"
-                  className="hand-drawn-input"
-                />
-              </div>
-
-              {/* Target Channels Visual Pills */}
-              <div style={styles.formCol}>
-                <label style={styles.label}>Target Outlets</label>
-                <div style={styles.channelPillsContainer}>
-                  {CHANNELS.map(([key, label, emoji, color]) => {
-                    const isSelected = selectedChannels.includes(key);
-                    return (
-                      <button
-                        key={key}
-                        type="button"
-                        onClick={() => {
-                          setSelectedChannels(prev =>
-                            prev.includes(key) ? prev.filter(c => c !== key) : [...prev, key]
-                          );
-                        }}
-                        style={{
-                          ...styles.channelPill,
-                          ...(isSelected ? {
-                            background: color ? `${color}12` : "rgba(45, 106, 79, 0.08)",
-                            borderColor: "var(--ink-black)",
-                            color: color || "#2d6a4f",
-                            fontWeight: "600",
-                            transform: "scale(1.02)",
-                            borderWidth: "2px"
-                          } : {})
-                        }}
-                        className={isSelected ? "hand-drawn" : ""}
-                      >
-                        <span style={{ marginRight: "6px", display: "inline-flex", alignItems: "center" }}>
-                          {Icons[key] ? Icons[key]({ size: 13, color: isSelected ? color : "#6b6b6b" }) : emoji}
-                        </span>
-                        <span>{label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Output Formats Pills */}
-              <div style={styles.formCol}>
-                <label style={styles.label}>Required Package Outputs</label>
-                <div style={styles.formatPillsContainer}>
-                  {OUTPUT_TYPES.map(([key, label]) => {
-                    const isSelected = selectedOutputs.includes(key);
-                    return (
-                      <button
-                        key={key}
-                        type="button"
-                        onClick={() => {
-                          setSelectedOutputs(prev =>
-                            prev.includes(key) ? prev.filter(o => o !== key) : [...prev, key]
-                          );
-                        }}
-                        style={{
-                          ...styles.formatPill,
-                          ...(isSelected ? {
-                            ...styles.formatPillActive,
-                            borderColor: "var(--ink-black)",
-                            borderWidth: "2px"
-                          } : {})
-                        }}
-                        className={isSelected ? "hand-drawn" : ""}
-                      >
-                        {label}
-                      </button>
-                    );
-                  })}
-                </div>
+                  Next: Tune Settings & Outlets ➜
+                </button>
               </div>
             </div>
           </div>
-        </div>
+        )}
+
+        {currentStep === 2 && (
+          /* Right Column: Creative brand tuners */
+          <div style={styles.rightCol}>
+            <div style={styles.workspaceCard} className="hand-drawn">
+              <div style={styles.cardHeader}>
+                <h3 style={styles.cardSectionTitle}>2. Target Settings & Tuning</h3>
+                <span style={styles.stepHint}>Configure voice & platforms</span>
+              </div>
+
+              <div style={styles.form}>
+                <div style={styles.formCol}>
+                  <label style={styles.label}>Draft Package Title</label>
+                  <input
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    style={styles.input}
+                    placeholder="e.g. Launch Kit v1.0"
+                    className="hand-drawn-input"
+                  />
+                </div>
+
+                <div style={styles.formCol}>
+                  <label style={styles.label}>Brand Voice Tone</label>
+                  <select
+                    value={tone}
+                    onChange={(e) => setTone(e.target.value)}
+                    style={styles.select}
+                    className="hand-drawn-input"
+                  >
+                    {TONE_OPTIONS.map(t => (
+                      <option key={t} value={t}>{t.toUpperCase()}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div style={styles.formCol}>
+                  <label style={styles.label}>Application URL (optional)</label>
+                  <input
+                    type="url"
+                    value={appUrl}
+                    onChange={(e) => setAppUrl(e.target.value)}
+                    style={styles.input}
+                    placeholder="https://acme.io"
+                    className="hand-drawn-input"
+                  />
+                </div>
+
+                <div style={styles.formCol}>
+                  <label style={styles.label}>Primary Value Proposition (Value Hook)</label>
+                  <input
+                    type="text"
+                    value={mainValue}
+                    onChange={(e) => setMainValue(e.target.value)}
+                    style={styles.input}
+                    placeholder="e.g. Saves developers 10 hours a week"
+                    className="hand-drawn-input"
+                  />
+                </div>
+
+                <div style={styles.formCol}>
+                  <label style={styles.label}>Key Target Audience Message</label>
+                  <input
+                    type="text"
+                    value={audienceUnderstand}
+                    onChange={(e) => setAudienceUnderstand(e.target.value)}
+                    style={styles.input}
+                    placeholder="e.g. It is completely client-side and private"
+                    className="hand-drawn-input"
+                  />
+                </div>
+
+                {/* Target Channels Visual Pills */}
+                <div style={styles.formCol}>
+                  <label style={styles.label}>Target Outlets</label>
+                  <div style={styles.channelPillsContainer}>
+                    {CHANNELS.map(([key, label, emoji, color]) => {
+                      const isSelected = selectedChannels.includes(key);
+                      return (
+                        <button
+                          key={key}
+                          type="button"
+                          onClick={() => {
+                            setSelectedChannels(prev =>
+                              prev.includes(key) ? prev.filter(c => c !== key) : [...prev, key]
+                            );
+                          }}
+                          style={{
+                            ...styles.channelPill,
+                            ...(isSelected ? {
+                              background: color ? `${color}12` : "rgba(45, 106, 79, 0.08)",
+                              borderColor: "var(--ink-black)",
+                              color: color || "#2d6a4f",
+                              fontWeight: "600",
+                              transform: "scale(1.02)",
+                              borderWidth: "2px"
+                            } : {})
+                          }}
+                          className={isSelected ? "hand-drawn" : ""}
+                        >
+                          <span style={{ marginRight: "6px", display: "inline-flex", alignItems: "center" }}>
+                            {Icons[key] ? Icons[key]({ size: 13, color: isSelected ? color : "#6b6b6b" }) : emoji}
+                          </span>
+                          <span>{label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Output Formats Pills */}
+                <div style={styles.formCol}>
+                  <label style={styles.label}>Required Package Outputs</label>
+                  <div style={styles.formatPillsContainer}>
+                    {OUTPUT_TYPES.map(([key, label]) => {
+                      const isSelected = selectedOutputs.includes(key);
+                      return (
+                        <button
+                          key={key}
+                          type="button"
+                          onClick={() => {
+                            setSelectedOutputs(prev =>
+                              prev.includes(key) ? prev.filter(o => o !== key) : [...prev, key]
+                            );
+                          }}
+                          style={{
+                            ...styles.formatPill,
+                            ...(isSelected ? {
+                              ...styles.formatPillActive,
+                              borderColor: "var(--ink-black)",
+                              borderWidth: "2px"
+                            } : {})
+                          }}
+                          className={isSelected ? "hand-drawn" : ""}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "space-between", gap: "16px", marginTop: "24px" }}>
+                <button
+                  type="button"
+                  onClick={() => setCurrentStep(1)}
+                  style={{
+                    padding: "12px 24px",
+                    borderRadius: "10px",
+                    background: "#fff",
+                    color: "var(--ink-black)",
+                    fontWeight: "600",
+                    cursor: "pointer"
+                  }}
+                  className="hand-drawn-btn"
+                >
+                  ← Back to Context Brief
+                </button>
+
+                <button
+                  onClick={triggerGeneration}
+                  disabled={isGenerating || !notes.trim()}
+                  style={{
+                    ...styles.primaryGenerateBtn,
+                    padding: "12px 28px",
+                    ...((isGenerating || !notes.trim()) ? styles.primaryGenerateBtnDisabled : {})
+                  }}
+                  className="hand-drawn-btn"
+                >
+                  {isGenerating ? "🤖 Synthesizing..." : "Synthesize Drafts ✦"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1133,5 +1252,60 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     gap: "16px"
+  },
+  loaderOverlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 1000,
+    background: "rgba(251, 249, 244, 0.82)",
+    backdropFilter: "blur(8px)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  loaderCard: {
+    width: "400px",
+    background: "#fff",
+    padding: "40px 30px",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    textAlign: "center",
+    position: "relative",
+    overflow: "hidden"
+  },
+  sketchContainer: {
+    position: "relative",
+    width: "120px",
+    height: "120px",
+    marginBottom: "20px"
+  },
+  sketchSvg: {
+    width: "100%",
+    height: "100%"
+  },
+  animatedPencil: {
+    position: "absolute",
+    top: "35px",
+    left: "55px",
+    width: "32px",
+    height: "32px",
+    transformOrigin: "bottom left",
+    animation: "pencilWrite 1.8s ease-in-out infinite"
+  },
+  loaderTitle: {
+    fontSize: "24px",
+    fontWeight: "700",
+    color: "var(--ink-black)",
+    margin: "0 0 10px 0"
+  },
+  loaderStatus: {
+    fontSize: "13px",
+    color: "#888",
+    margin: 0,
+    fontWeight: "500"
   }
 };

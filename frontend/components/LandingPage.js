@@ -401,7 +401,7 @@ const s = {
     minHeight: "100vh",
     background: "#faf9f6",
     color: "#1a1a1a",
-    fontFamily: "'Inter', 'SF Pro Display', system-ui, -apple-system, sans-serif",
+    fontFamily: "'Plus Jakarta Sans', system-ui, -apple-system, sans-serif",
     overflowX: "hidden",
   },
 
