@@ -593,12 +593,22 @@ export default function Home() {
               <ContentPackageCreationFlow
                 activeProject={activeProject}
                 aiSettings={aiSettings}
+                onSaveSettings={(s) => {
+                  storageService.saveAISettings(s);
+                  setAiSettings(s);
+                }}
+                projects={projects}
+                activeProjectId={activeProjectId}
+                onSelectActiveProject={handleSelectActiveProject}
+                onSaveProject={handleSaveProject}
+                connectedChannels={connectedChannels}
                 onSavePackage={handleSavePackage}
                 setView={setView}
                 initialSource={creationSource}
                 onPublishNow={handlePublishNow}
                 onSchedulePost={handleSchedulePost}
                 onExport={handleExport}
+                onConnectPlatform={handleConnectPlatform}
               />
             )}
 
@@ -610,6 +620,10 @@ export default function Home() {
                 onDeletePackage={handleDeletePackage}
                 onSchedulePost={handleSchedulePost}
                 setView={setView}
+                onSaveProject={handleSaveProject}
+                onDeleteProject={handleDeleteProject}
+                onSelectActiveProject={handleSelectActiveProject}
+                activeProjectId={activeProjectId}
               />
             )}
 
@@ -668,6 +682,7 @@ export default function Home() {
 const styles = {
   appContainer: {
     display: "flex",
+    flexDirection: "column",
     width: "100vw",
     height: "100vh",
     background: "#faf9f6",
@@ -677,7 +692,7 @@ const styles = {
   },
   mainContent: {
     flexGrow: 1,
-    height: "100%",
+    height: "calc(100vh - 64px)",
     overflowY: "auto",
     background: "transparent",
     animation: "fadeIn 0.3s ease",

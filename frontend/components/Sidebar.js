@@ -2,31 +2,29 @@ import React from "react";
 import { Icons } from "./Icons";
 
 export default function Sidebar({ view, setView, activeProjectName, aiStatus }) {
+  // Main Top Nav items (Studio and Library only)
   const navItems = [
-    { id: "create", label: "Studio Workspace", icon: (color) => <Icons.workspace size={16} color={color} /> },
-    { id: "library", label: "Library", icon: (color) => <Icons.library size={16} color={color} /> },
-    { id: "projects", label: "Profiles", icon: (color) => <Icons.profiles size={16} color={color} /> },
-    { id: "channels", label: "Channels", icon: (color) => <Icons.channels size={16} color={color} /> },
-    { id: "settings", label: "Settings", icon: (color) => <Icons.settings size={16} color={color} /> }
+    { id: "create", label: "Studio", icon: (color) => <Icons.workspace size={14} color={color} /> },
+    { id: "library", label: "Library", icon: (color) => <Icons.library size={14} color={color} /> }
   ];
 
   return (
-    <aside style={{ ...styles.sidebar, borderRight: "3.5px solid var(--ink-black)", background: "#fffdfa" }}>
-      {/* Logo */}
-      <div style={styles.brand}>
+    <header style={{ ...styles.topNav, borderBottom: "3px solid var(--ink-black)", background: "#fffdfa" }}>
+      {/* Brand Logo - Left side */}
+      <div style={styles.brand} onClick={() => setView("create")}>
         <div style={{
           ...styles.logoBadge,
           border: "2px solid var(--ink-black)",
-          boxShadow: "2px 2px 0px var(--ink-black)"
+          boxShadow: "2.5px 2.5px 0px var(--ink-black)"
         }}>SF</div>
         <div style={styles.brandText}>
-          <span style={{ ...styles.brandName, fontFamily: "'Space Grotesk', sans-serif", fontSize: "16px", fontWeight: "850" }}>SignalFlow</span>
-          <span style={styles.brandSub} className="handwritten">Studio Edition</span>
+          <span style={{ ...styles.brandName, fontFamily: "'Space Grotesk', sans-serif", fontSize: "15px", fontWeight: "850" }}>SignalFlow</span>
+          <span style={styles.brandSub} className="handwritten">Studio</span>
         </div>
       </div>
 
-      {/* Navigation */}
-      <nav style={styles.nav}>
+      {/* Main Navigation - Centered */}
+      <nav style={styles.navRow}>
         {navItems.map(item => {
           const isActive = view === item.id;
           const activeColor = "var(--ink-black)";
@@ -41,7 +39,7 @@ export default function Sidebar({ view, setView, activeProjectName, aiStatus }) 
                   borderColor: "var(--ink-black)",
                   borderWidth: "2px",
                   borderStyle: "solid",
-                  boxShadow: "2.5px 3px 0px var(--ink-black)",
+                  boxShadow: "2px 2.5px 0px var(--ink-black)",
                   fontWeight: "800",
                   color: "var(--ink-black)"
                 } : {
@@ -51,59 +49,85 @@ export default function Sidebar({ view, setView, activeProjectName, aiStatus }) 
               className="hand-drawn-btn"
             >
               <span style={styles.navIcon}>{item.icon(activeColor)}</span>
-              <span style={{ ...styles.navLabel, fontWeight: isActive ? "800" : "500" }}>{item.label}</span>
+              <span style={{ ...styles.navLabel, fontWeight: isActive ? "800" : "600" }}>{item.label}</span>
             </button>
           );
         })}
       </nav>
 
-      {/* Bottom Info */}
-      <div style={styles.bottomInfo}>
-        <div style={styles.infoItem}>
-          <span style={styles.infoLabel}>Profile</span>
-          <span style={styles.infoValue}>{activeProjectName || "Default"}</span>
+      {/* Utilities - Right side */}
+      <div style={styles.utilityRow}>
+        {/* Connection status or active profile label */}
+        <div style={styles.infoBadge} className="handwritten">
+          <span>{activeProjectName || "Default Profile"}</span>
         </div>
-        <div style={styles.infoItem}>
-          <span style={styles.infoLabel}>AI Engine</span>
-          <span style={{ ...styles.infoValue, color: "#2d6a4f" }}>
-            {aiStatus || "Template"}
-          </span>
+
+        {/* Channels Configuration Trigger */}
+        <button
+          onClick={() => setView("channels")}
+          title="Configure Outlets & Channels"
+          style={{
+            ...styles.utilBtn,
+            background: view === "channels" ? "var(--pastel-blue)" : "transparent",
+            borderColor: view === "channels" ? "var(--ink-black)" : "transparent"
+          }}
+          className="hand-drawn-btn"
+        >
+          <Icons.channels size={16} color="var(--ink-black)" />
+        </button>
+
+        {/* Settings Panel Trigger */}
+        <button
+          onClick={() => setView("settings")}
+          title="AI Settings & API Keys"
+          style={{
+            ...styles.utilBtn,
+            background: view === "settings" ? "var(--pastel-yellow)" : "transparent",
+            borderColor: view === "settings" ? "var(--ink-black)" : "transparent"
+          }}
+          className="hand-drawn-btn"
+        >
+          <Icons.settings size={16} color="var(--ink-black)" />
+        </button>
+
+        {/* Model dot status indicator */}
+        <div style={styles.engineBadge} title={`AI Provider: ${aiStatus || "None"}`}>
+          <div style={styles.modelDot} />
+          <span style={{ fontSize: "11px", fontWeight: "600", color: "#6b6b6b" }}>{aiStatus || "Local Template"}</span>
         </div>
       </div>
-    </aside>
+    </header>
   );
 }
 
 const styles = {
-  sidebar: {
-    width: "220px",
-    background: "#fff",
-    borderRight: "1px solid rgba(0,0,0,0.07)",
+  topNav: {
+    width: "100%",
+    height: "64px",
     display: "flex",
-    flexDirection: "column",
-    padding: "20px 12px",
-    flexShrink: 0,
-    height: "100vh",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: "0 24px",
     position: "sticky",
     top: 0,
-    fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
+    zIndex: 90,
+    fontFamily: "'Plus Jakarta Sans', system-ui, -apple-system, sans-serif",
   },
   brand: {
     display: "flex",
     alignItems: "center",
     gap: "10px",
-    padding: "4px 8px",
-    marginBottom: "28px",
+    cursor: "pointer"
   },
   logoBadge: {
     width: "32px",
     height: "32px",
     borderRadius: "8px",
-    background: "linear-gradient(135deg, #2d6a4f, #52b788)",
+    background: "var(--pastel-green)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    color: "#fff",
+    color: "var(--ink-black)",
     fontWeight: "700",
     fontSize: "13px",
     flexShrink: 0,
@@ -115,80 +139,81 @@ const styles = {
   brandName: {
     fontSize: "15px",
     fontWeight: "700",
-    color: "#1a1a1a",
+    color: "var(--ink-black)",
     letterSpacing: "-0.3px",
     lineHeight: "1.1",
   },
   brandSub: {
     fontSize: "11px",
-    color: "#aaa",
+    color: "#6b6b6b",
     fontWeight: "500",
+    marginTop: "-2px"
   },
-  nav: {
+  navRow: {
     display: "flex",
-    flexDirection: "column",
-    gap: "4px",
-    flexGrow: 1,
+    alignItems: "center",
+    gap: "8px",
   },
   navBtn: {
     display: "flex",
     alignItems: "center",
-    gap: "10px",
-    padding: "10px 12px",
+    gap: "8px",
+    padding: "6px 16px",
     borderRadius: "8px",
     background: "transparent",
     border: "2px solid transparent",
     color: "#6b6b6b",
-    textAlign: "left",
     cursor: "pointer",
     fontSize: "13px",
-    fontWeight: "500",
-    transition: "all 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.15)",
+    fontWeight: "600",
+    transition: "all 0.2s ease",
     fontFamily: "inherit",
   },
-  navBtnActive: {
-    background: "rgba(45, 106, 79, 0.08)",
-    color: "#2d6a4f",
-    fontWeight: "600",
-  },
   navIcon: {
-    fontSize: "15px",
-    width: "20px",
-    textAlign: "center",
-    flexShrink: 0,
-  },
-  navLabel: {
-    flexGrow: 1,
-  },
-  bottomInfo: {
-    marginTop: "auto",
     display: "flex",
-    flexDirection: "column",
-    gap: "8px",
-    padding: "12px",
-    background: "#faf9f6",
-    borderRadius: "10px",
-    border: "1px solid rgba(0,0,0,0.05)",
-  },
-  infoItem: {
-    display: "flex",
-    justifyContent: "space-between",
     alignItems: "center",
   },
-  infoLabel: {
-    fontSize: "10px",
-    color: "#aaa",
-    fontWeight: "600",
-    textTransform: "uppercase",
-    letterSpacing: "0.5px",
+  navLabel: {
+    fontSize: "13px"
   },
-  infoValue: {
+  utilityRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+  },
+  infoBadge: {
     fontSize: "12px",
-    fontWeight: "600",
-    color: "#1a1a1a",
-    maxWidth: "110px",
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
+    color: "var(--ink-black)",
+    padding: "2px 8px",
+    background: "var(--pastel-lavender)",
+    border: "1.5px solid var(--ink-black)",
+    boxShadow: "1.5px 1.5px 0px var(--ink-black)",
+    borderRadius: "6px",
   },
+  utilBtn: {
+    width: "32px",
+    height: "32px",
+    borderRadius: "8px",
+    border: "2px solid transparent",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    transition: "all 0.2s ease",
+  },
+  engineBadge: {
+    display: "flex",
+    alignItems: "center",
+    gap: "6px",
+    padding: "4px 8px",
+    background: "#fff",
+    border: "1.5px solid rgba(0,0,0,0.06)",
+    borderRadius: "6px"
+  },
+  modelDot: {
+    width: "6px",
+    height: "6px",
+    borderRadius: "50%",
+    background: "#00f5d4"
+  }
 };

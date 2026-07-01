@@ -5,42 +5,42 @@ import PlatformPreviews from "./PlatformPreviews";
 import { Icons } from "./Icons";
 
 const TONE_OPTIONS = ["professional", "founder-style", "technical", "educational", "casual", "launch-style"];
-const OUTPUT_PRESET_OPTIONS = [
-  { id: "short", label: "Short Post" },
-  { id: "long", label: "Long Post" },
-  { id: "thread", label: "X Thread" },
-  { id: "carousel", label: "Carousel Plan" },
-  { id: "video", label: "Video Script" },
-  { id: "launch", label: "Launch Package" },
-  { id: "full", label: "Full Package" }
-];
 
 export default function ContentPackageCreationFlow({
   activeProject,
   aiSettings,
+  onSaveSettings,
+  projects = [],
+  activeProjectId,
+  onSelectActiveProject,
+  onSaveProject,
+  connectedChannels = {},
   onSavePackage,
   setView,
   initialSource = "manual",
   onPublishNow,
   onSchedulePost,
-  onExport
+  onExport,
+  onConnectPlatform
 }) {
-  const [sourceType, setSourceType] = useState(initialSource === "manual" ? null : initialSource); // null, "record", "screenshot", "url", "notes", "repo"
-  
   // Form values
+  const [notes, setNotes] = useState("");
   const [title, setTitle] = useState("");
-  const [notes, setNotes] = useState(""); // What did you build
   const [audienceUnderstand, setAudienceUnderstand] = useState("");
   const [mainValue, setMainValue] = useState("");
   const [tone, setTone] = useState("founder-style");
-  const [selectedChannels, setSelectedChannels] = useState(["linkedin", "x", "instagram", "newsletter"]);
+  const [selectedChannels, setSelectedChannels] = useState(["linkedin", "x"]);
   const [selectedOutputs, setSelectedOutputs] = useState(["caption", "text", "image", "video", "carousel", "doc"]);
   const [appUrl, setAppUrl] = useState("");
-  const [pastedText, setPastedText] = useState(""); // For changelog/notes code
-  const [currentStep, setCurrentStep] = useState(1); // 1: Context brief, 2: Target tuning & output generation
-  const [showAdvancedTuning, setShowAdvancedTuning] = useState(false);
+  const [pastedText, setPastedText] = useState("");
 
-  // Scraping URL
+  // Brand folder
+  const [selectedFolderId, setSelectedFolderId] = useState(activeProjectId || "default-project");
+  const [showNewBrand, setShowNewBrand] = useState(false);
+  const [newBrandName, setNewBrandName] = useState("");
+  const [newBrandDesc, setNewBrandDesc] = useState("");
+
+  // URL / repo  
   const [scrapeUrl, setScrapeUrl] = useState("");
   const [repoUrl, setRepoUrl] = useState("");
   const [githubToken, setGithubToken] = useState("");
@@ -55,6 +55,25 @@ export default function ContentPackageCreationFlow({
   const [generationError, setGenerationError] = useState("");
   const [generationResult, setGenerationResult] = useState(null);
   const [loadingStatus, setLoadingStatus] = useState("Ingesting release assets...");
+
+  // AI Provider selection (inline)
+  const currentProvider = aiSettings.defaultProvider || "template";
+
+  // Attachment toggles (all open by default, no click-to-expand)
+  const [showAttachUrl, setShowAttachUrl] = useState(false);
+  const [showAttachCode, setShowAttachCode] = useState(false);
+  const [showAttachRepo, setShowAttachRepo] = useState(false);
+
+  // Step refs for smooth scrolling
+  const stepRefs = {
+    step1: useRef(null),
+    step2: useRef(null),
+    step3: useRef(null),
+    step4: useRef(null),
+    step5: useRef(null),
+    step6: useRef(null),
+    step7: useRef(null)
+  };
 
   useEffect(() => {
     if (!isGenerating) return;
@@ -124,6 +143,7 @@ export default function ContentPackageCreationFlow({
       setAppUrl(activeProject.url || "");
       setTone(activeProject.brandVoice || "founder-style");
       setSelectedChannels(activeProject.platforms || ["linkedin", "x"]);
+      setSelectedFolderId(activeProject.id || "default-project");
     }
   }, [activeProject]);
 
@@ -137,7 +157,6 @@ export default function ContentPackageCreationFlow({
       } else if (["mp4", "mov", "webm", "avi"].includes(ext)) {
         category = "screen recording";
       }
-
       const url = URL.createObjectURL(file);
       const newFile = {
         id: `upload-${Date.now()}-${Math.random()}`,
@@ -156,16 +175,28 @@ export default function ContentPackageCreationFlow({
     setUploadedFiles(prev => prev.filter(f => f.id !== id));
   }
 
-  function getTabIcon(id, color) {
-    switch (id) {
-      case "manual": return <Icons.manual size={14} color={color} />;
-      case "notes": return <Icons.notes size={14} color={color} />;
-      case "url": return <Icons.url size={14} color={color} />;
-      case "record": return <Icons.record size={14} color={color} />;
-      case "screenshot": return <Icons.screenshot size={14} color={color} />;
-      case "repo": return <Icons.repo size={14} color={color} />;
-      default: return null;
+  function handleSelectProvider(key) {
+    if (onSaveSettings) {
+      onSaveSettings({ ...aiSettings, defaultProvider: key });
     }
+  }
+
+  function handleCreateNewBrand() {
+    if (!newBrandName.trim()) return;
+    const newProject = {
+      id: `project-${Date.now()}`,
+      name: newBrandName.trim(),
+      description: newBrandDesc.trim(),
+      brandVoice: tone,
+      platforms: selectedChannels,
+      createdAt: new Date().toISOString()
+    };
+    if (onSaveProject) onSaveProject(newProject);
+    setSelectedFolderId(newProject.id);
+    if (onSelectActiveProject) onSelectActiveProject(newProject.id);
+    setShowNewBrand(false);
+    setNewBrandName("");
+    setNewBrandDesc("");
   }
 
   async function triggerGeneration() {
@@ -173,21 +204,22 @@ export default function ContentPackageCreationFlow({
     setGenerationError("");
     setGenerationResult(null);
 
-    // Prepare payload context
     const provider = aiSettings.defaultProvider || "template";
     const currentConfig = aiSettings[provider] || {};
 
+    const selectedProject = projects.find(p => p.id === selectedFolderId) || activeProject;
+
     const payload = {
-      project_name: activeProject?.name || "SignalFlow Project",
+      project_name: selectedProject?.name || "SignalFlow Project",
       notes: `${notes}\n\nAudience understands: ${audienceUnderstand}\nMain Value: ${mainValue}\nRecording Context: ${recordingNotes}`,
-      audience: activeProject?.audience || "developers, founders",
-      app_url: appUrl || activeProject?.url || "",
+      audience: selectedProject?.audience || "developers, founders",
+      app_url: appUrl || selectedProject?.url || "",
       generator: provider,
       channels: selectedChannels,
       output_types: selectedOutputs,
       document_text: pastedText,
-      repo: sourceType === "repo" ? repoUrl : "",
-      github_token: sourceType === "repo" ? githubToken : "",
+      repo: repoUrl || "",
+      github_token: githubToken || "",
       media_items: uploadedFiles.map(f => ({
         name: f.name,
         category: f.category,
@@ -200,26 +232,27 @@ export default function ContentPackageCreationFlow({
       providerModelName: currentConfig.model || ""
     };
 
-    if (sourceType === "url" && scrapeUrl) {
+    if (scrapeUrl) {
       payload.docs_url = scrapeUrl;
     }
 
     try {
       const token = typeof window !== "undefined" ? window.localStorage.getItem("signalflow_owner_token") || "" : "";
       const authHeaders = token ? { "Authorization": `Bearer ${token}` } : {};
-
       const resp = await fetch("/api/launch_kit", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...authHeaders },
         body: JSON.stringify(payload)
       });
-      
       const data = await resp.json();
       if (!resp.ok) {
         throw new Error(data.error || "Package generation failed on the server.");
       }
-
       setGenerationResult(data);
+      // Scroll to results
+      setTimeout(() => {
+        stepRefs.step6.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 300);
     } catch (err) {
       console.error(err);
       setGenerationError(err.message || "An unexpected generation error occurred.");
@@ -230,16 +263,16 @@ export default function ContentPackageCreationFlow({
 
   function handleSaveDraft(editedPosts) {
     if (!generationResult) return;
-
+    const selectedProject = projects.find(p => p.id === selectedFolderId) || activeProject;
     const finalPkg = {
       id: `pkg-${Date.now()}`,
-      projectId: activeProject?.id || "default-project",
+      projectId: selectedFolderId || "default-project",
       title: title || `Launch Package - ${new Date().toLocaleDateString()}`,
-      sourceType,
+      sourceType: "wizard",
       sourceText: notes + " " + pastedText,
       sourceAssets: uploadedFiles.map(f => ({ name: f.name, category: f.category, url: f.url })),
       tone,
-      goal: activeProject?.goals?.[0] || "launch",
+      goal: selectedProject?.goals?.[0] || "launch",
       platforms: selectedChannels,
       outputs: selectedOutputs,
       status: "draft",
@@ -260,1015 +293,748 @@ export default function ContentPackageCreationFlow({
       markdown: generationResult.markdown,
       image_base64: generationResult.image_base64
     };
-
     onSavePackage(finalPkg);
     setView("library");
   }
 
-  // Active Provider text helper
-  const providerMeta = MODEL_ROUTES_META.find(m => m.key === aiSettings.defaultProvider);
+  const providerMeta = MODEL_ROUTES_META.find(m => m.key === currentProvider);
+  const canGenerate = notes.trim() && selectedChannels.length > 0;
 
-  if (generationResult) {
-    return (
-      <div style={styles.container}>
-        <div style={styles.headerRow}>
-          <div>
-            <h2 style={styles.title}>Review Generated Drafts</h2>
-            <p style={styles.subtitle}>Modify drafts inline and publish or schedule them directly.</p>
-          </div>
-          <button onClick={() => setGenerationResult(null)} style={styles.cancelBtn}>
-            ← Adjust Config
-          </button>
-        </div>
-        <div style={styles.mainCard}>
-          <PlatformPreviews
-            generationResult={generationResult}
-            onSave={handleSaveDraft}
-            onCancel={() => setGenerationResult(null)}
-            onPublishNow={onPublishNow}
-            onSchedulePost={onSchedulePost}
-            onExport={onExport}
-          />
-        </div>
-      </div>
-    );
-  }
-
+  // ─── RENDER ───────────────────────────────────────────────────
   return (
-    <div style={styles.container}>
-      {/* Hand-Drawn Animated Loader */}
+    <div style={styles.wizardContainer}>
+      {/* ── Full-screen generation loader ── */}
       {isGenerating && (
         <div style={styles.loaderOverlay}>
           <div style={styles.loaderCard} className="hand-drawn fade-in-up">
-            {/* Drifting paper icons in background */}
-            <div className="falling-paper-item" style={{ top: "-30px", left: "10%", animationDelay: "0s" }}>
-              <Icons.notes size={20} color="var(--pastel-blue-border)" />
-            </div>
-            <div className="falling-paper-item" style={{ top: "-30px", left: "75%", animationDelay: "1.5s" }}>
-              <Icons.manual size={18} color="var(--pastel-green-border)" />
-            </div>
-            <div className="falling-paper-item" style={{ top: "-30px", left: "45%", animationDelay: "2.8s" }}>
-              <Icons.library size={22} color="var(--pastel-yellow-border)" />
-            </div>
-
-            {/* Drawing Animation */}
             <div style={styles.sketchContainer}>
               <svg viewBox="0 0 100 100" style={styles.sketchSvg}>
-                {/* Clipboard */}
                 <rect x="25" y="15" width="50" height="70" rx="4" fill="#fff" stroke="var(--ink-black)" strokeWidth="3" />
                 <rect x="40" y="8" width="20" height="8" rx="2" fill="var(--pastel-yellow)" stroke="var(--ink-black)" strokeWidth="2.5" />
-                
-                {/* Sketch lines */}
                 <line x1="35" y1="35" x2="65" y2="35" stroke="var(--ink-black)" strokeWidth="2.5" strokeLinecap="round" strokeDasharray="30" strokeDashoffset="30" style={{ animation: "lineDraw 1.2s forwards 0.3s" }} />
                 <line x1="35" y1="48" x2="60" y2="48" stroke="var(--ink-black)" strokeWidth="2.5" strokeLinecap="round" strokeDasharray="25" strokeDashoffset="25" style={{ animation: "lineDraw 1s forwards 1.2s" }} />
                 <line x1="35" y1="61" x2="65" y2="61" stroke="var(--ink-black)" strokeWidth="2.5" strokeLinecap="round" strokeDasharray="30" strokeDashoffset="30" style={{ animation: "lineDraw 1.2s forwards 2s" }} />
               </svg>
-
-              {/* Writing Pencil */}
               <div style={styles.animatedPencil}>
                 <svg viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" style={{ width: "32px", height: "32px", fill: "none", stroke: "var(--ink-black)", strokeWidth: 2.5 }}>
                   <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
                 </svg>
               </div>
             </div>
-
-            <h3 style={styles.loaderTitle} className="handwritten">Drafting launch packages...</h3>
+            <h3 style={styles.loaderTitle} className="handwritten">Crafting your content...</h3>
             <p style={styles.loaderStatus}>{loadingStatus}</p>
           </div>
         </div>
       )}
 
-      {/* Dynamic Header */}
-      <div style={styles.headerRow}>
+      {/* ── Page Header ── */}
+      <div style={styles.pageHeader}>
         <div>
-          <h2 style={styles.title}>Studio Workspace</h2>
-          <p style={styles.subtitle}>Describe update once, select outlets, and generate cross-platform packages instantly.</p>
+          <h1 style={styles.pageTitle}>Create Content</h1>
+          <p style={styles.pageSubtitle}>Fill in the details below, select your platforms, and hit generate.</p>
         </div>
-        
-        <div style={styles.headerActions}>
-          {providerMeta && (
-            <div style={styles.activeModelBadge} className="hand-drawn">
-              <span style={styles.modelDot} />
-              <span>AI Engine: <strong>{providerMeta.title}</strong></span>
-            </div>
-          )}
-          <button
-            onClick={currentStep === 1 ? () => setCurrentStep(2) : triggerGeneration}
-            disabled={currentStep === 1 ? !notes.trim() : (isGenerating || !notes.trim())}
-            style={{
-              ...styles.primaryGenerateBtn,
-              ...((currentStep === 1 ? !notes.trim() : (isGenerating || !notes.trim())) ? styles.primaryGenerateBtnDisabled : {})
-            }}
-            className="hand-drawn-btn"
-          >
-            {currentStep === 1 ? "Next: Tune Settings ➜" : (isGenerating ? "🤖 Synthesizing..." : "Synthesize Drafts ✦")}
-          </button>
-        </div>
+        {providerMeta && (
+          <div style={styles.activeBadge} className="hand-drawn">
+            <span style={styles.modelDot} />
+            <span style={{ fontSize: "12px", color: "#6b6b6b" }}>Engine: <strong style={{ color: "var(--ink-black)" }}>{providerMeta.title}</strong></span>
+          </div>
+        )}
       </div>
 
       {generationError && (
         <div style={styles.errorAlert} className="hand-drawn">
           <strong>Generation Error:</strong> {generationError}
           <p style={{ margin: "4px 0 0 0", fontSize: "12px" }}>
-            Verify API key configs in the Settings panel or try the offline fallback model.
+            Check your API key in Step 1 or switch to "SignalFlow AI (Demo Mode)".
           </p>
         </div>
       )}
 
-      {/* 2-Step Creative Pipeline */}
-      <div style={{ ...styles.workspaceBody, gridTemplateColumns: "1fr" }}>
-        {currentStep === 1 && (
-          /* Left Column: Context & Input sources */
-          <div style={styles.leftCol}>
-            <div style={styles.workspaceCard} className="hand-drawn offset-border">
-              
-              {/* ALWAYS VISIBLE context textarea (Notebook Ruled Sheet) */}
-              <div style={styles.formCol}>
-                <label style={styles.label} className="handwritten">✍️ Tell us what you built / released *</label>
-                <textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
+      {/* ══════════════════════════════════════════════════════════
+          STEP 1 — AI Engine
+         ══════════════════════════════════════════════════════════ */}
+      <section ref={stepRefs.step1} style={styles.wizardSection}>
+        <div style={styles.stepHeader}>
+          <span style={styles.stepNumber}>1</span>
+          <div>
+            <h2 style={styles.stepTitle}>AI Engine</h2>
+            <p style={styles.stepDesc}>Pick a provider or use the free demo template.</p>
+          </div>
+        </div>
+        <div style={styles.stepBody}>
+          <div style={styles.providerGrid}>
+            {MODEL_ROUTES_META.map(m => {
+              const isActive = currentProvider === m.key;
+              return (
+                <button
+                  key={m.key}
+                  onClick={() => handleSelectProvider(m.key)}
                   style={{
-                    ...styles.textarea,
-                    minHeight: "220px",
-                    backgroundImage: "linear-gradient(rgba(36, 113, 93, 0.07) 1px, transparent 1px)",
-                    backgroundSize: "100% 28px",
-                    lineHeight: "28px",
-                    backgroundAttachment: "local",
-                    padding: "14px 20px",
-                    fontSize: "15px",
-                    backgroundColor: "#fffdf9"
+                    ...styles.providerCard,
+                    ...(isActive ? styles.providerCardActive : {})
                   }}
-                  placeholder="Draft release updates, list key features, or write down raw launch details here..."
-                  required
-                  className="hand-drawn-input"
-                />
-              </div>
+                  className="hand-drawn-btn"
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontWeight: "700", fontSize: "13px", color: isActive ? "var(--ink-black)" : "#555" }}>{m.title}</span>
+                    <span style={{
+                      fontSize: "10px",
+                      padding: "2px 8px",
+                      borderRadius: "20px",
+                      background: m.badge === "Local" ? "var(--pastel-green)" : "var(--pastel-blue)",
+                      color: "var(--ink-black)",
+                      fontWeight: "600",
+                      border: "1px solid var(--ink-black)"
+                    }}>{m.badge}</span>
+                  </div>
+                  <p style={{ fontSize: "11px", color: "#888", margin: "6px 0 0 0", lineHeight: "1.4" }}>{m.use}</p>
+                </button>
+              );
+            })}
+          </div>
+          {/* Inline API Key input if a cloud provider is selected */}
+          {providerMeta && providerMeta.badge === "Cloud" && (
+            <div style={{ marginTop: "16px", padding: "16px", background: "#faf9f6", border: "2px dashed rgba(0,0,0,0.1)", borderRadius: "12px" }}>
+              <label style={styles.label}>API Key for {providerMeta.title}</label>
+              <input
+                type="password"
+                value={aiSettings[currentProvider]?.apiKey || ""}
+                onChange={(e) => {
+                  const updated = { ...aiSettings, [currentProvider]: { ...aiSettings[currentProvider], apiKey: e.target.value } };
+                  if (onSaveSettings) onSaveSettings(updated);
+                }}
+                style={{ ...styles.input, marginTop: "6px", width: "100%", boxSizing: "border-box" }}
+                placeholder={`Enter your ${providerMeta.title} API key...`}
+                className="hand-drawn-input"
+              />
+            </div>
+          )}
+        </div>
+      </section>
 
-              {/* Attachment Tray */}
-              <div style={{ marginTop: "20px" }}>
-                <span style={{ fontSize: "12px", fontWeight: "700", color: "var(--ink-black)", display: "block", marginBottom: "8px" }} className="handwritten">
-                  📎 Attach optional context material:
+      {/* ══════════════════════════════════════════════════════════
+          STEP 2 — What did you build?
+         ══════════════════════════════════════════════════════════ */}
+      <section ref={stepRefs.step2} style={styles.wizardSection}>
+        <div style={styles.stepHeader}>
+          <span style={styles.stepNumber}>2</span>
+          <div>
+            <h2 style={styles.stepTitle}>What did you build?</h2>
+            <p style={styles.stepDesc}>Describe your product, update, or feature — the more context, the better the output.</p>
+          </div>
+        </div>
+        <div style={styles.stepBody}>
+          {/* Main textarea */}
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            style={styles.mainTextarea}
+            placeholder="Tell us about your launch, feature update, or product... write freely, paste changelog, or describe what makes it special."
+            required
+            className="hand-drawn-input"
+          />
+
+          {/* Quick optional fields — always visible */}
+          <div style={styles.optionalFieldsRow}>
+            <div style={styles.halfField}>
+              <label style={styles.label}>Draft Title (optional)</label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                style={styles.input}
+                placeholder="e.g. Launch Kit v2.0"
+                className="hand-drawn-input"
+              />
+            </div>
+            <div style={styles.halfField}>
+              <label style={styles.label}>Brand Voice</label>
+              <select value={tone} onChange={(e) => setTone(e.target.value)} style={styles.select} className="hand-drawn-input">
+                {TONE_OPTIONS.map(t => (
+                  <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div style={styles.optionalFieldsRow}>
+            <div style={styles.halfField}>
+              <label style={styles.label}>Value Proposition (optional)</label>
+              <input type="text" value={mainValue} onChange={(e) => setMainValue(e.target.value)} style={styles.input} placeholder="e.g. Saves 10 hours per week" className="hand-drawn-input" />
+            </div>
+            <div style={styles.halfField}>
+              <label style={styles.label}>App URL (optional)</label>
+              <input type="url" value={appUrl} onChange={(e) => setAppUrl(e.target.value)} style={styles.input} placeholder="https://myproduct.com" className="hand-drawn-input" />
+            </div>
+          </div>
+
+          {/* Attachment buttons row */}
+          <div style={styles.attachRow}>
+            <span style={{ fontSize: "12px", fontWeight: "700", color: "#999" }}>📎 Add context:</span>
+            <button onClick={() => document.getElementById("wizard-file-upload").click()} style={styles.attachPill} className="hand-drawn-btn">
+              📸 Upload Files
+            </button>
+            <input id="wizard-file-upload" type="file" multiple accept="image/*,video/*,.pdf,.md,.txt" onChange={handleFileChange} style={{ display: "none" }} />
+            <button onClick={() => setShowAttachUrl(!showAttachUrl)} style={{ ...styles.attachPill, ...(showAttachUrl ? styles.attachPillActive : {}) }} className="hand-drawn-btn">🔗 Website URL</button>
+            <button onClick={() => setShowAttachCode(!showAttachCode)} style={{ ...styles.attachPill, ...(showAttachCode ? styles.attachPillActive : {}) }} className="hand-drawn-btn">📝 Paste Code</button>
+            <button onClick={() => setShowAttachRepo(!showAttachRepo)} style={{ ...styles.attachPill, ...(showAttachRepo ? styles.attachPillActive : {}) }} className="hand-drawn-btn">💻 Scan Repo</button>
+            {captureStatus === "idle" && (
+              <button onClick={startRecording} style={styles.attachPill} className="hand-drawn-btn">🎙️ Record Screen</button>
+            )}
+            {captureStatus === "recording" && (
+              <>
+                <button onClick={stopRecording} style={{ ...styles.attachPill, background: "#fee2e2", borderColor: "#ef4444" }} className="hand-drawn-btn">⏹️ Stop</button>
+                <button onClick={captureFrame} style={styles.attachPill} className="hand-drawn-btn">📸 Frame</button>
+              </>
+            )}
+          </div>
+
+          {/* Conditional attachment fields */}
+          {showAttachUrl && (
+            <div style={styles.inlinePanel}>
+              <label style={styles.label}>Website / Documentation URL</label>
+              <input type="url" value={scrapeUrl} onChange={(e) => setScrapeUrl(e.target.value)} style={{ ...styles.input, width: "100%", boxSizing: "border-box" }} placeholder="https://myproduct.com/docs" className="hand-drawn-input" />
+            </div>
+          )}
+          {showAttachCode && (
+            <div style={styles.inlinePanel}>
+              <label style={styles.label}>Paste Changelog, Code, or Notes</label>
+              <textarea value={pastedText} onChange={(e) => setPastedText(e.target.value)} style={{ ...styles.mainTextarea, minHeight: "100px" }} placeholder="Paste feature details, markdown, release notes, etc..." className="hand-drawn-input" />
+            </div>
+          )}
+          {showAttachRepo && (
+            <div style={styles.inlinePanel}>
+              <label style={styles.label}>Repository Path or GitHub URL</label>
+              <input type="text" value={repoUrl} onChange={(e) => setRepoUrl(e.target.value)} style={{ ...styles.input, width: "100%", boxSizing: "border-box" }} placeholder="https://github.com/user/repo or C:\workspace\app" className="hand-drawn-input" />
+              <div style={{ marginTop: "8px" }}>
+                <label style={styles.label}>GitHub Token (optional, for private repos)</label>
+                <input type="password" value={githubToken} onChange={(e) => setGithubToken(e.target.value)} style={{ ...styles.input, width: "100%", boxSizing: "border-box" }} placeholder="ghp_..." className="hand-drawn-input" />
+              </div>
+            </div>
+          )}
+
+          {showRecordingNotesForm && (
+            <div style={styles.inlinePanel}>
+              <label style={styles.label}>Walkthrough Notes</label>
+              <textarea value={recordingNotes} onChange={(e) => setRecordingNotes(e.target.value)} style={{ ...styles.mainTextarea, minHeight: "60px" }} placeholder="Key highlights from your recording..." className="hand-drawn-input" />
+            </div>
+          )}
+
+          {/* Uploaded files badges */}
+          {uploadedFiles.length > 0 && (
+            <div style={styles.filesList}>
+              {uploadedFiles.map(file => (
+                <div key={file.id} style={styles.fileBadge} className="hand-drawn">
+                  <span>{file.category === "screenshot" ? "🖼️" : "🎥"}</span>
+                  <span style={{ fontSize: "12px", fontWeight: "600" }}>{file.name}</span>
+                  <span style={{ fontSize: "10px", color: "#aaa" }}>{(file.size / 1024 / 1024).toFixed(1)}MB</span>
+                  <button onClick={() => handleRemoveFile(file.id)} style={styles.fileRemoveBtn}>✕</button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════
+          STEP 3 — Brand Folder
+         ══════════════════════════════════════════════════════════ */}
+      <section ref={stepRefs.step3} style={styles.wizardSection}>
+        <div style={styles.stepHeader}>
+          <span style={styles.stepNumber}>3</span>
+          <div>
+            <h2 style={styles.stepTitle}>Brand Folder</h2>
+            <p style={styles.stepDesc}>Choose which brand profile to save this content under.</p>
+          </div>
+        </div>
+        <div style={styles.stepBody}>
+          <div style={styles.folderGrid}>
+            {projects.map(p => {
+              const isSelected = selectedFolderId === p.id;
+              return (
+                <button
+                  key={p.id}
+                  onClick={() => {
+                    setSelectedFolderId(p.id);
+                    if (onSelectActiveProject) onSelectActiveProject(p.id);
+                  }}
+                  style={{
+                    ...styles.folderCard,
+                    ...(isSelected ? styles.folderCardActive : {})
+                  }}
+                  className="hand-drawn-btn"
+                >
+                  <div style={styles.folderIcon}>📁</div>
+                  <span style={{ fontWeight: "700", fontSize: "13px", color: isSelected ? "var(--ink-black)" : "#555" }}>{p.name}</span>
+                  {p.brandVoice && <span style={{ fontSize: "10px", color: "#aaa" }}>{p.brandVoice}</span>}
+                </button>
+              );
+            })}
+
+            {/* New Brand button */}
+            <button
+              onClick={() => setShowNewBrand(!showNewBrand)}
+              style={{
+                ...styles.folderCard,
+                borderStyle: "dashed",
+                ...(showNewBrand ? { background: "var(--pastel-yellow)", borderColor: "var(--ink-black)" } : {})
+              }}
+              className="hand-drawn-btn"
+            >
+              <div style={{ fontSize: "24px" }}>✚</div>
+              <span style={{ fontWeight: "600", fontSize: "12px", color: "#888" }}>New Brand</span>
+            </button>
+          </div>
+
+          {showNewBrand && (
+            <div style={{ ...styles.inlinePanel, marginTop: "16px" }}>
+              <div style={styles.optionalFieldsRow}>
+                <div style={styles.halfField}>
+                  <label style={styles.label}>Brand Name *</label>
+                  <input type="text" value={newBrandName} onChange={(e) => setNewBrandName(e.target.value)} style={styles.input} placeholder="My SaaS Product" className="hand-drawn-input" />
+                </div>
+                <div style={styles.halfField}>
+                  <label style={styles.label}>Description (optional)</label>
+                  <input type="text" value={newBrandDesc} onChange={(e) => setNewBrandDesc(e.target.value)} style={styles.input} placeholder="Brief brand description" className="hand-drawn-input" />
+                </div>
+              </div>
+              <button onClick={handleCreateNewBrand} disabled={!newBrandName.trim()} style={{ ...styles.smallBtn, marginTop: "12px", opacity: newBrandName.trim() ? 1 : 0.5 }} className="hand-drawn-btn">
+                Create Brand Folder
+              </button>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════
+          STEP 4 — Platforms
+         ══════════════════════════════════════════════════════════ */}
+      <section ref={stepRefs.step4} style={styles.wizardSection}>
+        <div style={styles.stepHeader}>
+          <span style={styles.stepNumber}>4</span>
+          <div>
+            <h2 style={styles.stepTitle}>Where do you want to post?</h2>
+            <p style={styles.stepDesc}>Select the platforms you want content for — we'll only generate for the ones you pick.</p>
+          </div>
+        </div>
+        <div style={styles.stepBody}>
+          <div style={styles.platformGrid}>
+            {CHANNELS.map(([key, label, emoji, color]) => {
+              const isSelected = selectedChannels.includes(key);
+              return (
+                <button
+                  key={key}
+                  onClick={() => {
+                    setSelectedChannels(prev =>
+                      prev.includes(key) ? prev.filter(c => c !== key) : [...prev, key]
+                    );
+                  }}
+                  style={{
+                    ...styles.platformCard,
+                    ...(isSelected ? {
+                      background: `${color}12`,
+                      borderColor: color,
+                      boxShadow: `3px 3px 0px ${color}`
+                    } : {})
+                  }}
+                  className="hand-drawn-btn"
+                >
+                  <span style={{ fontSize: "22px" }}>{Icons[key] ? <span style={{ display: "inline-flex" }}>{Icons[key]({ size: 22, color: isSelected ? color : "#999" })}</span> : emoji}</span>
+                  <span style={{ fontWeight: isSelected ? "700" : "500", fontSize: "13px", color: isSelected ? color : "#888" }}>{label}</span>
+                  {isSelected && <span style={{ fontSize: "16px", color }}>✓</span>}
+                </button>
+              );
+            })}
+          </div>
+
+          {selectedChannels.length === 0 && (
+            <p style={{ fontSize: "12px", color: "#ef4444", marginTop: "8px" }}>Please select at least one platform to generate content for.</p>
+          )}
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════
+          STEP 5 — Generate
+         ══════════════════════════════════════════════════════════ */}
+      <section ref={stepRefs.step5} style={styles.wizardSection}>
+        <div style={styles.stepHeader}>
+          <span style={styles.stepNumber}>5</span>
+          <div>
+            <h2 style={styles.stepTitle}>Generate</h2>
+            <p style={styles.stepDesc}>Ready? Hit the button to create content drafts for your selected platforms.</p>
+          </div>
+        </div>
+        <div style={{ ...styles.stepBody, display: "flex", flexDirection: "column", alignItems: "center", gap: "16px", padding: "40px 24px" }}>
+          <button
+            onClick={triggerGeneration}
+            disabled={!canGenerate || isGenerating}
+            style={{
+              ...styles.generateBtn,
+              ...(!canGenerate || isGenerating ? styles.generateBtnDisabled : {})
+            }}
+            className="hand-drawn-btn"
+          >
+            {isGenerating ? "🤖 Generating..." : "✦ Generate Content Drafts"}
+          </button>
+          {!canGenerate && (
+            <p style={{ fontSize: "12px", color: "#aaa", margin: 0 }}>
+              {!notes.trim() ? "Step 2: Describe what you built first." : "Step 4: Select at least one platform."}
+            </p>
+          )}
+          <div style={{ display: "flex", gap: "16px", flexWrap: "wrap", justifyContent: "center", marginTop: "8px" }}>
+            {selectedChannels.map(key => {
+              const ch = CHANNELS.find(c => c[0] === key);
+              if (!ch) return null;
+              return (
+                <span key={key} style={styles.selectedPlatformTag}>
+                  {ch[2]} {ch[1]}
                 </span>
-                
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-                  {[
-                    { id: "notes", label: "Changelog / Code", icon: "notes" },
-                    { id: "url", label: "Website Link", icon: "url" },
-                    { id: "record", label: "Record Screen", icon: "record" },
-                    { id: "screenshot", label: "Upload Mockups", icon: "screenshot" },
-                    { id: "repo", label: "Scan Repo", icon: "repo" }
-                  ].map(tab => {
-                    const isActive = sourceType === tab.id;
-                    return (
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════
+          STEP 6 — Review Drafts (only shown after generation)
+         ══════════════════════════════════════════════════════════ */}
+      {generationResult && (
+        <section ref={stepRefs.step6} style={styles.wizardSection}>
+          <div style={styles.stepHeader}>
+            <span style={{ ...styles.stepNumber, background: "var(--pastel-green)" }}>6</span>
+            <div>
+              <h2 style={styles.stepTitle}>Review Your Drafts</h2>
+              <p style={styles.stepDesc}>Edit, adjust, and finalize your content. Only your selected platforms are shown.</p>
+            </div>
+            <button onClick={() => setGenerationResult(null)} style={styles.resetBtn} className="hand-drawn-btn">↺ Regenerate</button>
+          </div>
+          <div style={styles.stepBody}>
+            <PlatformPreviews
+              generationResult={generationResult}
+              onSave={handleSaveDraft}
+              onCancel={() => setGenerationResult(null)}
+              onPublishNow={onPublishNow}
+              onSchedulePost={onSchedulePost}
+              onExport={onExport}
+            />
+          </div>
+        </section>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════
+          STEP 7 — Connect & Publish (only shown after generation)
+         ══════════════════════════════════════════════════════════ */}
+      {generationResult && (
+        <section ref={stepRefs.step7} style={styles.wizardSection}>
+          <div style={styles.stepHeader}>
+            <span style={{ ...styles.stepNumber, background: "var(--pastel-lavender)" }}>7</span>
+            <div>
+              <h2 style={styles.stepTitle}>Connect & Publish</h2>
+              <p style={styles.stepDesc}>Post directly, schedule, or export your generated content.</p>
+            </div>
+          </div>
+          <div style={styles.stepBody}>
+            <div style={styles.publishGrid}>
+              {selectedChannels.map(key => {
+                const ch = CHANNELS.find(c => c[0] === key);
+                if (!ch) return null;
+                const isConnected = connectedChannels[key];
+                return (
+                  <div key={key} style={styles.publishCard} className="hand-drawn">
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      <span style={{ fontSize: "20px" }}>{ch[2]}</span>
+                      <span style={{ fontWeight: "700", fontSize: "14px" }}>{ch[1]}</span>
+                    </div>
+                    {isConnected ? (
+                      <div style={{ display: "flex", gap: "8px", marginTop: "12px" }}>
+                        <button
+                          onClick={() => onPublishNow && onPublishNow(key, generationResult.posts?.[key])}
+                          style={{ ...styles.smallBtn, background: ch[3], color: "#fff" }}
+                          className="hand-drawn-btn"
+                        >
+                          Post Now
+                        </button>
+                        <button
+                          onClick={() => onSchedulePost && onSchedulePost(key, generationResult.posts?.[key])}
+                          style={styles.smallBtn}
+                          className="hand-drawn-btn"
+                        >
+                          Schedule
+                        </button>
+                      </div>
+                    ) : (
                       <button
-                        key={tab.id}
-                        type="button"
-                        onClick={() => setSourceType(sourceType === tab.id ? null : tab.id)}
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "6px",
-                          padding: "6px 12px",
-                          fontSize: "12px",
-                          background: isActive ? "var(--pastel-yellow)" : "#fff",
-                          border: "2px solid var(--ink-black)",
-                          cursor: "pointer",
-                          fontWeight: "700"
-                        }}
+                        onClick={() => onConnectPlatform && onConnectPlatform(key)}
+                        style={{ ...styles.smallBtn, marginTop: "12px", borderStyle: "dashed" }}
                         className="hand-drawn-btn"
                       >
-                        {getTabIcon(tab.id, "var(--ink-black)")}
-                        <span>{tab.label}</span>
+                        🔗 Connect Account
                       </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Dynamic input panels based on selection */}
-              {sourceType && (
-                <div style={{
-                  marginTop: "16px",
-                  padding: "16px",
-                  background: "#faf9f6",
-                  border: "2px dashed var(--ink-black)",
-                  borderRadius: "10px"
-                }} className="hand-drawn-wavy">
-                  
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-                    <h4 style={{ margin: 0, fontSize: "13px", fontWeight: "800" }} className="handwritten">
-                      Attachment Config: {sourceType.toUpperCase()}
-                    </h4>
-                    <button
-                      type="button"
-                      onClick={() => setSourceType(null)}
-                      style={{ background: "transparent", border: "none", cursor: "pointer", fontSize: "12px", fontWeight: "700" }}
-                    >
-                      ✕ Clear
-                    </button>
+                    )}
                   </div>
+                );
+              })}
+            </div>
 
-                  {sourceType === "notes" && (
-                    <div style={styles.formCol}>
-                      <label style={styles.label}>Paste Notes, Raw Code or Changelog Text</label>
-                      <textarea
-                        value={pastedText}
-                        onChange={(e) => setPastedText(e.target.value)}
-                        style={{ ...styles.textarea, minHeight: "120px" }}
-                        placeholder="Paste feature details, markdown readme files, logs or package files..."
-                        rows={4}
-                        className="hand-drawn-input"
-                      />
-                    </div>
-                  )}
-
-                  {sourceType === "url" && (
-                    <div style={styles.formCol}>
-                      <label style={styles.label}>Website App or Documentation Link</label>
-                      <input
-                        type="url"
-                        value={scrapeUrl}
-                        onChange={(e) => setScrapeUrl(e.target.value)}
-                        style={styles.input}
-                        placeholder="https://myproduct.com/docs"
-                        className="hand-drawn-input"
-                      />
-                    </div>
-                  )}
-
-                  {sourceType === "record" && (
-                    <div style={styles.recordingSection}>
-                      <label style={styles.label}>🎙️ Capture Interactive Screencast Demo</label>
-                      <p style={styles.panelTip}>Use clean resolution tabs. Toggle the microphone button if you want to transcribe feature voice overs directly into generator prompts.</p>
-                      
-                      <div style={styles.recorderControls}>
-                        {captureStatus === "idle" && (
-                          <button type="button" onClick={startRecording} style={styles.recordStartBtn} className="hand-drawn-btn">
-                            🔴 Record Walkthrough Screen
-                          </button>
-                        )}
-                        
-                        {captureStatus === "recording" && (
-                          <div style={{ display: "flex", gap: "10px" }}>
-                            <button type="button" onClick={stopRecording} style={styles.recordStopBtn} className="hand-drawn-btn">
-                              ⏹️ Stop Screen Record
-                            </button>
-                            <button type="button" onClick={captureFrame} style={styles.frameCaptureBtn} className="hand-drawn-btn">
-                              📸 Capture Frame
-                            </button>
-                          </div>
-                        )}
-                      </div>
-
-                      <div style={{ marginTop: "12px" }}>
-                        <label style={{ ...styles.checkboxLabel, cursor: "pointer" }}>
-                          <input
-                            type="checkbox"
-                            checked={micEnabled}
-                            onChange={(e) => setMicEnabled(e.target.checked)}
-                            disabled={captureStatus === "recording"}
-                            style={{ cursor: "pointer" }}
-                          />
-                          Enable Audio Voice Transcription (Microphone input)
-                        </label>
-                      </div>
-
-                      {showRecordingNotesForm && (
-                        <div style={styles.recordingNotesBox}>
-                          <label style={styles.label}>Walkthrough Design Notes & Insights</label>
-                          <textarea
-                            value={recordingNotes}
-                            onChange={(e) => setRecordingNotes(e.target.value)}
-                            style={styles.textarea}
-                            placeholder="What makes this walkthrough cool? Mention highlights (e.g. key interactions, colors, animations) to steer social caption designs."
-                            rows={2}
-                            className="hand-drawn-input"
-                          />
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {sourceType === "screenshot" && (
-                    <div style={styles.formCol}>
-                      <label style={styles.label}>Drop Interactive Mockups, Wireframes or Screenshots</label>
-                      <div style={styles.fileUploadBox} className="hand-drawn-wavy" onClick={() => document.getElementById("file-upload-input").click()}>
-                        <input
-                          id="file-upload-input"
-                          type="file"
-                          multiple
-                          accept="image/*,video/*"
-                          onChange={handleFileChange}
-                          style={{ display: "none" }}
-                        />
-                        <div style={styles.uploadLabel}>
-                          <Icons.screenshot size={32} color="var(--ink-black)" />
-                          <span>Click to upload mockup screenshots or walkthrough videos</span>
-                          <span style={{ fontSize: "10px", color: "#aaa" }}>PNG, JPG, WebP, MP4 up to 15MB</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {sourceType === "repo" && (
-                    <div style={styles.formCol}>
-                      <label style={styles.label}>Scan Repository Directory Path / GitHub URL</label>
-                      <input
-                        type="text"
-                        value={repoUrl}
-                        onChange={(e) => setRepoUrl(e.target.value)}
-                        style={styles.input}
-                        placeholder="e.g. https://github.com/Ankit6149/SignalFlow-Studio or C:\workspace\app"
-                        className="hand-drawn-input"
-                      />
-                      <div style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "6px" }}>
-                        <label style={styles.label}>GitHub Access Token (Optional, for private repos)</label>
-                        <input
-                          type="password"
-                          value={githubToken}
-                          onChange={(e) => setGithubToken(e.target.value)}
-                          style={styles.input}
-                          placeholder="ghp_..."
-                          className="hand-drawn-input"
-                        />
-                      </div>
-                      <p style={styles.panelTip}>💻 Local directories read and filter structural source files from your disk. GitHub URLs pull files securely via their public/authorized API tree.</p>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Ingested assets display */}
-              {uploadedFiles.length > 0 && (
-                <div style={styles.assetsList}>
-                  <h4 style={styles.assetsListTitle}>Ingested Assets ({uploadedFiles.length})</h4>
-                  <div style={styles.assetsGrid}>
-                    {uploadedFiles.map(file => (
-                      <div key={file.id} style={styles.assetItem} className="hand-drawn">
-                        <span style={styles.assetCategoryIcon}>
-                          {file.category === "screenshot" ? "🖼️" : "🎥"}
-                        </span>
-                        <div style={styles.assetDetails}>
-                          <span style={styles.assetName}>{file.name}</span>
-                          <span style={styles.assetSize}>{(file.size / 1024 / 1024).toFixed(2)} MB</span>
-                        </div>
-                        <button onClick={() => handleRemoveFile(file.id)} style={styles.removeAssetBtn}>✕</button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "24px" }}>
-                <button
-                  type="button"
-                  onClick={() => setCurrentStep(2)}
-                  disabled={!notes.trim()}
-                  style={{
-                    padding: "12px 28px",
-                    borderRadius: "10px",
-                    background: notes.trim() ? "var(--pastel-yellow)" : "#e5e5e0",
-                    color: notes.trim() ? "var(--ink-black)" : "#aaa",
-                    fontWeight: "600",
-                    cursor: notes.trim() ? "pointer" : "not-allowed",
-                    opacity: notes.trim() ? 1 : 0.6
-                  }}
-                  className="hand-drawn-btn"
-                >
-                  Next: Tune Settings & Outlets ➜
-                </button>
-              </div>
+            <div style={{ display: "flex", gap: "12px", justifyContent: "center", marginTop: "24px" }}>
+              <button onClick={() => handleSaveDraft({})} style={{ ...styles.generateBtn, fontSize: "14px", padding: "12px 28px" }} className="hand-drawn-btn">
+                💾 Save to Library
+              </button>
+              <button onClick={() => onExport && onExport(generationResult)} style={{ ...styles.smallBtn, padding: "12px 20px" }} className="hand-drawn-btn">
+                📥 Export Package
+              </button>
             </div>
           </div>
-        )}
+        </section>
+      )}
 
-        {currentStep === 2 && (
-          /* Right Column: Creative brand tuners */
-          <div style={styles.rightCol}>
-            <div style={styles.workspaceCard} className="hand-drawn offset-border">
-              <div style={styles.cardHeader}>
-                <h3 style={styles.cardSectionTitle}>2. Target Settings & Tuning</h3>
-                <span style={styles.stepHint}>Configure voice & platforms</span>
-              </div>
-
-              <div style={styles.form}>
-                <div style={styles.formCol}>
-                  <label style={styles.label}>Draft Package Title</label>
-                  <input
-                    type="text"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    style={styles.input}
-                    placeholder="e.g. Launch Kit v1.0"
-                    className="hand-drawn-input"
-                  />
-                </div>
-
-                <div style={styles.formCol}>
-                  <label style={styles.label}>Brand Voice Tone</label>
-                  <select
-                    value={tone}
-                    onChange={(e) => setTone(e.target.value)}
-                    style={styles.select}
-                    className="hand-drawn-input"
-                  >
-                    {TONE_OPTIONS.map(t => (
-                      <option key={t} value={t}>{t.toUpperCase()}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setShowAdvancedTuning(!showAdvancedTuning)}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    color: "var(--ink-black)",
-                    textDecoration: "underline",
-                    cursor: "pointer",
-                    fontSize: "12px",
-                    fontWeight: "600",
-                    textAlign: "left",
-                    padding: "4px 0",
-                    margin: "8px 0",
-                    display: "block",
-                    fontFamily: "inherit"
-                  }}
-                  className="handwritten"
-                >
-                  {showAdvancedTuning ? "✦ Hide Advanced Details" : "✦ Add advanced details (optional)"}
-                </button>
-
-                {showAdvancedTuning && (
-                  <div style={{ display: "flex", flexDirection: "column", gap: "16px", padding: "14px", border: "2px solid var(--ink-black)", background: "var(--bg-cream)", borderRadius: "8px" }}>
-                    <div style={styles.formCol}>
-                      <label style={styles.label}>Application URL (optional)</label>
-                      <input
-                        type="url"
-                        value={appUrl}
-                        onChange={(e) => setAppUrl(e.target.value)}
-                        style={styles.input}
-                        placeholder="https://acme.io"
-                        className="hand-drawn-input"
-                      />
-                    </div>
-
-                    <div style={styles.formCol}>
-                      <label style={styles.label}>Primary Value Proposition (Value Hook)</label>
-                      <input
-                        type="text"
-                        value={mainValue}
-                        onChange={(e) => setMainValue(e.target.value)}
-                        style={styles.input}
-                        placeholder="e.g. Saves developers 10 hours a week"
-                        className="hand-drawn-input"
-                      />
-                    </div>
-
-                    <div style={styles.formCol}>
-                      <label style={styles.label}>Key Target Audience Message</label>
-                      <input
-                        type="text"
-                        value={audienceUnderstand}
-                        onChange={(e) => setAudienceUnderstand(e.target.value)}
-                        style={styles.input}
-                        placeholder="e.g. It is completely client-side and private"
-                        className="hand-drawn-input"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* Target Channels Visual Pills */}
-                <div style={styles.formCol}>
-                  <label style={styles.label}>Target Outlets</label>
-                  <div style={styles.channelPillsContainer}>
-                    {CHANNELS.map(([key, label, emoji, color]) => {
-                      const isSelected = selectedChannels.includes(key);
-                      return (
-                        <button
-                          key={key}
-                          type="button"
-                          onClick={() => {
-                            setSelectedChannels(prev =>
-                              prev.includes(key) ? prev.filter(c => c !== key) : [...prev, key]
-                            );
-                          }}
-                          style={{
-                            ...styles.channelPill,
-                            ...(isSelected ? {
-                              background: color ? `${color}12` : "rgba(45, 106, 79, 0.08)",
-                              borderColor: "var(--ink-black)",
-                              color: color || "#2d6a4f",
-                              fontWeight: "600",
-                              transform: "scale(1.02)",
-                              borderWidth: "2px"
-                            } : {})
-                          }}
-                          className={isSelected ? "hand-drawn" : ""}
-                        >
-                          <span style={{ marginRight: "6px", display: "inline-flex", alignItems: "center" }}>
-                            {Icons[key] ? Icons[key]({ size: 13, color: isSelected ? color : "#6b6b6b" }) : emoji}
-                          </span>
-                          <span>{label}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Output Formats Pills */}
-                <div style={styles.formCol}>
-                  <label style={styles.label}>Required Package Outputs</label>
-                  <div style={styles.formatPillsContainer}>
-                    {OUTPUT_TYPES.map(([key, label]) => {
-                      const isSelected = selectedOutputs.includes(key);
-                      return (
-                        <button
-                          key={key}
-                          type="button"
-                          onClick={() => {
-                            setSelectedOutputs(prev =>
-                              prev.includes(key) ? prev.filter(o => o !== key) : [...prev, key]
-                            );
-                          }}
-                          style={{
-                            ...styles.formatPill,
-                            ...(isSelected ? {
-                              ...styles.formatPillActive,
-                              borderColor: "var(--ink-black)",
-                              borderWidth: "2px"
-                            } : {})
-                          }}
-                          className={isSelected ? "hand-drawn" : ""}
-                        >
-                          {label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ display: "flex", justifyContent: "space-between", gap: "16px", marginTop: "24px" }}>
-                <button
-                  type="button"
-                  onClick={() => setCurrentStep(1)}
-                  style={{
-                    padding: "12px 24px",
-                    borderRadius: "10px",
-                    background: "#fff",
-                    color: "var(--ink-black)",
-                    fontWeight: "600",
-                    cursor: "pointer"
-                  }}
-                  className="hand-drawn-btn"
-                >
-                  ← Back to Context Brief
-                </button>
-
-                <button
-                  onClick={triggerGeneration}
-                  disabled={isGenerating || !notes.trim()}
-                  style={{
-                    ...styles.primaryGenerateBtn,
-                    padding: "12px 28px",
-                    ...((isGenerating || !notes.trim()) ? styles.primaryGenerateBtnDisabled : {})
-                  }}
-                  className="hand-drawn-btn"
-                >
-                  {isGenerating ? "🤖 Synthesizing..." : "Synthesize Drafts ✦"}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+      {/* Bottom spacer */}
+      <div style={{ height: "80px" }} />
     </div>
   );
 }
 
+
+// ─── STYLES ─────────────────────────────────────────────────────
 const styles = {
-  container: {
-    padding: "32px",
+  wizardContainer: {
+    padding: "32px 40px",
+    maxWidth: "860px",
+    margin: "0 auto",
     display: "flex",
     flexDirection: "column",
-    gap: "24px",
-    overflowY: "auto",
-    flexGrow: 1,
-    fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
-    background: "#faf9f6"
+    gap: "12px",
+    fontFamily: "'Plus Jakarta Sans', system-ui, -apple-system, sans-serif"
   },
-  headerRow: {
+
+  // Page header
+  pageHeader: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    gap: "20px"
+    marginBottom: "12px"
   },
-  title: {
-    fontSize: "22px",
-    fontWeight: "700",
-    color: "#1a1a1a",
+  pageTitle: {
+    fontSize: "26px",
+    fontWeight: "800",
+    color: "var(--ink-black)",
     margin: 0,
-    letterSpacing: "-0.3px"
+    fontFamily: "'Space Grotesk', sans-serif",
+    letterSpacing: "-0.5px"
   },
-  subtitle: {
+  pageSubtitle: {
     fontSize: "14px",
-    color: "#888",
+    color: "#999",
     margin: "4px 0 0 0"
   },
-  headerActions: {
-    display: "flex",
-    alignItems: "center",
-    gap: "14px"
-  },
-  activeModelBadge: {
+  activeBadge: {
     display: "flex",
     alignItems: "center",
     gap: "8px",
     padding: "8px 14px",
     background: "#fff",
-    border: "1px solid rgba(0,0,0,0.06)",
+    border: "2px solid var(--ink-black)",
     borderRadius: "10px",
-    fontSize: "12px",
-    color: "#6b6b6b"
+    boxShadow: "2px 2px 0px var(--ink-black)"
   },
   modelDot: {
-    width: "7px",
-    height: "7px",
+    width: "8px",
+    height: "8px",
     borderRadius: "50%",
-    background: "#2d6a4f",
+    background: "#00f5d4",
     animation: "pulse-dot 2s infinite ease-in-out"
   },
-  primaryGenerateBtn: {
-    background: "linear-gradient(135deg, #2d6a4f, #52b788)",
-    color: "#fff",
-    border: "none",
-    padding: "10px 22px",
-    borderRadius: "10px",
-    fontSize: "14px",
-    fontWeight: "600",
-    cursor: "pointer",
-    boxShadow: "0 4px 16px rgba(45, 106, 79, 0.2)",
-    transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
-  },
-  primaryGenerateBtnDisabled: {
-    background: "#e5e5e0",
-    color: "#aaa",
-    cursor: "not-allowed",
-    boxShadow: "none"
-  },
-  errorAlert: {
-    padding: "14px 18px",
-    background: "rgba(239, 68, 68, 0.05)",
-    border: "1px solid rgba(239, 68, 68, 0.15)",
-    borderRadius: "10px",
-    color: "#ef4444",
-    fontSize: "13px",
-    lineHeight: "1.5"
-  },
-  workspaceBody: {
-    display: "grid",
-    gridTemplateColumns: "1.4fr 1fr",
-    gap: "24px",
-    alignItems: "start"
-  },
-  leftCol: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "24px"
-  },
-  rightCol: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "24px"
-  },
-  workspaceCard: {
+
+  // Section card
+  wizardSection: {
     background: "#fff",
     border: "2.5px solid var(--ink-black)",
     borderRadius: "16px",
-    padding: "48px 40px",
+    overflow: "hidden",
+    boxShadow: "4px 5px 0px var(--ink-black)"
+  },
+  stepHeader: {
     display: "flex",
-    flexDirection: "column",
-    gap: "24px",
-    boxShadow: "6px 8px 0px var(--ink-black)",
-    maxWidth: "720px",
-    width: "100%",
-    margin: "24px auto"
+    alignItems: "center",
+    gap: "16px",
+    padding: "20px 28px",
+    borderBottom: "2px solid rgba(0,0,0,0.06)",
+    background: "#fefcf8"
   },
-  cardHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center"
-  },
-  cardSectionTitle: {
-    fontSize: "15px",
-    fontWeight: "700",
-    color: "#1a1a1a",
-    margin: 0
-  },
-  stepHint: {
-    fontSize: "11px",
-    color: "#aaa",
-    fontWeight: "500"
-  },
-  tabBar: {
-    display: "grid",
-    gridTemplateColumns: "repeat(3, 1fr)",
-    gap: "8px",
-    background: "#faf9f6",
-    padding: "6px",
-    borderRadius: "12px",
-    border: "1px solid rgba(0,0,0,0.04)"
-  },
-  tabBtn: {
+  stepNumber: {
+    width: "36px",
+    height: "36px",
+    borderRadius: "50%",
+    background: "var(--pastel-yellow)",
+    border: "2px solid var(--ink-black)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    gap: "6px",
-    padding: "10px 8px",
-    borderRadius: "8px",
-    border: "none",
-    background: "transparent",
-    color: "#6b6b6b",
+    fontWeight: "900",
+    fontSize: "16px",
+    color: "var(--ink-black)",
+    flexShrink: 0,
+    fontFamily: "'Space Grotesk', sans-serif"
+  },
+  stepTitle: {
+    fontSize: "17px",
+    fontWeight: "700",
+    color: "var(--ink-black)",
+    margin: 0,
+    letterSpacing: "-0.2px"
+  },
+  stepDesc: {
     fontSize: "12px",
-    fontWeight: "500",
+    color: "#999",
+    margin: "2px 0 0 0"
+  },
+  stepBody: {
+    padding: "24px 28px"
+  },
+
+  // Providers grid  
+  providerGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+    gap: "10px"
+  },
+  providerCard: {
+    padding: "14px 16px",
+    background: "#faf9f6",
+    border: "2px solid rgba(0,0,0,0.08)",
+    borderRadius: "12px",
+    textAlign: "left",
     cursor: "pointer",
     transition: "all 0.15s ease",
     fontFamily: "inherit"
   },
-  tabBtnActive: {
-    background: "#fff",
-    color: "#2d6a4f",
-    fontWeight: "600",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02)"
+  providerCardActive: {
+    background: "var(--pastel-green)",
+    borderColor: "var(--ink-black)",
+    boxShadow: "3px 3px 0px var(--ink-black)"
   },
-  tabIcon: {
-    fontSize: "14px"
-  },
-  tabContentPanel: {
-    background: "#faf9f6",
+
+  // Main textarea
+  mainTextarea: {
+    width: "100%",
+    boxSizing: "border-box",
+    minHeight: "160px",
+    background: "#fffdf9",
+    border: "2px solid rgba(0,0,0,0.1)",
     borderRadius: "12px",
-    padding: "18px",
-    border: "1px solid rgba(0,0,0,0.04)",
-    minHeight: "120px",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center"
+    padding: "16px 20px",
+    fontSize: "14px",
+    color: "var(--ink-black)",
+    outline: "none",
+    resize: "vertical",
+    fontFamily: "inherit",
+    lineHeight: "1.7",
+    backgroundImage: "linear-gradient(rgba(36, 113, 93, 0.06) 1px, transparent 1px)",
+    backgroundSize: "100% 28px",
+    backgroundAttachment: "local",
+    transition: "border-color 0.2s ease"
   },
-  emptyBriefState: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    textAlign: "center",
-    color: "#aaa",
-    padding: "12px",
-    gap: "8px",
-    fontSize: "13px"
+
+  // Optional fields  
+  optionalFieldsRow: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: "16px",
+    marginTop: "16px"
   },
-  formCol: {
+  halfField: {
     display: "flex",
     flexDirection: "column",
     gap: "6px"
   },
+
+  // Shared input styles
   label: {
     fontSize: "11px",
-    fontWeight: "600",
+    fontWeight: "700",
     color: "#999",
     textTransform: "uppercase",
     letterSpacing: "0.5px"
   },
   input: {
     background: "#fff",
-    border: "1px solid rgba(0,0,0,0.1)",
-    borderRadius: "8px",
-    padding: "10px 12px",
-    color: "#1a1a1a",
+    border: "2px solid rgba(0,0,0,0.08)",
+    borderRadius: "10px",
+    padding: "10px 14px",
+    color: "var(--ink-black)",
     outline: "none",
     fontSize: "13px",
-    transition: "border-color 0.2s ease"
+    transition: "border-color 0.2s ease",
+    fontFamily: "inherit"
   },
   select: {
     background: "#fff",
-    border: "1px solid rgba(0,0,0,0.1)",
-    borderRadius: "8px",
-    padding: "10px 12px",
-    color: "#1a1a1a",
-    outline: "none",
-    fontSize: "13px",
-    cursor: "pointer"
-  },
-  textarea: {
-    background: "#fff",
-    border: "1px solid rgba(0,0,0,0.1)",
-    borderRadius: "8px",
-    padding: "10px 12px",
-    color: "#1a1a1a",
-    outline: "none",
-    fontSize: "13px",
-    resize: "vertical",
-    fontFamily: "inherit",
-    lineHeight: "1.5",
-    transition: "border-color 0.2s ease"
-  },
-  panelTip: {
-    fontSize: "11px",
-    color: "#888",
-    margin: "6px 0 0 0",
-    lineHeight: "1.4"
-  },
-  channelPillsContainer: {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "8px",
-    marginTop: "4px"
-  },
-  channelPill: {
-    display: "flex",
-    alignItems: "center",
-    padding: "8px 12px",
-    borderRadius: "20px",
-    border: "1px solid rgba(0,0,0,0.08)",
-    background: "#fff",
-    fontSize: "12px",
-    fontWeight: "500",
-    color: "#6b6b6b",
-    cursor: "pointer",
-    transition: "all 0.15s ease",
-    fontFamily: "inherit"
-  },
-  formatPillsContainer: {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "8px",
-    marginTop: "4px"
-  },
-  formatPill: {
-    padding: "6px 12px",
-    borderRadius: "8px",
-    border: "1px solid rgba(0,0,0,0.08)",
-    background: "#fff",
-    fontSize: "12px",
-    fontWeight: "500",
-    color: "#6b6b6b",
-    cursor: "pointer",
-    transition: "all 0.15s ease",
-    fontFamily: "inherit"
-  },
-  formatPillActive: {
-    background: "rgba(45, 106, 79, 0.08)",
-    borderColor: "#2d6a4f",
-    color: "#2d6a4f",
-    fontWeight: "600"
-  },
-  recorderWrapper: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "12px"
-  },
-  recordControls: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "10px"
-  },
-  btnGroup: {
-    display: "flex",
-    gap: "10px"
-  },
-  recordBtn: {
-    background: "#ef4444",
-    color: "#fff",
-    border: "none",
-    padding: "8px 16px",
-    borderRadius: "8px",
-    fontWeight: "600",
-    fontSize: "12px",
-    cursor: "pointer"
-  },
-  stopBtn: {
-    background: "#1a1a1a",
-    color: "#fff",
-    border: "none",
-    padding: "8px 16px",
-    borderRadius: "8px",
-    fontWeight: "600",
-    fontSize: "12px",
-    cursor: "pointer"
-  },
-  screenshotBtn: {
-    background: "#2d6a4f",
-    color: "#fff",
-    border: "none",
-    padding: "8px 16px",
-    borderRadius: "8px",
-    fontWeight: "600",
-    fontSize: "12px",
-    cursor: "pointer"
-  },
-  micToggle: {
-    display: "flex",
-    alignItems: "center",
-    gap: "6px",
-    fontSize: "12px",
-    color: "#6b6b6b",
-    cursor: "pointer"
-  },
-  statusRow: {
-    fontSize: "11px",
-    color: "#888"
-  },
-  statusText: {
-    fontWeight: "600",
-    color: "#2d6a4f"
-  },
-  errorText: {
-    fontSize: "11px",
-    color: "#ef4444"
-  },
-  previewBox: {
-    width: "100%",
-    aspectRatio: "16/9",
-    background: "#1a1a1a",
-    borderRadius: "8px",
-    overflow: "hidden"
-  },
-  videoPreview: {
-    width: "100%",
-    height: "100%",
-    objectFit: "contain"
-  },
-  recordingNotesBox: {
-    borderTop: "1px solid rgba(0,0,0,0.06)",
-    paddingTop: "12px",
-    marginTop: "4px"
-  },
-  recordingNotesTitle: {
-    fontSize: "13px",
-    fontWeight: "700",
-    margin: "0 0 8px 0"
-  },
-  fileUploadBox: {
-    border: "2px dashed rgba(0,0,0,0.1)",
+    border: "2px solid rgba(0,0,0,0.08)",
     borderRadius: "10px",
-    padding: "30px 16px",
-    textAlign: "center",
-    cursor: "pointer"
+    padding: "10px 14px",
+    color: "var(--ink-black)",
+    outline: "none",
+    fontSize: "13px",
+    cursor: "pointer",
+    fontFamily: "inherit"
   },
-  uploadLabel: {
+
+  // Attachment row
+  attachRow: {
     display: "flex",
-    flexDirection: "column",
+    flexWrap: "wrap",
+    gap: "8px",
+    alignItems: "center",
+    marginTop: "16px",
+    padding: "12px 16px",
+    background: "#faf9f6",
+    borderRadius: "12px",
+    border: "1.5px dashed rgba(0,0,0,0.1)"
+  },
+  attachPill: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "4px",
+    padding: "6px 14px",
+    fontSize: "12px",
+    background: "#fff",
+    border: "2px solid rgba(0,0,0,0.08)",
+    borderRadius: "20px",
+    cursor: "pointer",
+    fontWeight: "600",
+    transition: "all 0.15s ease",
+    fontFamily: "inherit",
+    color: "#555"
+  },
+  attachPillActive: {
+    background: "var(--pastel-yellow)",
+    borderColor: "var(--ink-black)"
+  },
+  inlinePanel: {
+    padding: "16px",
+    background: "#faf9f6",
+    border: "2px solid rgba(0,0,0,0.06)",
+    borderRadius: "12px",
+    marginTop: "12px"
+  },
+
+  // Files list
+  filesList: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "8px",
+    marginTop: "16px"
+  },
+  fileBadge: {
+    display: "flex",
     alignItems: "center",
     gap: "8px",
-    color: "#6b6b6b",
-    fontSize: "12px",
-    cursor: "pointer"
-  },
-  assetsList: {
-    borderTop: "1px solid rgba(0,0,0,0.06)",
-    paddingTop: "14px",
-    marginTop: "10px"
-  },
-  assetsListTitle: {
-    fontSize: "13px",
-    fontWeight: "700",
-    margin: "0 0 8px 0"
-  },
-  assetsGrid: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "6px"
-  },
-  assetItem: {
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-    padding: "8px 12px",
+    padding: "6px 12px",
     background: "#faf9f6",
-    borderRadius: "8px",
-    border: "1px solid rgba(0,0,0,0.04)"
+    border: "1.5px solid rgba(0,0,0,0.08)",
+    borderRadius: "8px"
   },
-  assetCategoryIcon: {
-    fontSize: "16px"
-  },
-  assetDetails: {
-    display: "flex",
-    flexGrow: 1,
-    justifyContent: "space-between",
-    alignItems: "center"
-  },
-  assetName: {
-    fontSize: "12px",
-    fontWeight: "600",
-    color: "#1a1a1a"
-  },
-  assetSize: {
-    fontSize: "10px",
-    color: "#aaa"
-  },
-  removeAssetBtn: {
+  fileRemoveBtn: {
     background: "transparent",
     border: "none",
     color: "#ef4444",
@@ -1276,30 +1042,143 @@ const styles = {
     cursor: "pointer",
     fontSize: "12px"
   },
-  cancelBtn: {
-    background: "transparent",
-    border: "1px solid rgba(0,0,0,0.1)",
-    color: "#1a1a1a",
-    padding: "8px 16px",
-    borderRadius: "10px",
-    fontSize: "13px",
-    fontWeight: "600",
-    cursor: "pointer",
-    transition: "all 0.15s ease",
-    fontFamily: "inherit"
+
+  // Folder grid
+  folderGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
+    gap: "12px"
   },
-  mainCard: {
-    background: "#fff",
-    border: "1px solid rgba(0,0,0,0.06)",
-    borderRadius: "16px",
-    padding: "24px",
-    boxShadow: "0 8px 30px rgba(0,0,0,0.015)"
-  },
-  form: {
+  folderCard: {
     display: "flex",
     flexDirection: "column",
-    gap: "16px"
+    alignItems: "center",
+    gap: "6px",
+    padding: "20px 16px",
+    background: "#faf9f6",
+    border: "2px solid rgba(0,0,0,0.08)",
+    borderRadius: "14px",
+    cursor: "pointer",
+    transition: "all 0.15s ease",
+    fontFamily: "inherit",
+    textAlign: "center"
   },
+  folderCardActive: {
+    background: "var(--pastel-green)",
+    borderColor: "var(--ink-black)",
+    boxShadow: "3px 3px 0px var(--ink-black)"
+  },
+  folderIcon: {
+    fontSize: "28px"
+  },
+
+  // Platform selection grid
+  platformGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fill, minmax(170px, 1fr))",
+    gap: "12px"
+  },
+  platformCard: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: "6px",
+    padding: "18px 16px",
+    background: "#faf9f6",
+    border: "2.5px solid rgba(0,0,0,0.08)",
+    borderRadius: "14px",
+    cursor: "pointer",
+    transition: "all 0.15s ease",
+    fontFamily: "inherit",
+    textAlign: "center"
+  },
+
+  // Generate button
+  generateBtn: {
+    background: "var(--ink-black)",
+    color: "#fff",
+    border: "none",
+    padding: "16px 40px",
+    borderRadius: "14px",
+    fontSize: "16px",
+    fontWeight: "700",
+    cursor: "pointer",
+    boxShadow: "4px 4px 0px var(--pastel-green)",
+    transition: "all 0.2s ease",
+    fontFamily: "'Space Grotesk', sans-serif",
+    letterSpacing: "-0.3px"
+  },
+  generateBtnDisabled: {
+    background: "#ddd",
+    color: "#aaa",
+    cursor: "not-allowed",
+    boxShadow: "none"
+  },
+
+  // Selected platform tags
+  selectedPlatformTag: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "4px",
+    padding: "4px 12px",
+    background: "var(--pastel-green)",
+    border: "1.5px solid var(--ink-black)",
+    borderRadius: "20px",
+    fontSize: "12px",
+    fontWeight: "600",
+    color: "var(--ink-black)"
+  },
+
+  // Publish section  
+  publishGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+    gap: "12px"
+  },
+  publishCard: {
+    padding: "20px",
+    background: "#faf9f6",
+    border: "2px solid rgba(0,0,0,0.08)",
+    borderRadius: "14px"
+  },
+
+  // Shared utility
+  smallBtn: {
+    padding: "8px 16px",
+    borderRadius: "10px",
+    background: "#fff",
+    border: "2px solid var(--ink-black)",
+    fontSize: "12px",
+    fontWeight: "600",
+    cursor: "pointer",
+    fontFamily: "inherit",
+    color: "var(--ink-black)"
+  },
+  resetBtn: {
+    marginLeft: "auto",
+    padding: "6px 14px",
+    borderRadius: "8px",
+    background: "#fff",
+    border: "2px solid rgba(0,0,0,0.1)",
+    fontSize: "12px",
+    fontWeight: "600",
+    cursor: "pointer",
+    fontFamily: "inherit",
+    color: "#888"
+  },
+
+  // Error
+  errorAlert: {
+    padding: "14px 18px",
+    background: "rgba(239, 68, 68, 0.05)",
+    border: "2px solid rgba(239, 68, 68, 0.2)",
+    borderRadius: "12px",
+    color: "#ef4444",
+    fontSize: "13px",
+    lineHeight: "1.5"
+  },
+
+  // Loader
   loaderOverlay: {
     position: "fixed",
     top: 0,
@@ -1307,7 +1186,7 @@ const styles = {
     right: 0,
     bottom: 0,
     zIndex: 1000,
-    background: "rgba(251, 249, 244, 0.82)",
+    background: "rgba(251, 249, 244, 0.85)",
     backdropFilter: "blur(8px)",
     display: "flex",
     alignItems: "center",
@@ -1322,7 +1201,10 @@ const styles = {
     alignItems: "center",
     textAlign: "center",
     position: "relative",
-    overflow: "hidden"
+    overflow: "hidden",
+    border: "2.5px solid var(--ink-black)",
+    borderRadius: "16px",
+    boxShadow: "6px 6px 0px var(--ink-black)"
   },
   sketchContainer: {
     position: "relative",
@@ -1344,7 +1226,7 @@ const styles = {
     animation: "pencilWrite 1.8s ease-in-out infinite"
   },
   loaderTitle: {
-    fontSize: "24px",
+    fontSize: "22px",
     fontWeight: "700",
     color: "var(--ink-black)",
     margin: "0 0 10px 0"
